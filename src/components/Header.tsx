@@ -10,7 +10,7 @@ export function Header() {
 
   const navItems = [
     { label: t.nav.home, href: '/' },
-    { label: t.nav.properties, href: '#propiedades' },
+    { label: t.nav.properties, href: '/propiedades' },
     { label: t.nav.about, href: '#nosotros' },
     { label: t.nav.contact, href: '#contacto' },
   ];

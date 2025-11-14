@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/utils/LanguageContext';
 import { getFeaturedProperties } from '@/data/properties';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function FeaturedProperties() {
   const { t, language } = useLanguage();
@@ -50,14 +51,16 @@ export function FeaturedProperties() {
 
         {/* View All Button */}
         <div className="text-center animate-in fade-in duration-700 delay-500">
-          <Button
-            size="lg"
-            variant="outline"
-            className="gap-2"
-          >
-            {t.featured.viewAll}
-            <ArrowRight className="h-5 w-5" />
-          </Button>
+          <Link to="/propiedades">
+            <Button
+              size="lg"
+              variant="outline"
+              className="gap-2"
+            >
+              {t.featured.viewAll}
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
