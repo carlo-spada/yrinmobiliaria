@@ -5,10 +5,14 @@ import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
 import heroImage from '@/assets/hero-oaxaca.jpg';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function HeroSection() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [priceRange, setPriceRange] = useState([0]);
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedZone, setSelectedZone] = useState('all');
 
   const propertyTypes = [
     { value: 'all', label: t.hero.allTypes },
@@ -20,11 +24,29 @@ export function HeroSection() {
 
   const zones = [
     { value: 'all', label: t.hero.allZones },
-    { value: 'centro', label: 'Centro Histórico' },
-    { value: 'reforma', label: 'Reforma San Felipe' },
-    { value: 'norte', label: 'Zona Norte' },
-    { value: 'valles', label: 'Valles Centrales' },
+    { value: 'Centro Histórico', label: 'Centro Histórico' },
+    { value: 'Reforma San Felipe', label: 'Reforma San Felipe' },
+    { value: 'Zona Norte', label: 'Zona Norte' },
+    { value: 'Valles Centrales', label: 'Valles Centrales' },
   ];
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    
+    if (selectedType !== 'all') {
+      params.set('type', selectedType);
+    }
+    
+    if (selectedZone !== 'all') {
+      params.set('zone', selectedZone);
+    }
+    
+    if (priceRange[0] > 0) {
+      params.set('maxPrice', (priceRange[0] * 100000).toString());
+    }
+    
+    navigate(`/propiedades?${params.toString()}`);
+  };
 
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -65,12 +87,14 @@ export function HeroSection() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Select
                 options={propertyTypes}
-                defaultValue="all"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
                 className="bg-background"
               />
               <Select
                 options={zones}
-                defaultValue="all"
+                value={selectedZone}
+                onChange={(e) => setSelectedZone(e.target.value)}
                 className="bg-background"
               />
             </div>
@@ -97,6 +121,7 @@ export function HeroSection() {
               size="lg"
               variant="primary"
               className="w-full font-semibold gap-2"
+              onClick={handleSearch}
             >
               <Search className="h-5 w-5" />
               {t.hero.search}

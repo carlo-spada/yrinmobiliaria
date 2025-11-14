@@ -56,6 +56,31 @@ export interface Translation {
     subtitle: string;
     button: string;
   };
+  properties: {
+    title: string;
+    results: string;
+    filters: string;
+    clearFilters: string;
+    applyFilters: string;
+    propertyType: string;
+    operation: string;
+    zone: string;
+    priceRange: string;
+    minPrice: string;
+    maxPrice: string;
+    bedrooms: string;
+    bathrooms: string;
+    any: string;
+    noResults: string;
+    sort: {
+      relevance: string;
+      priceAsc: string;
+      priceDesc: string;
+      newest: string;
+    };
+    previous: string;
+    next: string;
+  };
   footer: {
     contact: string;
     address: string;
