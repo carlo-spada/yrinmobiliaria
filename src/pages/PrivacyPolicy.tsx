@@ -3,15 +3,20 @@ import { Footer } from '@/components/Footer';
 import { useLanguage } from '@/utils/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Shield, Lock, FileText, AlertCircle } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function PrivacyPolicy() {
   const { language } = useLanguage();
+  const { getSetting } = useSiteSettings();
+  
+  const companyName = getSetting('company_name', 'YR Inmobiliaria');
+  const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
 
   const content = {
     es: {
       title: 'Política de Privacidad',
       lastUpdated: 'Última actualización: Noviembre 2025',
-      intro: 'En Y&R Inmobiliaria, nos comprometemos a proteger su privacidad y garantizar la seguridad de su información personal. Esta Política de Privacidad describe cómo recopilamos, usamos, divulgamos y protegemos su información cuando utiliza nuestros servicios.',
+      intro: `En ${companyName}, nos comprometemos a proteger su privacidad y garantizar la seguridad de su información personal. Esta Política de Privacidad describe cómo recopilamos, usamos, divulgamos y protegemos su información cuando utiliza nuestros servicios.`,
       sections: [
         {
           icon: FileText,
@@ -73,7 +78,7 @@ export default function PrivacyPolicy() {
             },
             {
               subtitle: '4.2 Ejercicio de Derechos',
-              text: 'Para ejercer estos derechos, puede contactarnos en: contacto@yrinmobiliaria.com. Responderemos a su solicitud dentro de los 20 días hábiles establecidos por la ley.'
+              text: `Para ejercer estos derechos, puede contactarnos en: ${companyEmail}. Responderemos a su solicitud dentro de los 20 días hábiles establecidos por la ley.`
             }
           ]
         }
@@ -101,7 +106,7 @@ export default function PrivacyPolicy() {
         },
         {
           title: '10. Contacto',
-          text: 'Si tiene preguntas sobre esta Política de Privacidad o sobre cómo manejamos su información personal, contáctenos en: Email: contacto@yrinmobiliaria.com | Teléfono: +52 (951) 123-4567 | Dirección: Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México'
+          text: `Si tiene preguntas sobre esta Política de Privacidad o sobre cómo manejamos su información personal, contáctenos en: Email: ${companyEmail} | Teléfono: ${getSetting('company_phone', '(951) 123-4567')} | Dirección: ${getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México')}`
         }
       ]
     },
@@ -198,7 +203,7 @@ export default function PrivacyPolicy() {
         },
         {
           title: '10. Contact',
-          text: 'If you have questions about this Privacy Policy or how we handle your personal information, contact us at: Email: contacto@yrinmobiliaria.com | Phone: +52 (951) 123-4567 | Address: Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México'
+          text: `If you have questions about this Privacy Policy or how we handle your personal information, contact us at: Email: ${companyEmail} | Phone: ${getSetting('company_phone', '(951) 123-4567')} | Address: ${getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México')}`
         }
       ]
     }

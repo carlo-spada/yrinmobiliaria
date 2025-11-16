@@ -2,10 +2,20 @@ import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react
 import { useLanguage } from '@/utils/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export function Footer() {
   const { t } = useLanguage();
+  const { getSetting, isLoading } = useSiteSettings();
   const currentYear = new Date().getFullYear();
+  
+  // Get dynamic settings with fallbacks
+  const companyPhone = getSetting('company_phone', '(951) 123-4567');
+  const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
+  const companyAddress = getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México');
+  const facebookUrl = getSetting('facebook_url', 'https://facebook.com');
+  const instagramUrl = getSetting('instagram_url', 'https://instagram.com');
 
   const quickLinks = [
     { label: t.nav?.properties || 'Propiedades', href: '/propiedades' },
@@ -22,8 +32,8 @@ export function Footer() {
   ];
 
   const socialLinks = [
-    { icon: Facebook, label: 'Facebook', url: 'https://facebook.com' },
-    { icon: Instagram, label: 'Instagram', url: 'https://instagram.com' },
+    { icon: Facebook, label: 'Facebook', url: facebookUrl },
+    { icon: Instagram, label: 'Instagram', url: instagramUrl },
     { icon: Linkedin, label: 'LinkedIn', url: 'https://linkedin.com' },
   ];
 
@@ -82,24 +92,36 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">{t.footer.contact}</h3>
             <div className="space-y-3">
-              <a
-                href="tel:+529511234567"
-                className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
-              >
-                <Phone className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
-                <span>+52 (951) 123-4567</span>
-              </a>
-              <a
-                href="mailto:contacto@yrinmobiliaria.com"
-                className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
-              >
-                <Mail className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
-                <span>contacto@yrinmobiliaria.com</span>
-              </a>
-              <div className="flex items-start gap-3 text-sm text-secondary-foreground/80">
-                <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <span>{t.footer.address}</span>
-              </div>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-12 w-full" />
+                </>
+              ) : (
+                <>
+                  <a
+                    href={`tel:${companyPhone.replace(/\s+/g, '')}`}
+                    className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
+                  >
+                    <Phone className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
+                    <span>{companyPhone}</span>
+                  </a>
+                  <a
+                    href={`mailto:${companyEmail}`}
+                    className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
+                  >
+                    <Mail className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
+                    <span>{companyEmail}</span>
+                  </a>
+                  <div className="flex items-start gap-3 text-sm text-secondary-foreground/80">
+                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed whitespace-pre-line">
+                      {companyAddress}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Social Media */}

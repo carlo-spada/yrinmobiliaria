@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelectorNew';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,6 +25,9 @@ export function Header() {
   const { t } = useTranslation();
   const location = useLocation();
   const { count: favoritesCount } = useFavorites();
+  const { getSetting } = useSiteSettings();
+  
+  const companyName = getSetting('company_name', 'YR Inmobiliaria');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,10 +67,12 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
-              <span className="text-2xl font-bold text-primary-foreground">YR</span>
+              <span className="text-2xl font-bold text-primary-foreground">
+                {companyName.split(' ')[0].substring(0, 2).toUpperCase()}
+              </span>
             </div>
             <span className="hidden sm:block text-xl font-semibold text-foreground">
-              Inmobiliaria
+              {companyName.split(' ').slice(1).join(' ') || companyName}
             </span>
           </Link>
 

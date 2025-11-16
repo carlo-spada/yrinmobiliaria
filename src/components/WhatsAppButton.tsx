@@ -1,6 +1,7 @@
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface WhatsAppButtonProps {
   message?: string;
@@ -9,9 +10,11 @@ interface WhatsAppButtonProps {
 
 export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
   const { t } = useTranslation();
+  const { getSetting } = useSiteSettings();
   
   const defaultMessage = t('whatsapp.defaultMessage', 'Hola, me interesa una propiedad de YR Inmobiliaria');
-  const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5219511234567'; // Format: country code + number without +
+  // Use dynamic setting with fallback to env var, then hardcoded fallback
+  const phoneNumber = getSetting('whatsapp_number', import.meta.env.VITE_WHATSAPP_NUMBER || '5219511234567');
   
   const handleClick = () => {
     const finalMessage = message || defaultMessage;
