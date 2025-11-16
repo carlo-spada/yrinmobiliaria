@@ -14,12 +14,13 @@ i18n
         translation: {} // Will be loaded from public/locales/en/translation.json
       }
     },
+    lng: 'es', // Set Spanish as the initial language
     fallbackLng: 'es',
     defaultNS: 'translation',
     debug: false,
     
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },
