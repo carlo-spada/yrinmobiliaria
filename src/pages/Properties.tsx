@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal } from 'lucide-react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Grid, List, SlidersHorizontal, MapPin } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
@@ -203,6 +203,11 @@ export default function Properties() {
                   />
 
                   <div className="flex gap-2">
+                    <Link to="/mapa">
+                      <Button variant="outline" size="icon" title={t.nav.map}>
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </Link>
                     <Button
                       variant={viewMode === 'grid' ? 'default' : 'outline'}
                       size="icon"
