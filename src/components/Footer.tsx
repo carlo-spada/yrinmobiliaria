@@ -1,8 +1,8 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -18,41 +18,41 @@ export function Footer() {
               <span className="text-xl font-semibold">Inmobiliaria</span>
             </div>
             <p className="text-sm text-secondary-foreground/80 leading-relaxed">
-              {t.hero.subtitle}
+              {t('hero.subtitle')}
             </p>
           </div>
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">{t.footer.contact}</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.contact')}</h3>
             <div className="space-y-3">
               <a
                 href="#"
                 className="flex items-start gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
               >
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 group-hover:text-accent" />
-                <span>{t.footer.address}</span>
+                <span>{t('footer.address')}</span>
               </a>
               <a
-                href={`tel:${t.footer.phone}`}
+                href={`tel:${t('footer.phone')}`}
                 className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
               >
                 <Phone className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
-                <span>{t.footer.phone}</span>
+                <span>{t('footer.phone')}</span>
               </a>
               <a
-                href={`mailto:${t.footer.email}`}
+                href={`mailto:${t('footer.email')}`}
                 className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
               >
                 <Mail className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
-                <span>{t.footer.email}</span>
+                <span>{t('footer.email')}</span>
               </a>
             </div>
           </div>
 
           {/* Social Media */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">{t.footer.followUs}</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.followUs')}</h3>
             <div className="flex gap-3">
               <a
                 href="#"
@@ -82,7 +82,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-secondary-foreground/10 text-center text-sm text-secondary-foreground/60">
           <p>
-            © {currentYear} YR Inmobiliaria. {t.footer.rights}
+            © {currentYear} YR Inmobiliaria. {t('footer.rights')}
           </p>
         </div>
       </div>
