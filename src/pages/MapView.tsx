@@ -301,63 +301,63 @@ export default function MapView() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-
-            {filteredProperties.map((property) => (
-              <Marker
-                key={property.id}
-                position={[
-                  property.location.coordinates.lat,
-                  property.location.coordinates.lng,
-                ]}
-                icon={createCustomIcon(property.type)}
-                eventHandlers={{
-                  click: () => handlePropertyClick(property),
-                }}
-              >
-                <Popup>
-                  <div className="w-64">
-                    <img
-                      src={property.images[0]}
-                      alt={property.title[language]}
-                      className="w-full h-32 object-cover rounded mb-2"
-                    />
-                    <h3 className="font-semibold text-sm mb-1">
-                      {property.title[language]}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {property.location.neighborhood}, {property.location.zone}
-                    </p>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-bold text-primary">
-                        ${property.price.toLocaleString()}
-                      </span>
-                      <Badge
-                        variant={
-                          property.operation === "venta" ? "default" : "secondary"
-                        }
-                      >
-                        {property.operation === "venta"
-                          ? language === "es"
-                            ? "Venta"
-                            : "Sale"
-                          : language === "es"
-                          ? "Renta"
-                          : "Rent"}
-                      </Badge>
+            <>
+              {filteredProperties.map((property) => (
+                <Marker
+                  key={property.id}
+                  position={[
+                    property.location.coordinates.lat,
+                    property.location.coordinates.lng,
+                  ]}
+                  icon={createCustomIcon(property.type)}
+                  eventHandlers={{
+                    click: () => handlePropertyClick(property),
+                  }}
+                >
+                  <Popup>
+                    <div className="w-64">
+                      <img
+                        src={property.images[0]}
+                        alt={property.title[language]}
+                        className="w-full h-32 object-cover rounded mb-2"
+                      />
+                      <h3 className="font-semibold text-sm mb-1">
+                        {property.title[language]}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {property.location.neighborhood}, {property.location.zone}
+                      </p>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-lg font-bold text-primary">
+                          ${property.price.toLocaleString()}
+                        </span>
+                        <Badge
+                          variant={
+                            property.operation === "venta" ? "default" : "secondary"
+                          }
+                        >
+                          {property.operation === "venta"
+                            ? language === "es"
+                              ? "Venta"
+                              : "Sale"
+                            : language === "es"
+                            ? "Renta"
+                            : "Rent"}
+                        </Badge>
+                      </div>
+                      <Link to={`/propiedad/${property.id}`}>
+                        <Button variant="primary" size="sm" className="w-full">
+                          {language === "es" ? "Ver detalles" : "View details"}
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </Link>
                     </div>
-                    <Link to={`/propiedad/${property.id}`}>
-                      <Button variant="primary" size="sm" className="w-full">
-                        {language === "es" ? "Ver detalles" : "View details"}
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </Link>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-
-            {flyToCenter && <FlyToLocation center={flyToCenter} />}
+                  </Popup>
+                </Marker>
+              ))}
+              {flyToCenter && <FlyToLocation center={flyToCenter} />}
+            </>
           </MapContainer>
 
           {/* Mobile overlay when sidebar is open */}
