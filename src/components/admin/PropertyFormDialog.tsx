@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -22,6 +24,58 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 
+const propertyFormSchema = z.object({
+  title_es: z.string().min(1, 'Título en español es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
+  title_en: z.string().min(1, 'Título en inglés es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
+  description_es: z.string().max(2000, 'Descripción debe tener máximo 2000 caracteres').optional(),
+  description_en: z.string().max(2000, 'Descripción debe tener máximo 2000 caracteres').optional(),
+  type: z.enum(['casa', 'departamento', 'local', 'oficina']),
+  operation: z.enum(['venta', 'renta']),
+  price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+    message: 'Precio debe ser mayor a 0',
+  }),
+  status: z.enum(['disponible', 'vendida', 'rentada']),
+  featured: z.boolean(),
+  zone: z.string().min(1, 'Zona es requerida').max(100),
+  neighborhood: z.string().min(1, 'Colonia es requerida').max(100),
+  address: z.string().min(1, 'Dirección es requerida').max(200),
+  lat: z.string().refine((val) => !isNaN(parseFloat(val)) && Math.abs(parseFloat(val)) <= 90, {
+    message: 'Latitud inválida',
+  }),
+  lng: z.string().refine((val) => !isNaN(parseFloat(val)) && Math.abs(parseFloat(val)) <= 180, {
+    message: 'Longitud inválida',
+  }),
+  bedrooms: z.string().refine((val) => val === '' || (!isNaN(parseInt(val)) && parseInt(val) >= 0 && parseInt(val) <= 50), {
+    message: 'Recámaras debe estar entre 0 y 50',
+  }).optional(),
+  bathrooms: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 0 && parseInt(val) <= 50, {
+    message: 'Baños debe estar entre 0 y 50',
+  }),
+  parking: z.string().refine((val) => val === '' || (!isNaN(parseInt(val)) && parseInt(val) >= 0 && parseInt(val) <= 50), {
+    message: 'Estacionamientos debe estar entre 0 y 50',
+  }).optional(),
+  constructionArea: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+    message: 'Área de construcción debe ser mayor a 0',
+  }),
+  landArea: z.string().refine((val) => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), {
+    message: 'Área de terreno debe ser mayor a 0',
+  }).optional(),
+  imageUrls: z.string().refine((val) => {
+    if (!val.trim()) return true;
+    const urls = val.split('\n').filter(url => url.trim());
+    return urls.every(url => {
+      try {
+        new URL(url.trim());
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }, {
+    message: 'Todas las URLs de imágenes deben ser válidas',
+  }).optional(),
+});
+
 interface PropertyFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,7 +84,9 @@ interface PropertyFormDialogProps {
 
 export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFormDialogProps) => {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
+    resolver: zodResolver(propertyFormSchema),
+  });
 
   const propertyType = watch('type');
   const operation = watch('operation');
@@ -178,11 +234,13 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title_es">Título (Español)</Label>
-              <Input id="title_es" {...register('title_es')} required />
+              <Input id="title_es" {...register('title_es')} />
+              {errors.title_es && <p className="text-sm text-destructive">{errors.title_es.message as string}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="title_en">Título (Inglés)</Label>
-              <Input id="title_en" {...register('title_en')} required />
+              <Input id="title_en" {...register('title_en')} />
+              {errors.title_en && <p className="text-sm text-destructive">{errors.title_en.message as string}</p>}
             </div>
           </div>
 
@@ -190,10 +248,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             <div className="space-y-2">
               <Label htmlFor="description_es">Descripción (Español)</Label>
               <Textarea id="description_es" {...register('description_es')} rows={3} />
+              {errors.description_es && <p className="text-sm text-destructive">{errors.description_es.message as string}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="description_en">Descripción (Inglés)</Label>
               <Textarea id="description_en" {...register('description_en')} rows={3} />
+              {errors.description_en && <p className="text-sm text-destructive">{errors.description_en.message as string}</p>}
             </div>
           </div>
 
@@ -242,7 +302,8 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">Precio</Label>
-              <Input id="price" type="number" {...register('price')} required />
+              <Input id="price" type="number" {...register('price')} />
+              {errors.price && <p className="text-sm text-destructive">{errors.price.message as string}</p>}
             </div>
             <div className="flex items-center space-x-2 pt-8">
               <input
@@ -260,25 +321,30 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="zone">Zona</Label>
-                <Input id="zone" {...register('zone')} required />
+                <Input id="zone" {...register('zone')} />
+                {errors.zone && <p className="text-sm text-destructive">{errors.zone.message as string}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="neighborhood">Colonia</Label>
-                <Input id="neighborhood" {...register('neighborhood')} required />
+                <Input id="neighborhood" {...register('neighborhood')} />
+                {errors.neighborhood && <p className="text-sm text-destructive">{errors.neighborhood.message as string}</p>}
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Dirección</Label>
-              <Input id="address" {...register('address')} required />
+              <Input id="address" {...register('address')} />
+              {errors.address && <p className="text-sm text-destructive">{errors.address.message as string}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="lat">Latitud</Label>
-                <Input id="lat" type="number" step="any" {...register('lat')} required />
+                <Input id="lat" type="number" step="any" {...register('lat')} />
+                {errors.lat && <p className="text-sm text-destructive">{errors.lat.message as string}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lng">Longitud</Label>
-                <Input id="lng" type="number" step="any" {...register('lng')} required />
+                <Input id="lng" type="number" step="any" {...register('lng')} />
+                {errors.lng && <p className="text-sm text-destructive">{errors.lng.message as string}</p>}
               </div>
             </div>
           </div>
@@ -289,24 +355,29 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
               <div className="space-y-2">
                 <Label htmlFor="bedrooms">Recámaras</Label>
                 <Input id="bedrooms" type="number" {...register('bedrooms')} />
+                {errors.bedrooms && <p className="text-sm text-destructive">{errors.bedrooms.message as string}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bathrooms">Baños</Label>
-                <Input id="bathrooms" type="number" {...register('bathrooms')} required />
+                <Input id="bathrooms" type="number" {...register('bathrooms')} />
+                {errors.bathrooms && <p className="text-sm text-destructive">{errors.bathrooms.message as string}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="parking">Estacionamientos</Label>
                 <Input id="parking" type="number" {...register('parking')} />
+                {errors.parking && <p className="text-sm text-destructive">{errors.parking.message as string}</p>}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="constructionArea">Área de construcción (m²)</Label>
-                <Input id="constructionArea" type="number" {...register('constructionArea')} required />
+                <Input id="constructionArea" type="number" {...register('constructionArea')} />
+                {errors.constructionArea && <p className="text-sm text-destructive">{errors.constructionArea.message as string}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="landArea">Área de terreno (m²)</Label>
                 <Input id="landArea" type="number" {...register('landArea')} />
+                {errors.landArea && <p className="text-sm text-destructive">{errors.landArea.message as string}</p>}
               </div>
             </div>
           </div>
@@ -319,6 +390,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
               rows={5}
               placeholder="https://ejemplo.com/imagen1.jpg&#10;https://ejemplo.com/imagen2.jpg"
             />
+            {errors.imageUrls && <p className="text-sm text-destructive">{errors.imageUrls.message as string}</p>}
           </div>
 
           <div className="flex justify-end gap-4">
