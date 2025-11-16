@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { sendScheduleEmail } from '@/utils/emailService';
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
 import { ProgressSteps } from '@/components/ui/progress-steps';
+import { supabase } from '@/integrations/supabase/client';
 
 const scheduleSchema = z.object({
   propertyId: z.string().min(1, 'Selecciona una propiedad'),
@@ -81,6 +82,26 @@ export default function ScheduleVisit() {
     setIsSubmitting(true);
     
     try {
+      // First, save to database
+      const { error: dbError } = await supabase
+        .from('scheduled_visits')
+        .insert({
+          property_id: data.propertyId,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          preferred_date: format(data.date, 'yyyy-MM-dd'),
+          preferred_time: data.timeSlot,
+          message: data.notes || null,
+          status: 'pending',
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error('Failed to save visit');
+      }
+
+      // Then, send email
       const property = properties.find(p => p.id === data.propertyId);
       const success = await sendScheduleEmail({
         propertyId: data.propertyId,
