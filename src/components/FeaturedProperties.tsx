@@ -31,6 +31,7 @@ export function FeaturedProperties() {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <PropertyCard
+                id={property.id}
                 image={property.images[0]}
                 title={property.title[language]}
                 price={new Intl.NumberFormat('es-MX', {

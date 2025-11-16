@@ -2,13 +2,15 @@ import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface PropertyCardProps {
+  id: string;
   image: string;
   title: string;
   price: string;
   location: string;
-  bedrooms: number;
+  bedrooms?: number;
   bathrooms: number;
   area: number;
   featured?: boolean;
@@ -18,6 +20,7 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({
+  id,
   image,
   title,
   price,
@@ -37,13 +40,13 @@ export function PropertyCard({
   };
 
   return (
-    <Card
-      className={cn(
-        'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
-        className
-      )}
-      onClick={onClick}
-    >
+    <Link to={`/propiedad/${id}`} onClick={onClick}>
+      <Card
+        className={cn(
+          'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+          className
+        )}
+      >
       <div className="relative overflow-hidden aspect-[4/3]">
         <img
           src={image}
@@ -85,10 +88,12 @@ export function PropertyCard({
 
         {/* Features */}
         <div className="flex items-center gap-4 pt-3 border-t border-border">
-          <div className="flex items-center gap-1.5 text-sm text-foreground">
-            <Bed className="h-4 w-4 text-muted-foreground" />
-            <span>{bedrooms}</span>
-          </div>
+          {bedrooms && (
+            <div className="flex items-center gap-1.5 text-sm text-foreground">
+              <Bed className="h-4 w-4 text-muted-foreground" />
+              <span>{bedrooms}</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5 text-sm text-foreground">
             <Bath className="h-4 w-4 text-muted-foreground" />
             <span>{bathrooms}</span>
@@ -100,5 +105,6 @@ export function PropertyCard({
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }

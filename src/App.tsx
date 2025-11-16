@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/utils/LanguageContext";
 import Index from "./pages/Index";
 import Properties from "./pages/Properties";
+import PropertyDetail from "./pages/PropertyDetail";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/propiedades" element={<Properties />} />
+            <Route path="/propiedad/:id" element={<PropertyDetail />} />
             <Route path="/componentes" element={<ComponentShowcase />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
