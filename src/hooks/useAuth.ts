@@ -11,15 +11,16 @@ export const useAuth = () => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check admin role synchronously
+        // Defer admin check to avoid deadlock
         if (session?.user) {
-          setLoading(true);
-          await checkAdminRole(session.user.id);
-          setLoading(false);
+          setTimeout(async () => {
+            await checkAdminRole(session.user.id);
+            setLoading(false);
+          }, 0);
         } else {
           setIsAdmin(false);
           setLoading(false);
@@ -34,6 +35,8 @@ export const useAuth = () => {
       
       if (session?.user) {
         await checkAdminRole(session.user.id);
+      } else {
+        setIsAdmin(false);
       }
       setLoading(false);
     });
