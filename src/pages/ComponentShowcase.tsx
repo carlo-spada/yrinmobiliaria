@@ -129,6 +129,7 @@ const ComponentShowcase = () => {
             <h2 className="text-2xl font-bold mb-6">Tarjetas de Propiedades</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <PropertyCard
+                id="showcase-1"
                 image="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800"
                 title="Casa Colonial en el Centro Histórico"
                 price="$4,500,000 MXN"
@@ -140,6 +141,7 @@ const ComponentShowcase = () => {
                 status="sale"
               />
               <PropertyCard
+                id="showcase-2"
                 image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800"
                 title="Departamento Moderno con Vista"
                 price="$12,000 MXN"
@@ -150,6 +152,7 @@ const ComponentShowcase = () => {
                 status="rent"
               />
               <PropertyCard
+                id="showcase-3"
                 image="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800"
                 title="Residencia de Lujo"
                 price="$8,900,000 MXN"

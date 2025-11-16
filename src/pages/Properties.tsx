@@ -248,6 +248,7 @@ export default function Properties() {
                       return (
                         <PropertyCard
                           key={property.id}
+                          id={property.id}
                           image={property.images[0]}
                           title={property.title[language]}
                           price={formatPrice(property.price)}
