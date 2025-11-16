@@ -12,7 +12,7 @@ export function Header() {
     { label: t.nav.home, href: '/' },
     { label: t.nav.properties, href: '/propiedades' },
     { label: t.nav.map, href: '/mapa' },
-    { label: t.nav.about, href: '#nosotros' },
+    { label: t.nav.about, href: '/nosotros' },
     { label: t.nav.contact, href: '/contacto' },
   ];
 
