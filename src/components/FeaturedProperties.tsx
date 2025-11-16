@@ -1,13 +1,19 @@
 import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/utils/LanguageContext';
-import { getFeaturedProperties } from '@/data/properties';
+import { useProperties } from '@/hooks/useProperties';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function FeaturedProperties() {
   const { t, language } = useLanguage();
-  const featuredProperties = getFeaturedProperties().slice(0, 6);
+  const { data: properties = [], isLoading } = useProperties({ featured: true });
+  const featuredProperties = properties.slice(0, 6);
+
+  // Don't render if no featured properties
+  if (!isLoading && featuredProperties.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 bg-background">
@@ -24,7 +30,17 @@ export function FeaturedProperties() {
 
         {/* Properties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {featuredProperties.map((property, index) => (
+          {isLoading ? (
+            // Loading skeletons
+            Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-muted h-64 rounded-lg mb-4"></div>
+                <div className="bg-muted h-4 rounded w-3/4 mb-2"></div>
+                <div className="bg-muted h-4 rounded w-1/2"></div>
+              </div>
+            ))
+          ) : (
+            featuredProperties.map((property, index) => (
             <div
               key={property.id}
               className="animate-in fade-in slide-in-from-bottom-4 duration-700"
@@ -47,7 +63,8 @@ export function FeaturedProperties() {
                 status={property.operation === 'venta' ? 'sale' : 'rent'}
               />
             </div>
-          ))}
+          ))
+          )}
         </div>
 
         {/* View All Button */}

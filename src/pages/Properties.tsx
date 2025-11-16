@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select } from '@/components/ui/select-enhanced';
 import { useLanguage } from '@/utils/LanguageContext';
-import { properties } from '@/data/properties';
+import { useProperties } from '@/hooks/useProperties';
+import { EmptyPropertyList } from '@/components/EmptyPropertyList';
 import { Property, PropertyFilters as PropertyFiltersType } from '@/types/property';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';
@@ -25,6 +26,9 @@ export default function Properties() {
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // Fetch properties from database
+  const { data: allProperties = [], isLoading } = useProperties();
 
   // Parse filters from URL
   const filtersFromUrl: PropertyFiltersType = useMemo(() => {
@@ -73,7 +77,7 @@ export default function Properties() {
 
   // Filter and sort properties
   const filteredProperties = useMemo(() => {
-    let filtered = properties.filter(property => {
+    let filtered = allProperties.filter(property => {
       // Status filter - only show available
       if (property.status !== 'disponible') return false;
 
@@ -228,7 +232,17 @@ export default function Properties() {
               </div>
 
               {/* Properties Grid/List */}
-              {paginatedProperties.length > 0 ? (
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-muted h-64 rounded-lg mb-4"></div>
+                      <div className="bg-muted h-4 rounded w-3/4 mb-2"></div>
+                      <div className="bg-muted h-4 rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : paginatedProperties.length > 0 ? (
                 <>
                   <div className={
                     viewMode === 'grid'

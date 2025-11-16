@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Property, PropertyFilters } from '@/types/property';
-import { properties as mockProperties } from '@/data/properties';
+import { logger } from '@/utils/logger';
 
 // Transform database row to Property type
 const transformProperty = (row: any): Property => {
@@ -72,27 +72,22 @@ export const useProperties = (filters?: PropertyFilters) => {
         const { data, error } = await query;
 
         if (error) {
-          console.error('Error fetching properties:', error);
-          // Return mock data as fallback
-          return mockProperties;
+          logger.error('Error fetching properties', error);
+          throw error;
         }
 
-        // If no data from database, return mock data
+        // Return empty array if no data (no mock fallback)
         if (!data || data.length === 0) {
-          console.log('No properties in database, using mock data');
-          return mockProperties;
+          return [];
         }
 
         // Transform and return properties
         return data.map(transformProperty);
       } catch (error) {
-        console.error('Error in useProperties:', error);
-        // Return mock data as fallback
-        return mockProperties;
+        logger.error('Error in useProperties', error);
+        throw error;
       }
     },
-    // Use mock data initially while fetching
-    placeholderData: mockProperties,
     // Refetch every 5 minutes
     staleTime: 5 * 60 * 1000,
   });
@@ -118,24 +113,18 @@ export const useProperty = (id: string) => {
           .single();
 
         if (error) {
-          console.error('Error fetching property:', error);
-          // Fallback to mock data
-          const mockProperty = mockProperties.find(p => p.id === id);
-          return mockProperty || null;
+          logger.error('Error fetching property', error);
+          return null;
         }
 
         if (!data) {
-          // Fallback to mock data
-          const mockProperty = mockProperties.find(p => p.id === id);
-          return mockProperty || null;
+          return null;
         }
 
         return transformProperty(data);
       } catch (error) {
-        console.error('Error in useProperty:', error);
-        // Fallback to mock data
-        const mockProperty = mockProperties.find(p => p.id === id);
-        return mockProperty || null;
+        logger.error('Error in useProperty', error);
+        return null;
       }
     },
     enabled: !!id,
