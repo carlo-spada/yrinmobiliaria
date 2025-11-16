@@ -26,6 +26,21 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
   const shareTitle = title || document.title;
   const shareDescription = description || '';
 
+  // Validate URL format for security
+  const isValidUrl = (urlString: string): boolean => {
+    try {
+      const urlObj = new URL(urlString);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  if (!isValidUrl(shareUrl)) {
+    console.error('Invalid URL format for sharing');
+    return null;
+  }
+
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);

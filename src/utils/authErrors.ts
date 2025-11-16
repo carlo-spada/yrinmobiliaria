@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 /**
  * Maps detailed Supabase auth errors to generic user-friendly messages
  * to prevent information leakage and user enumeration attacks
@@ -5,8 +7,8 @@
 export const mapAuthError = (error: any): string => {
   const message = error?.message?.toLowerCase() || '';
 
-  // Log detailed error for debugging (server-side in production)
-  console.error('Auth error:', error);
+  // Log detailed error for debugging (only in development)
+  logger.error('Auth error', error);
 
   // Invalid credentials - don't reveal if user exists or password is wrong
   if (

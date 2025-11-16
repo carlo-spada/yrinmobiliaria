@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -54,14 +55,14 @@ export const useAuth = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking admin role:', error);
+        logger.error('Error checking admin role', error);
         setIsAdmin(false);
         return;
       }
 
       setIsAdmin(!!data);
     } catch (error) {
-      console.error('Error checking admin role:', error);
+      logger.error('Error checking admin role', error);
       setIsAdmin(false);
     }
   };

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { logger } from '@/utils/logger';
 
 const FAVORITES_KEY = 'yr-inmobiliaria-favorites';
 
@@ -36,7 +37,7 @@ export function useFavorites() {
             await syncLocalFavoritesToDatabase(localFavorites, propertyIds);
           }
         } catch (error) {
-          console.error('Error loading favorites from database:', error);
+          logger.error('Error loading favorites from database', error);
           toast({
             title: 'Error',
             description: 'No se pudieron cargar los favoritos',
@@ -92,7 +93,7 @@ export function useFavorites() {
         localStorage.removeItem(FAVORITES_KEY);
       }
     } catch (error) {
-      console.error('Error syncing favorites to database:', error);
+      logger.error('Error syncing favorites to database', error);
     } finally {
       setIsSyncing(false);
     }
@@ -105,7 +106,7 @@ export function useFavorites() {
         localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
         window.dispatchEvent(new CustomEvent('favoritesChanged', { detail: favorites }));
       } catch (error) {
-        console.error('Error saving favorites to localStorage:', error);
+        logger.error('Error saving favorites to localStorage', error);
       }
     }
   }, [favorites, user]);
@@ -130,7 +131,7 @@ export function useFavorites() {
       } catch (error) {
         // Revert on error
         setFavorites(prev => prev.filter(id => id !== propertyId));
-        console.error('Error adding favorite:', error);
+        logger.error('Error adding favorite', error);
         toast({
           title: 'Error',
           description: 'No se pudo agregar a favoritos',
@@ -168,7 +169,7 @@ export function useFavorites() {
       } catch (error) {
         // Revert on error
         setFavorites(prev => [...prev, propertyId]);
-        console.error('Error removing favorite:', error);
+        logger.error('Error removing favorite', error);
         toast({
           title: 'Error',
           description: 'No se pudo eliminar de favoritos',

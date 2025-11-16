@@ -15,6 +15,13 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
   
   const handleClick = () => {
     const finalMessage = message || defaultMessage;
+    
+    // Validate message length for security
+    if (finalMessage.length > 500) {
+      console.warn('WhatsApp message exceeds maximum length');
+      return;
+    }
+    
     const encodedMessage = encodeURIComponent(finalMessage);
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
