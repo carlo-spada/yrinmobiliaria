@@ -1,17 +1,17 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/utils/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 
 export function Footer() {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
-    { label: t('nav.properties'), href: '/propiedades' },
-    { label: t('nav.map'), href: '/mapa' },
-    { label: t('nav.about'), href: '/nosotros' },
-    { label: t('nav.contact'), href: '/contacto' },
+    { label: t.nav?.properties || 'Propiedades', href: '/propiedades' },
+    { label: t.nav?.map || 'Mapa', href: '/mapa' },
+    { label: t.nav?.about || 'Nosotros', href: '/nosotros' },
+    { label: t.nav?.contact || 'Contacto', href: '/contacto' },
   ];
 
   const zones = [
@@ -40,13 +40,13 @@ export function Footer() {
               <span className="text-xl font-semibold">Inmobiliaria</span>
             </div>
             <p className="text-sm text-secondary-foreground/80 leading-relaxed">
-              {t('footer.description')}
+              {t.footer.description}
             </p>
           </div>
 
           {/* Column 2: Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{t('footer.quickLinks')}</h3>
+            <h3 className="text-lg font-semibold">{t.footer.quickLinks}</h3>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.href}>
@@ -63,7 +63,7 @@ export function Footer() {
 
           {/* Column 3: Zones */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{t('footer.zones')}</h3>
+            <h3 className="text-lg font-semibold">{t.footer.zones}</h3>
             <ul className="space-y-3">
               {zones.map((zone) => (
                 <li key={zone.href}>
@@ -80,7 +80,7 @@ export function Footer() {
 
           {/* Column 4: Contact & Social */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{t('footer.contact')}</h3>
+            <h3 className="text-lg font-semibold">{t.footer.contact}</h3>
             <div className="space-y-3">
               <a
                 href="tel:+529511234567"
@@ -98,13 +98,13 @@ export function Footer() {
               </a>
               <div className="flex items-start gap-3 text-sm text-secondary-foreground/80">
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <span>{t('footer.address')}</span>
+                <span>{t.footer.address}</span>
               </div>
             </div>
 
             {/* Social Media */}
             <div className="pt-4">
-              <h4 className="text-sm font-semibold mb-3">{t('footer.followUs')}</h4>
+              <h4 className="text-sm font-semibold mb-3">{t.footer.followUs}</h4>
               <div className="flex gap-3">
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
@@ -131,14 +131,14 @@ export function Footer() {
         {/* Copyright & Legal */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-secondary-foreground/60">
           <p>
-            © {currentYear} YR Inmobiliaria. {t('footer.rights')}
+            © {currentYear} YR Inmobiliaria. {t.footer.rights}
           </p>
           <div className="flex gap-6">
             <Link to="/privacidad" className="hover:text-accent transition-colors">
-              {t('footer.privacy')}
+              {t.footer.privacy}
             </Link>
             <Link to="/terminos" className="hover:text-accent transition-colors">
-              {t('footer.terms')}
+              {t.footer.terms}
             </Link>
           </div>
         </div>
