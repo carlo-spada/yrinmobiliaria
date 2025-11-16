@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import ScheduleVisit from "./pages/ScheduleVisit";
 import Favorites from "./pages/Favorites";
 import About from "./pages/About";
+import DatabaseSeed from "./pages/admin/DatabaseSeed";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/contacto" element={<Contact />} />
             <Route path="/agendar" element={<ScheduleVisit />} />
             <Route path="/nosotros" element={<About />} />
+            <Route path="/admin/seed" element={<DatabaseSeed />} />
             <Route path="/componentes" element={<ComponentShowcase />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
