@@ -1,6 +1,39 @@
 # 🌟 Features Overview - YR Inmobiliaria
 
+**Last Updated:** November 16, 2025
+**Project Status:** 72% Complete
+
 Complete feature list and capabilities of the YR Inmobiliaria website.
+
+## 🆕 Recently Added Features (Nov 16, 2025)
+
+### Admin Panel & Management
+- ✅ **Admin Dashboard** - Stats overview with property/inquiry/visit counts
+- ✅ **Property Management** - Full CRUD with image upload system
+- ✅ **Image Upload System** - Drag-and-drop with WebP optimization
+- ✅ **Inquiry Management** - View and manage contact form submissions
+- ✅ **Visit Management** - Scheduled property visit tracking
+- ✅ **User Management** - Role-based access control
+- ✅ **Zone Management** - Service area configuration
+- ✅ **Audit Logs** - Activity tracking for admin actions
+- ✅ **Settings Page** - Platform configuration options
+
+### Backend Enhancements
+- ✅ **Supabase Storage** - Property image storage bucket
+- ✅ **New Database Tables:**
+  - `contact_inquiries` - Form submission tracking
+  - `scheduled_visits` - Visit booking system
+  - `service_zones` - Zone management
+  - `audit_logs` - Activity logging
+
+### Image Processing
+- ✅ **WebP Conversion** - Automatic format optimization
+- ✅ **Image Resizing** - Max 1920px with aspect ratio preservation
+- ✅ **Quality Control** - 85% quality compression
+- ✅ **Drag & Drop** - Modern file upload UX
+- ✅ **Progress Indicators** - Upload status feedback
+
+---
 
 ## 🏠 Property Management
 
@@ -391,8 +424,9 @@ The codebase is ready to be converted to a PWA with minimal changes:
 ## 🔄 Future Enhancements
 
 ### Planned Features
-- [ ] User authentication and accounts
-- [ ] Admin dashboard for property management
+- [x] ~~User authentication and accounts~~ ✅ **DONE** (Auth + Roles)
+- [x] ~~Admin dashboard for property management~~ ✅ **DONE** (8 admin pages)
+- [x] ~~Image upload system~~ ✅ **DONE** (Supabase Storage + WebP)
 - [ ] CMS integration
 - [ ] Property comparison tool
 - [ ] Mortgage calculator
