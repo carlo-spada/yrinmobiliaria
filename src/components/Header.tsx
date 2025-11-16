@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail } from 'lucide-react';
+import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail, Heart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelectorNew';
 import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -21,6 +23,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useTranslation();
   const location = useLocation();
+  const { count: favoritesCount } = useFavorites();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -166,6 +169,24 @@ export function Header() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            {/* Favorites Button */}
+            <Link to="/favoritos" className="hidden md:block relative">
+              <Button variant="ghost" size="icon" className="relative">
+                <Heart className={cn(
+                  'h-5 w-5',
+                  favoritesCount > 0 && 'fill-red-500 text-red-500'
+                )} />
+                {favoritesCount > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    variant="destructive"
+                  >
+                    {favoritesCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+
             <LanguageSelector />
             
             <Link to="/agendar" className="hidden md:block">

@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/utils/LanguageContext';
+import { sendContactEmail } from '@/utils/emailService';
+import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
@@ -42,20 +44,38 @@ export default function Contact() {
   const subject = watch('subject');
 
   const onSubmit = async (data: ContactFormData) => {
+    if (!data.name || !data.email || !data.phone || !data.subject || !data.message) return;
+    
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log('Contact form submitted:', { ...data, phone: '***' });
-    
-    toast({
-      title: t.contact?.successTitle || '¡Mensaje enviado!',
-      description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
-    });
-    
-    reset();
-    setIsSubmitting(false);
+    try {
+      const success = await sendContactEmail({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+      });
+      
+      if (success) {
+        toast({
+          title: t.contact?.successTitle || '¡Mensaje enviado!',
+          description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
+        });
+        reset();
+      } else {
+        throw new Error('Failed to send email');
+      }
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo enviar el mensaje. Por favor intenta nuevamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [

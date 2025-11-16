@@ -5,12 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import Index from "./pages/Index";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import MapView from "./pages/MapView";
 import Contact from "./pages/Contact";
 import ScheduleVisit from "./pages/ScheduleVisit";
+import Favorites from "./pages/Favorites";
 import About from "./pages/About";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
@@ -29,6 +31,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/propiedades" element={<Properties />} />
             <Route path="/propiedad/:id" element={<PropertyDetail />} />
+            <Route path="/favoritos" element={<Favorites />} />
             <Route path="/mapa" element={<MapView />} />
             <Route path="/contacto" element={<Contact />} />
             <Route path="/agendar" element={<ScheduleVisit />} />
@@ -38,6 +41,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </PageTransition>
+        <WhatsAppButton />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

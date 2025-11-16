@@ -19,6 +19,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/utils/LanguageContext';
 import { properties } from '@/data/properties';
 import { cn } from '@/lib/utils';
+import { sendScheduleEmail } from '@/utils/emailService';
+import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
+import { ProgressSteps } from '@/components/ui/progress-steps';
 
 const scheduleSchema = z.object({
   propertyId: z.string().min(1, 'Selecciona una propiedad'),
@@ -77,19 +80,40 @@ export default function ScheduleVisit() {
   const onSubmit = async (data: ScheduleFormData) => {
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log('Visit scheduled:', { ...data, phone: '***' });
-    
-    setConfirmedData(data);
-    setIsConfirmed(true);
-    setIsSubmitting(false);
-    
-    toast({
-      title: t.schedule?.successTitle || '¡Cita agendada!',
-      description: t.schedule?.successMessage || 'Te enviaremos una confirmación por email.',
-    });
+    try {
+      const property = properties.find(p => p.id === data.propertyId);
+      const success = await sendScheduleEmail({
+        propertyId: data.propertyId,
+        propertyName: property?.title[language] || '',
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        date: format(data.date, 'PPP', { locale: language === 'es' ? es : undefined }),
+        timeSlot: data.timeSlot,
+        notes: data.notes,
+      });
+      
+      if (success) {
+        setConfirmedData(data);
+        setIsConfirmed(true);
+        
+        toast({
+          title: t.schedule?.successTitle || '¡Cita agendada!',
+          description: t.schedule?.successMessage || 'Te enviaremos una confirmación por email.',
+        });
+      } else {
+        throw new Error('Failed to send email');
+      }
+    } catch (error) {
+      console.error('Error scheduling visit:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo agendar la cita. Por favor intenta nuevamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addToGoogleCalendar = () => {
