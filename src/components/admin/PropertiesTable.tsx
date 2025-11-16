@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { logAuditEvent } from '@/utils/auditLog';
 
 export const PropertiesTable = () => {
   const [editingProperty, setEditingProperty] = useState<any>(null);
@@ -44,12 +45,24 @@ export const PropertiesTable = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const propertyToDelete = properties?.find(p => p.id === id);
+      
       const { error } = await supabase
         .from('properties')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+
+      // Log audit event
+      await logAuditEvent({
+        action: 'DELETE_PROPERTY',
+        table_name: 'properties',
+        record_id: id,
+        changes: {
+          deleted_property: propertyToDelete?.title_es || 'Unknown'
+        }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-properties'] });

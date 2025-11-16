@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          changes: Json | null
+          created_at: string
+          id: string
+          record_id: string | null
+          table_name: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          record_id?: string | null
+          table_name?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          record_id?: string | null
+          table_name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           amenities: string[] | null
