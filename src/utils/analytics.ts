@@ -1,19 +1,41 @@
 // Google Analytics utilities
-// To enable GA, add your measurement ID to the environment variables
-// and uncomment the initialization code in main.tsx
+// GA4 is automatically initialized if VITE_GA_MEASUREMENT_ID env var is set
 
 declare global {
   interface Window {
-    gtag?: (
-      command: 'config' | 'event' | 'js' | 'set',
-      targetId: string,
-      config?: any
-    ) => void;
+    gtag?: (...args: any[]) => void;
     dataLayer?: any[];
   }
 }
 
 export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+
+// Initialize Google Analytics
+export const initGA = () => {
+  if (!GA_MEASUREMENT_ID || GA_MEASUREMENT_ID === 'undefined') {
+    console.info('Google Analytics not configured. Add VITE_GA_MEASUREMENT_ID to enable tracking.');
+    return;
+  }
+
+  // Load gtag.js script
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(script);
+
+  // Initialize dataLayer and gtag
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(...args: any[]) {
+    window.dataLayer?.push(args);
+  };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_MEASUREMENT_ID, {
+    send_page_view: true,
+    cookie_flags: 'SameSite=None;Secure',
+  });
+
+  console.info('Google Analytics initialized:', GA_MEASUREMENT_ID);
+};
 
 export const pageview = (url: string) => {
   if (!window.gtag) return;

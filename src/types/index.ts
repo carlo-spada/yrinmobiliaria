@@ -83,12 +83,23 @@ export interface Translation {
     next: string;
   };
   footer: {
+    description: string;
+    quickLinks: string;
+    zones: string;
     contact: string;
     address: string;
     phone: string;
     email: string;
     followUs: string;
     rights: string;
+    privacy: string;
+    terms: string;
+  };
+  favorites: {
+    added: string;
+    removed: string;
+    add: string;
+    remove: string;
   };
   contact: {
     title: string;

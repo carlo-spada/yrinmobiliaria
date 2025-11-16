@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/utils/LanguageContext';
 
 interface FavoriteButtonProps {
   propertyId: string;
@@ -15,7 +15,7 @@ interface FavoriteButtonProps {
 export function FavoriteButton({ propertyId, variant = 'icon', className }: FavoriteButtonProps) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const favorite = isFavorite(propertyId);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -26,8 +26,8 @@ export function FavoriteButton({ propertyId, variant = 'icon', className }: Favo
     
     toast({
       title: favorite 
-        ? t('favorites.removed', 'Eliminado de favoritos')
-        : t('favorites.added', 'Agregado a favoritos'),
+        ? (t.favorites?.removed || 'Eliminado de favoritos')
+        : (t.favorites?.added || 'Agregado a favoritos'),
       duration: 2000,
     });
   };
@@ -46,8 +46,8 @@ export function FavoriteButton({ propertyId, variant = 'icon', className }: Favo
           )}
         />
         {favorite 
-          ? t('favorites.remove', 'Eliminar de favoritos')
-          : t('favorites.add', 'Agregar a favoritos')
+          ? (t.favorites?.remove || 'Eliminar de favoritos')
+          : (t.favorites?.add || 'Agregar a favoritos')
         }
       </Button>
     );
@@ -62,7 +62,7 @@ export function FavoriteButton({ propertyId, variant = 'icon', className }: Favo
       )}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      aria-label={favorite ? t('favorites.remove', 'Eliminar de favoritos') : t('favorites.add', 'Agregar a favoritos')}
+      aria-label={favorite ? (t.favorites?.remove || 'Eliminar de favoritos') : (t.favorites?.add || 'Agregar a favoritos')}
     >
       <motion.div
         initial={false}
