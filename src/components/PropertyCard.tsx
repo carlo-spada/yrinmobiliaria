@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { FavoriteButton } from '@/components/FavoriteButton';
 
 interface PropertyCardProps {
   id: string;
@@ -72,6 +73,11 @@ export function PropertyCard({
           <Badge variant={status} className="shadow-lg">
             {statusLabels[status].es}
           </Badge>
+        </div>
+
+        {/* Favorite Button */}
+        <div className="absolute top-4 right-4">
+          <FavoriteButton propertyId={id} />
         </div>
       </div>
 

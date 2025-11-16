@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input-enhanced";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { PropertyCard } from "@/components/PropertyCard";
+import { ShareButtons } from "@/components/ShareButtons";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import {
   ArrowLeft,
   Bed,
@@ -15,7 +17,6 @@ import {
   Car,
   Maximize,
   MapPin,
-  Share2,
   MessageCircle,
   Calendar,
   X,
@@ -376,10 +377,14 @@ export default function PropertyDetail() {
                       {language === "es" ? "Agendar visita" : "Schedule visit"}
                     </Button>
                   </Link>
-                  <Button variant="outline" className="w-full" onClick={handleShare}>
-                    <Share2 className="mr-2 h-4 w-4" />
-                    {language === "es" ? "Compartir" : "Share"}
-                  </Button>
+                  <div className="w-full">
+                    <ShareButtons 
+                      title={property.title[language]}
+                      description={property.description[language]}
+                      variant="default"
+                    />
+                  </div>
+                  <FavoriteButton propertyId={property.id} variant="button" className="w-full" />
                 </div>
               </CardContent>
             </Card>

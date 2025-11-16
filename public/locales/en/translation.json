@@ -226,5 +226,48 @@
     "scheduleAppointment": "Schedule Appointment",
     "viewProperties": "View Properties",
     "yearsExperience": "Years of experience"
+  },
+  "whatsapp": {
+    "defaultMessage": "Hello, I'm interested in a property from YR Real Estate",
+    "buttonLabel": "Contact via WhatsApp"
+  },
+  "share": {
+    "linkCopied": "Link copied",
+    "linkCopiedDesc": "The link was copied to clipboard",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "error": "Error",
+    "errorDesc": "Could not copy link",
+    "more": "More options"
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "subtitle": "Properties you've saved to review later",
+    "added": "Added to favorites",
+    "removed": "Removed from favorites",
+    "add": "Add to favorites",
+    "remove": "Remove from favorites",
+    "empty": "You don't have any favorites yet",
+    "emptyDesc": "Explore our catalog and save the properties you like the most.",
+    "exploreCatalog": "Explore catalog",
+    "backToProperties": "View more properties",
+    "clearAll": "Clear all",
+    "clearConfirmTitle": "Delete all favorites?",
+    "clearConfirmDesc": "This action cannot be undone. All properties will be removed from your favorites list.",
+    "countLabel": "saved properties"
+  },
+  "savedSearches": {
+    "save": "Save search",
+    "saved": "Search saved",
+    "savedDesc": "You can access it from your saved searches list",
+    "saveTitle": "Save search",
+    "saveDesc": "Give this search a name to quickly access it in the future.",
+    "nameLabel": "Search name",
+    "namePlaceholder": "Ex: Houses in Historic Center",
+    "errorTitle": "Error",
+    "errorName": "You must enter a name for the search"
+  },
+  "common": {
+    "cancel": "Cancel"
   }
 }

@@ -226,5 +226,48 @@
     "scheduleAppointment": "Agendar Cita",
     "viewProperties": "Ver Propiedades",
     "yearsExperience": "Años de experiencia"
+  },
+  "whatsapp": {
+    "defaultMessage": "Hola, me interesa una propiedad de YR Inmobiliaria",
+    "buttonLabel": "Contactar por WhatsApp"
+  },
+  "share": {
+    "linkCopied": "Enlace copiado",
+    "linkCopiedDesc": "El enlace se copió al portapapeles",
+    "copyLink": "Copiar enlace",
+    "copied": "Copiado",
+    "error": "Error",
+    "errorDesc": "No se pudo copiar el enlace",
+    "more": "Más opciones"
+  },
+  "favorites": {
+    "title": "Mis Favoritos",
+    "subtitle": "Propiedades que has guardado para revisar después",
+    "added": "Agregado a favoritos",
+    "removed": "Eliminado de favoritos",
+    "add": "Agregar a favoritos",
+    "remove": "Eliminar de favoritos",
+    "empty": "No tienes favoritos aún",
+    "emptyDesc": "Explora nuestro catálogo y guarda las propiedades que más te gusten.",
+    "exploreCatalog": "Explorar catálogo",
+    "backToProperties": "Ver más propiedades",
+    "clearAll": "Limpiar todo",
+    "clearConfirmTitle": "¿Eliminar todos los favoritos?",
+    "clearConfirmDesc": "Esta acción no se puede deshacer. Se eliminarán todas las propiedades de tu lista de favoritos.",
+    "countLabel": "propiedades guardadas"
+  },
+  "savedSearches": {
+    "save": "Guardar búsqueda",
+    "saved": "Búsqueda guardada",
+    "savedDesc": "Puedes acceder a ella desde tu lista de búsquedas guardadas",
+    "saveTitle": "Guardar búsqueda",
+    "saveDesc": "Dale un nombre a esta búsqueda para acceder rápidamente a ella en el futuro.",
+    "nameLabel": "Nombre de la búsqueda",
+    "namePlaceholder": "Ej: Casas en Centro Histórico",
+    "errorTitle": "Error",
+    "errorName": "Debes ingresar un nombre para la búsqueda"
+  },
+  "common": {
+    "cancel": "Cancelar"
   }
 }
