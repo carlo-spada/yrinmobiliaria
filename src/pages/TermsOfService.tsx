@@ -3,15 +3,20 @@ import { Footer } from '@/components/Footer';
 import { useLanguage } from '@/utils/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { FileText, Scale, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function TermsOfService() {
   const { language } = useLanguage();
+  const { getSetting } = useSiteSettings();
+  
+  const companyName = getSetting('company_name', 'YR Inmobiliaria');
+  const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
 
   const content = {
     es: {
       title: 'Términos y Condiciones de Servicio',
       lastUpdated: 'Última actualización: Noviembre 2025',
-      intro: 'Bienvenido a Y&R Inmobiliaria. Estos Términos y Condiciones rigen el uso de nuestro sitio web y servicios. Al acceder o utilizar nuestros servicios, usted acepta estar sujeto a estos términos.',
+      intro: `Bienvenido a ${companyName}. Estos Términos y Condiciones rigen el uso de nuestro sitio web y servicios. Al acceder o utilizar nuestros servicios, usted acepta estar sujeto a estos términos.`,
       sections: [
         {
           icon: FileText,
@@ -19,7 +24,7 @@ export default function TermsOfService() {
           content: [
             {
               subtitle: '1.1 Descripción de Servicios',
-              text: 'Y&R Inmobiliaria ofrece servicios de intermediación inmobiliaria que incluyen: listado y promoción de propiedades para venta y renta, coordinación de visitas a propiedades, asesoría en transacciones inmobiliarias, servicios de valoración de propiedades, y asistencia en procesos de compra-venta y arrendamiento.'
+              text: `${companyName} ofrece servicios de intermediación inmobiliaria que incluyen: listado y promoción de propiedades para venta y renta, coordinación de visitas a propiedades, asesoría en transacciones inmobiliarias, servicios de valoración de propiedades, y asistencia en procesos de compra-venta y arrendamiento.`
             },
             {
               subtitle: '1.2 Alcance del Servicio',
@@ -69,7 +74,7 @@ export default function TermsOfService() {
           content: [
             {
               subtitle: '4.1 Derechos de Autor',
-              text: 'Todo el contenido de nuestro sitio web, incluyendo textos, gráficos, logotipos, imágenes, videos y software, está protegido por derechos de autor y otras leyes de propiedad intelectual. Son propiedad de Y&R Inmobiliaria o de sus licenciantes.'
+              text: `Todo el contenido de nuestro sitio web, incluyendo textos, gráficos, logotipos, imágenes, videos y software, está protegido por derechos de autor y otras leyes de propiedad intelectual. Son propiedad de ${companyName} o de sus licenciantes.`
             },
             {
               subtitle: '4.2 Uso Permitido',
@@ -77,7 +82,7 @@ export default function TermsOfService() {
             },
             {
               subtitle: '4.3 Marcas Registradas',
-              text: 'Las marcas, logotipos y nombres comerciales mostrados son propiedad de Y&R Inmobiliaria. Su uso no autorizado está estrictamente prohibido.'
+              text: `Las marcas, logotipos y nombres comerciales mostrados son propiedad de ${companyName}. Su uso no autorizado está estrictamente prohibido.`
             }
           ]
         }
@@ -113,18 +118,18 @@ export default function TermsOfService() {
         },
         {
           title: '12. Acuerdo Completo',
-          text: 'Estos términos, junto con nuestra Política de Privacidad, constituyen el acuerdo completo entre usted y Y&R Inmobiliaria con respecto al uso de nuestros servicios, y reemplazan cualquier acuerdo o comunicación anterior.'
+          text: `Estos términos, junto con nuestra Política de Privacidad, constituyen el acuerdo completo entre usted y ${companyName} con respecto al uso de nuestros servicios, y reemplazan cualquier acuerdo o comunicación anterior.`
         },
         {
           title: '13. Contacto',
-          text: 'Para preguntas sobre estos Términos y Condiciones, contáctenos en: Email: contacto@yrinmobiliaria.com | Teléfono: +52 (951) 123-4567 | Dirección: Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México | Horario: Lunes a Viernes, 9:00 AM - 6:00 PM'
+          text: `Para preguntas sobre estos Términos y Condiciones, contáctenos en: Email: ${companyEmail} | Teléfono: ${getSetting('company_phone', '(951) 123-4567')} | Dirección: ${getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México')} | Horario: ${getSetting('business_hours', 'Lunes a Viernes, 9:00 AM - 6:00 PM')}`
         }
       ]
     },
     en: {
       title: 'Terms and Conditions of Service',
       lastUpdated: 'Last updated: November 2025',
-      intro: 'Welcome to Y&R Real Estate. These Terms and Conditions govern the use of our website and services. By accessing or using our services, you agree to be bound by these terms.',
+      intro: `Welcome to ${companyName}. These Terms and Conditions govern the use of our website and services. By accessing or using our services, you agree to be bound by these terms.`,
       sections: [
         {
           icon: FileText,
@@ -132,7 +137,7 @@ export default function TermsOfService() {
           content: [
             {
               subtitle: '1.1 Service Description',
-              text: 'Y&R Real Estate offers real estate intermediary services that include: listing and promotion of properties for sale and rent, coordination of property visits, advisory services in real estate transactions, property valuation services, and assistance in purchase-sale and lease processes.'
+              text: `${companyName} offers real estate intermediary services that include: listing and promotion of properties for sale and rent, coordination of property visits, advisory services in real estate transactions, property valuation services, and assistance in purchase-sale and lease processes.`
             },
             {
               subtitle: '1.2 Service Scope',
@@ -190,7 +195,7 @@ export default function TermsOfService() {
             },
             {
               subtitle: '4.3 Trademarks',
-              text: 'The trademarks, logos, and trade names displayed are property of Y&R Real Estate. Their unauthorized use is strictly prohibited.'
+              text: `The trademarks, logos, and trade names displayed are property of ${companyName}. Their unauthorized use is strictly prohibited.`
             }
           ]
         }
@@ -226,11 +231,11 @@ export default function TermsOfService() {
         },
         {
           title: '12. Entire Agreement',
-          text: 'These terms, together with our Privacy Policy, constitute the complete agreement between you and Y&R Real Estate regarding the use of our services, and replace any prior agreements or communications.'
+          text: `These terms, together with our Privacy Policy, constitute the complete agreement between you and ${companyName} regarding the use of our services, and replace any prior agreements or communications.`
         },
         {
           title: '13. Contact',
-          text: 'For questions about these Terms and Conditions, contact us at: Email: contacto@yrinmobiliaria.com | Phone: +52 (951) 123-4567 | Address: Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, Mexico | Hours: Monday to Friday, 9:00 AM - 6:00 PM'
+          text: `For questions about these Terms and Conditions, contact us at: Email: ${companyEmail} | Phone: ${getSetting('company_phone', '(951) 123-4567')} | Address: ${getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, Mexico')} | Hours: ${getSetting('business_hours', 'Monday to Friday, 9:00 AM - 6:00 PM')}`
         }
       ]
     }

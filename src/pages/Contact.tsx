@@ -16,6 +16,8 @@ import { sendContactEmail } from '@/utils/emailService';
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
@@ -30,7 +32,16 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export default function Contact() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { getSetting, isLoading: settingsLoading } = useSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Get dynamic settings with fallbacks
+  const companyPhone = getSetting('company_phone', '(951) 123-4567');
+  const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
+  const companyAddress = getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México');
+  const businessHours = getSetting('business_hours', 'Lunes a Viernes: 9:00 AM - 6:00 PM\nSábados: 10:00 AM - 2:00 PM');
+  const facebookUrl = getSetting('facebook_url', 'https://facebook.com');
+  const instagramUrl = getSetting('instagram_url', 'https://instagram.com');
 
   const {
     register,
@@ -101,24 +112,24 @@ export default function Contact() {
     {
       icon: MapPin,
       title: t.contact?.addressTitle || 'Dirección',
-      content: 'Calle Independencia 123, Centro Histórico\nOaxaca de Juárez, Oaxaca, México',
+      content: companyAddress,
     },
     {
       icon: Phone,
       title: t.contact?.phoneTitle || 'Teléfono',
-      content: '+52 (951) 123-4567',
-      link: 'tel:+529511234567',
+      content: companyPhone,
+      link: `tel:${companyPhone.replace(/\s+/g, '')}`,
     },
     {
       icon: Mail,
       title: t.contact?.emailTitle || 'Email',
-      content: 'contacto@yrinmobiliaria.com',
-      link: 'mailto:contacto@yrinmobiliaria.com',
+      content: companyEmail,
+      link: `mailto:${companyEmail}`,
     },
     {
       icon: Clock,
       title: t.contact?.hoursTitle || 'Horarios',
-      content: 'Lunes a Viernes: 9:00 AM - 6:00 PM\nSábados: 10:00 AM - 2:00 PM',
+      content: businessHours,
     },
   ];
 
@@ -126,19 +137,19 @@ export default function Contact() {
     {
       icon: Facebook,
       label: 'Facebook',
-      url: 'https://facebook.com',
+      url: facebookUrl,
       color: 'hover:text-[#1877F2]',
     },
     {
       icon: Instagram,
       label: 'Instagram',
-      url: 'https://instagram.com',
+      url: instagramUrl,
       color: 'hover:text-[#E4405F]',
     },
     {
       icon: Send,
       label: 'WhatsApp',
-      url: 'https://wa.me/529511234567',
+      url: `https://wa.me/${getSetting('whatsapp_number', '5219511234567')}`,
       color: 'hover:text-[#25D366]',
     },
   ];
