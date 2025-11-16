@@ -11,7 +11,7 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
   const { t } = useTranslation();
   
   const defaultMessage = t('whatsapp.defaultMessage', 'Hola, me interesa una propiedad de YR Inmobiliaria');
-  const phoneNumber = '5219511234567'; // Format: country code + number without +
+  const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5219511234567'; // Format: country code + number without +
   
   const handleClick = () => {
     const finalMessage = message || defaultMessage;

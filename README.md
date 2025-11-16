@@ -1,73 +1,62 @@
-# Welcome to your Lovable project
+# YR Inmobiliaria - Real Estate Website
 
-## Project info
+A modern, bilingual (Spanish/English) real estate website built with React, TypeScript, and Tailwind CSS, showcasing properties in Oaxaca, Mexico.
 
-**URL**: https://lovable.dev/projects/85042ab5-51cc-4730-a42e-b9fceaafa3a2
+## 🌟 Features
 
-## How can I edit this code?
+- **Bilingual Support** - Full Spanish/English translation
+- **Property Listings** - Advanced filtering and search
+- **Interactive Map** - Leaflet map with property markers
+- **Favorites System** - Save properties locally
+- **WhatsApp Integration** - Instant contact button
+- **Contact Forms** - EmailJS integration
+- **Responsive Design** - Mobile, tablet, desktop optimized
+- **SEO Ready** - Semantic HTML, meta tags, sitemap
+- **Animations** - Framer Motion throughout
 
-There are several ways of editing your application.
+## 🚀 Quick Start
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/85042ab5-51cc-4730-a42e-b9fceaafa3a2) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
+cp .env.example .env
+# Configure .env with your keys
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🌐 Deploy
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Lovable (Recommended):** Click "Publish" button
+**Other platforms:** See [DEPLOYMENT.md](DEPLOYMENT.md)
 
-**Use GitHub Codespaces**
+## 📚 Documentation
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide
+- **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** - Pre-launch checklist
+- **[FEATURES.md](FEATURES.md)** - Detailed features list
 
-## What technologies are used for this project?
+## 🔧 Configuration
 
-This project is built with:
+Create `.env` file:
+```env
+VITE_EMAILJS_SERVICE_ID=your_service_id
+VITE_EMAILJS_TEMPLATE_ID_CONTACT=your_template_id
+VITE_EMAILJS_TEMPLATE_ID_SCHEDULE=your_template_id
+VITE_EMAILJS_PUBLIC_KEY=your_public_key
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+VITE_WHATSAPP_NUMBER=5219511234567
+```
 
+## 📦 Tech Stack
+
+- React 18 + TypeScript
 - Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Tailwind CSS + shadcn/ui
+- Framer Motion
+- React Router
+- React Hook Form + Zod
+- i18next
+- Leaflet
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/85042ab5-51cc-4730-a42e-b9fceaafa3a2) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+**Lovable Project**: https://lovable.dev/projects/85042ab5-51cc-4730-a42e-b9fceaafa3a2
