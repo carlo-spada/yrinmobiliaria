@@ -90,6 +90,67 @@ export interface Translation {
     followUs: string;
     rights: string;
   };
+  contact: {
+    title: string;
+    subtitle: string;
+    formTitle: string;
+    formSubtitle: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    subjectLabel: string;
+    subjectPlaceholder: string;
+    subjectInfo: string;
+    subjectSell: string;
+    subjectBuy: string;
+    subjectRent: string;
+    messageLabel: string;
+    messagePlaceholder: string;
+    send: string;
+    sending: string;
+    successTitle: string;
+    successMessage: string;
+    infoTitle: string;
+    infoSubtitle: string;
+    addressTitle: string;
+    phoneTitle: string;
+    emailTitle: string;
+    hoursTitle: string;
+    socialTitle: string;
+    mapPlaceholder: string;
+  };
+  schedule: {
+    title: string;
+    subtitle: string;
+    selectProperty: string;
+    propertyLabel: string;
+    propertyPlaceholder: string;
+    selectDateTime: string;
+    dateLabel: string;
+    selectDate: string;
+    timeLabel: string;
+    contactInfo: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    notesLabel: string;
+    notesPlaceholder: string;
+    schedule: string;
+    scheduling: string;
+    successTitle: string;
+    successMessage: string;
+    confirmedTitle: string;
+    confirmedSubtitle: string;
+    contactLabel: string;
+    addToCalendar: string;
+    backToProperties: string;
+  };
 }
 
 export interface Translations {

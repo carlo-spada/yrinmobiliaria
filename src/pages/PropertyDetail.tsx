@@ -370,10 +370,12 @@ export default function PropertyDetail() {
                     <MessageCircle className="mr-2 h-4 w-4" />
                     WhatsApp
                   </Button>
-                  <Button variant="outline" className="w-full">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {language === "es" ? "Agendar visita" : "Schedule visit"}
-                  </Button>
+                  <Link to={`/agendar?propertyId=${property.id}`} className="w-full">
+                    <Button variant="outline" className="w-full">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {language === "es" ? "Agendar visita" : "Schedule visit"}
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="w-full" onClick={handleShare}>
                     <Share2 className="mr-2 h-4 w-4" />
                     {language === "es" ? "Compartir" : "Share"}
