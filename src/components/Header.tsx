@@ -1,19 +1,19 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
-import { useLanguage } from '@/utils/LanguageContext';
-import { LanguageSelector } from './LanguageSelector';
+import { LanguageSelector } from './LanguageSelectorNew';
 import { Button } from '@/components/ui/button';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   const navItems = [
-    { label: t.nav.home, href: '/' },
-    { label: t.nav.properties, href: '/propiedades' },
-    { label: t.nav.map, href: '/mapa' },
-    { label: t.nav.about, href: '/nosotros' },
-    { label: t.nav.contact, href: '/contacto' },
+    { label: t('nav.home'), href: '/' },
+    { label: t('nav.properties'), href: '/propiedades' },
+    { label: t('nav.map'), href: '/mapa' },
+    { label: t('nav.about'), href: '/nosotros' },
+    { label: t('nav.contact'), href: '/contacto' },
   ];
 
   return (
