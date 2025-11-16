@@ -18,6 +18,8 @@ import About from "./pages/About";
 import DatabaseSeed from "./pages/admin/DatabaseSeed";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const App = () => (
               <Route path="/contacto" element={<Contact />} />
               <Route path="/agendar" element={<ScheduleVisit />} />
               <Route path="/nosotros" element={<About />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="/admin/seed" element={<DatabaseSeed />} />
               <Route path="/componentes" element={<ComponentShowcase />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
