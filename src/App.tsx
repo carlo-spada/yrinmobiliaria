@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import MapView from "./pages/MapView";
+import Contact from "./pages/Contact";
+import ScheduleVisit from "./pages/ScheduleVisit";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +27,8 @@ const App = () => (
             <Route path="/propiedades" element={<Properties />} />
             <Route path="/propiedad/:id" element={<PropertyDetail />} />
             <Route path="/mapa" element={<MapView />} />
+            <Route path="/contacto" element={<Contact />} />
+            <Route path="/agendar" element={<ScheduleVisit />} />
             <Route path="/componentes" element={<ComponentShowcase />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
