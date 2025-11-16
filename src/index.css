@@ -76,14 +76,18 @@ All colors MUST be HSL.
     --input: 159 25% 25%;
     --ring: 12 54% 51%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
