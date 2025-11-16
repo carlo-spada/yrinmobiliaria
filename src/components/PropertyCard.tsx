@@ -1,4 +1,5 @@
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -41,19 +42,25 @@ export function PropertyCard({
 
   return (
     <Link to={`/propiedad/${id}`} onClick={onClick}>
-      <Card
-        className={cn(
-          'group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
-          className
-        )}
+      <motion.div
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
       >
-      <div className="relative overflow-hidden aspect-[4/3]">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card
+          className={cn(
+            'group cursor-pointer overflow-hidden transition-shadow duration-300 hover:shadow-xl',
+            className
+          )}
+        >
+          <div className="relative overflow-hidden aspect-[4/3]">
+            <motion.img
+              src={image}
+              alt={title}
+              className="w-full h-full object-cover"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Badges */}
         <div className="absolute top-4 left-4 flex gap-2">
@@ -104,7 +111,8 @@ export function PropertyCard({
           </div>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+      </motion.div>
     </Link>
   );
 }
