@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "./logger";
 
 export interface AuditLogEntry {
   action: string;
@@ -12,7 +13,7 @@ export const logAuditEvent = async (entry: AuditLogEntry) => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.error('Cannot log audit event: No authenticated user');
+      logger.error('Cannot log audit event: No authenticated user');
       return;
     }
 
@@ -27,9 +28,9 @@ export const logAuditEvent = async (entry: AuditLogEntry) => {
       });
 
     if (error) {
-      console.error('Failed to log audit event:', error);
+      logger.error('Failed to log audit event', error);
     }
   } catch (error) {
-    console.error('Error logging audit event:', error);
+    logger.error('Error logging audit event', error);
   }
 };

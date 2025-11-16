@@ -18,11 +18,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/utils/LanguageContext';
 import { properties } from '@/data/properties';
-import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { sendScheduleEmail } from '@/utils/emailService';
+import { logger } from '@/utils/logger';
+import { cn } from '@/lib/utils';
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
 import { ProgressSteps } from '@/components/ui/progress-steps';
-import { supabase } from '@/integrations/supabase/client';
 
 const scheduleSchema = z.object({
   propertyId: z.string().min(1, 'Selecciona una propiedad'),
@@ -97,7 +98,7 @@ export default function ScheduleVisit() {
         });
 
       if (dbError) {
-        console.error('Database error:', dbError);
+        logger.error('Database error', dbError);
         throw new Error('Failed to save visit');
       }
 

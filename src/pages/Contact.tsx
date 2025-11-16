@@ -15,6 +15,7 @@ import { useLanguage } from '@/utils/LanguageContext';
 import { sendContactEmail } from '@/utils/emailService';
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
@@ -62,7 +63,7 @@ export default function Contact() {
         });
 
       if (dbError) {
-        console.error('Database error:', dbError);
+        logger.error('Database error', dbError);
         throw new Error('Failed to save inquiry');
       }
 
