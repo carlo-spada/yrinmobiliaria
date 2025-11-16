@@ -29,6 +29,7 @@ import AdminVisits from "./pages/admin/AdminVisits";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminHealth from "./pages/admin/AdminHealth";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/health" element={<AdminHealth />} />
               <Route path="/admin/seed" element={<DatabaseSeed />} />
               <Route path="/componentes" element={<ComponentShowcase />} />
               <Route path="*" element={<NotFound />} />

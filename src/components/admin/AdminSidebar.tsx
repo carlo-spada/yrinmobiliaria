@@ -6,7 +6,8 @@ import {
   Calendar, 
   Users, 
   FileText,
-  Settings
+  Settings,
+  Activity
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -30,6 +31,7 @@ const menuItems = [
   { title: 'Visitas Agendadas', url: '/admin/visits', icon: Calendar },
   { title: 'Usuarios', url: '/admin/users', icon: Users },
   { title: 'Registro de Actividad', url: '/admin/audit-logs', icon: FileText },
+  { title: 'Estado del Sistema', url: '/admin/health', icon: Activity },
   { title: 'Configuración', url: '/admin/settings', icon: Settings },
 ];
 
