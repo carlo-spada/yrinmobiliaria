@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { logAuditEvent } from '@/utils/auditLog';
+import { ImageUploadZone } from './ImageUploadZone';
+import { useState } from 'react';
 
 const propertyFormSchema = z.object({
   title_es: z.string().min(1, 'Título en español es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
@@ -61,20 +63,6 @@ const propertyFormSchema = z.object({
   landArea: z.string().refine((val) => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), {
     message: 'Área de terreno debe ser mayor a 0',
   }).optional(),
-  imageUrls: z.string().refine((val) => {
-    if (!val.trim()) return true;
-    const urls = val.split('\n').filter(url => url.trim());
-    return urls.every(url => {
-      try {
-        new URL(url.trim());
-        return true;
-      } catch {
-        return false;
-      }
-    });
-  }, {
-    message: 'Todas las URLs de imágenes deben ser válidas',
-  }).optional(),
 });
 
 interface PropertyFormDialogProps {
@@ -88,6 +76,8 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(propertyFormSchema),
   });
+
+  const [images, setImages] = useState<Array<{ url: string; path?: string }>>([]);
 
   const propertyType = watch('type');
   const operation = watch('operation');
@@ -115,8 +105,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         parking: property.features?.parking,
         constructionArea: property.features?.constructionArea,
         landArea: property.features?.landArea,
-        imageUrls: property.property_images?.map((img: any) => img.image_url).join('\n'),
       });
+      
+      // Load existing images
+      if (property.property_images && Array.isArray(property.property_images)) {
+        setImages(property.property_images.map((img: any) => ({ url: img.image_url })));
+      }
     } else {
       reset({
         type: 'casa',
@@ -124,11 +118,17 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         status: 'disponible',
         featured: false,
       });
+      setImages([]);
     }
   }, [property, reset]);
 
   const mutation = useMutation({
     mutationFn: async (formData: any) => {
+      // Validate that we have at least one image
+      if (images.length === 0) {
+        throw new Error('Debes subir al menos una imagen');
+      }
+
       const propertyData = {
         title_es: formData.title_es,
         title_en: formData.title_en,
@@ -178,30 +178,29 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       }
 
       // Handle images
-      if (formData.imageUrls) {
-        // Delete existing images if updating
-        if (property) {
-          await supabase
-            .from('property_images')
-            .delete()
-            .eq('property_id', property.id);
-        }
+      // Delete existing images if updating
+      if (property) {
+        await supabase
+          .from('property_images')
+          .delete()
+          .eq('property_id', property.id);
+      }
 
-        // Insert new images
-        const imageUrls = formData.imageUrls.split('\n').filter((url: string) => url.trim());
-        if (imageUrls.length > 0) {
-          const images = imageUrls.map((url: string, index: number) => ({
-            property_id: propertyId,
-            image_url: url.trim(),
-            display_order: index,
-          }));
+      // Insert all images
+      if (images.length > 0) {
+        const imageRecords = images.map((image, index) => ({
+          property_id: propertyId,
+          image_url: image.url,
+          display_order: index,
+          alt_text_es: `${formData.title_es} - Imagen ${index + 1}`,
+          alt_text_en: `${formData.title_en} - Image ${index + 1}`,
+        }));
 
-          const { error } = await supabase
-            .from('property_images')
-            .insert(images);
+        const { error } = await supabase
+          .from('property_images')
+          .insert(imageRecords);
 
-          if (error) throw error;
-        }
+        if (error) throw error;
       }
 
       // Log audit event
@@ -222,6 +221,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       toast.success(property ? 'Propiedad actualizada' : 'Propiedad creada correctamente');
       onOpenChange(false);
       reset();
+      setImages([]);
     },
     onError: (error: any) => {
       toast.error('Error: ' + error.message);
@@ -397,14 +397,13 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrls">URLs de Imágenes (una por línea)</Label>
-            <Textarea
-              id="imageUrls"
-              {...register('imageUrls')}
-              rows={5}
-              placeholder="https://ejemplo.com/imagen1.jpg&#10;https://ejemplo.com/imagen2.jpg"
+            <Label>Imágenes de la Propiedad</Label>
+            <ImageUploadZone
+              images={images}
+              onImagesChange={setImages}
+              propertyId={property?.id}
+              maxImages={10}
             />
-            {errors.imageUrls && <p className="text-sm text-destructive">{errors.imageUrls.message as string}</p>}
           </div>
 
           <div className="flex justify-end gap-4">
