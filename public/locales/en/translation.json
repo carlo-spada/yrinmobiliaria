@@ -6,6 +6,16 @@
     "about": "About",
     "contact": "Contact"
   },
+  "header": {
+    "scheduleVisit": "Schedule Visit"
+  },
+  "propertyTypes": {
+    "title": "Property Types",
+    "houses": "Houses",
+    "apartments": "Apartments",
+    "commercial": "Commercial Spaces",
+    "viewAll": "View all properties"
+  },
   "hero": {
     "title": "Find your ideal home in Oaxaca",
     "subtitle": "Familiar and professional service. Your dream, our priority",
@@ -89,7 +99,12 @@
     "phone": "+52 (951) 000-0000",
     "email": "contact@yrinmobiliaria.com",
     "followUs": "Follow Us",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "description": "Your trusted real estate partner in Oaxaca. Over 10 years helping find the perfect home.",
+    "quickLinks": "Quick Links",
+    "zones": "Main Areas",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
   },
   "contact": {
     "title": "Contact Us",
