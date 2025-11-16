@@ -19,7 +19,14 @@ import DatabaseSeed from "./pages/admin/DatabaseSeed";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProperties from "./pages/admin/AdminProperties";
+import AdminZones from "./pages/admin/AdminZones";
+import AdminInquiries from "./pages/admin/AdminInquiries";
+import AdminVisits from "./pages/admin/AdminVisits";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -42,10 +49,16 @@ const App = () => (
               <Route path="/agendar" element={<ScheduleVisit />} />
               <Route path="/nosotros" element={<About />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/properties" element={<AdminProperties />} />
+              <Route path="/admin/zones" element={<AdminZones />} />
+              <Route path="/admin/inquiries" element={<AdminInquiries />} />
+              <Route path="/admin/visits" element={<AdminVisits />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/admin/seed" element={<DatabaseSeed />} />
               <Route path="/componentes" element={<ComponentShowcase />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </PageTransition>
