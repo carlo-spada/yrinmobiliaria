@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { logAuditEvent } from '@/utils/auditLog';
 
 const propertyFormSchema = z.object({
   title_es: z.string().min(1, 'Título en español es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
@@ -202,6 +203,19 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           if (error) throw error;
         }
       }
+
+      // Log audit event
+      await logAuditEvent({
+        action: property ? 'UPDATE_PROPERTY' : 'CREATE_PROPERTY',
+        table_name: 'properties',
+        record_id: propertyId,
+        changes: {
+          title: formData.title_es,
+          type: formData.type,
+          operation: formData.operation,
+          price: formData.price
+        }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
