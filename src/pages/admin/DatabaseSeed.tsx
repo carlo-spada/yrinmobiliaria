@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Progress } from '@/components/ui/progress';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 
 export default function DatabaseSeed() {
   const [isSeeding, setIsSeeding] = useState(false);
@@ -91,8 +92,8 @@ export default function DatabaseSeed() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16 max-w-4xl">
+    <AdminLayout>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Database Management</h1>
@@ -264,6 +265,6 @@ export default function DatabaseSeed() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
