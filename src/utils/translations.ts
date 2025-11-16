@@ -5,6 +5,7 @@ export const translations: Translations = {
     nav: {
       home: 'Inicio',
       properties: 'Propiedades',
+      map: 'Mapa',
       about: 'Nosotros',
       contact: 'Contacto',
     },
@@ -95,6 +96,7 @@ export const translations: Translations = {
     nav: {
       home: 'Home',
       properties: 'Properties',
+      map: 'Map',
       about: 'About',
       contact: 'Contact',
     },

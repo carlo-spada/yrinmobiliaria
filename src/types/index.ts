@@ -4,6 +4,7 @@ export interface Translation {
   nav: {
     home: string;
     properties: string;
+    map: string;
     about: string;
     contact: string;
   };
