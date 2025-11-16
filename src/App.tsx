@@ -10,6 +10,7 @@ import PropertyDetail from "./pages/PropertyDetail";
 import MapView from "./pages/MapView";
 import Contact from "./pages/Contact";
 import ScheduleVisit from "./pages/ScheduleVisit";
+import About from "./pages/About";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/mapa" element={<MapView />} />
             <Route path="/contacto" element={<Contact />} />
             <Route path="/agendar" element={<ScheduleVisit />} />
+            <Route path="/nosotros" element={<About />} />
             <Route path="/componentes" element={<ComponentShowcase />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
