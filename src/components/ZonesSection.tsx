@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/utils/LanguageContext';
-import { getPropertiesByZone } from '@/data/properties';
+import { useProperties } from '@/hooks/useProperties';
 import { MapPin } from 'lucide-react';
 
 const zones = [
@@ -28,6 +28,7 @@ const zones = [
 
 export function ZonesSection() {
   const { t } = useLanguage();
+  const { data: properties = [] } = useProperties();
 
   return (
     <section className="py-20 bg-neutral">
@@ -44,8 +45,8 @@ export function ZonesSection() {
 
         {/* Zones Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {zones.map((zone, index) => {
-            const zoneProperties = getPropertiesByZone(zone.name);
+        {zones.map((zone, index) => {
+            const zoneProperties = properties.filter(p => p.location.zone === zone.name);
             return (
               <div
                 key={zone.id}

@@ -4,7 +4,7 @@ import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./MapView.css";
 import { useLanguage } from "@/utils/LanguageContext";
-import { getAvailableProperties } from "@/data/properties";
+import { useProperties } from "@/hooks/useProperties";
 import { Property, PropertyType } from "@/types/property";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,7 +59,7 @@ function FlyToLocation({ center }: { center: [number, number] }) {
 
 export default function MapView() {
   const { language, t } = useLanguage();
-  const [properties] = useState(getAvailableProperties());
+  const { data: properties = [] } = useProperties({ featured: false });
   const [filteredProperties, setFilteredProperties] = useState(properties);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -157,7 +157,7 @@ export default function MapView() {
               label={language === "es" ? "Zona" : "Zone"}
               options={[
                 { value: "all", label: language === "es" ? "Todas" : "All" },
-                ...zones.map((zone) => ({ value: zone, label: zone })),
+                ...zones.map((zone) => ({ value: zone as string, label: zone as string })),
               ]}
               value={filters.zone}
               onChange={(e) => setFilters({ ...filters, zone: e.target.value })}

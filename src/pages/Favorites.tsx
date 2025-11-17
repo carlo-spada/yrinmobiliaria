@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
-import { properties } from '@/data/properties';
+import { useProperties } from '@/hooks/useProperties';
 import { useTranslation } from 'react-i18next';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer';
@@ -25,6 +25,7 @@ import {
 export default function Favorites() {
   const { t, i18n } = useTranslation();
   const { favorites, clearFavorites } = useFavorites();
+  const { data: properties = [] } = useProperties();
   const [viewMode] = useState<'grid' | 'list'>('grid');
 
   const favoriteProperties = properties.filter(property =>
