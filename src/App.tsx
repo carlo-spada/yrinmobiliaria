@@ -12,7 +12,10 @@ import "nprogress/nprogress.css";
 import { useEffect, lazy, Suspense } from "react";
 import Index from "./pages/Index";
 import Properties from "./pages/Properties";
+import PropertyDetail from "./pages/PropertyDetail";
 import Contact from "./pages/Contact";
+import ScheduleVisit from "./pages/ScheduleVisit";
+import Favorites from "./pages/Favorites";
 import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -20,13 +23,8 @@ import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
-// Lazy load heavy components for code splitting
-const PropertyDetail = lazy(() => import("./pages/PropertyDetail"));
+// Lazy load only truly heavy components (Map with Leaflet, Admin pages)
 const MapView = lazy(() => import("./pages/MapView"));
-const Favorites = lazy(() => import("./pages/Favorites"));
-const ScheduleVisit = lazy(() => import("./pages/ScheduleVisit"));
-
-// Lazy load all admin pages (reduces initial bundle by ~70KB)
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
 const AdminZones = lazy(() => import("./pages/admin/AdminZones"));
@@ -81,33 +79,75 @@ const App = () => (
           <RouteProgressTracker />
           <ScrollToTop />
           <PageTransition>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/propiedades" element={<Properties />} />
-                <Route path="/propiedad/:id" element={<PropertyDetail />} />
-                <Route path="/favoritos" element={<Favorites />} />
-                <Route path="/mapa" element={<MapView />} />
-                <Route path="/contacto" element={<Contact />} />
-                <Route path="/agendar" element={<ScheduleVisit />} />
-                <Route path="/nosotros" element={<About />} />
-                <Route path="/privacidad" element={<PrivacyPolicy />} />
-                <Route path="/terminos" element={<TermsOfService />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/properties" element={<AdminProperties />} />
-                <Route path="/admin/zones" element={<AdminZones />} />
-                <Route path="/admin/inquiries" element={<AdminInquiries />} />
-                <Route path="/admin/visits" element={<AdminVisits />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/health" element={<AdminHealth />} />
-                <Route path="/admin/seed" element={<DatabaseSeed />} />
-                <Route path="/componentes" element={<ComponentShowcase />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/propiedades" element={<Properties />} />
+              <Route path="/propiedad/:id" element={<PropertyDetail />} />
+              <Route path="/favoritos" element={<Favorites />} />
+              <Route path="/mapa" element={
+                <Suspense fallback={<PageLoader />}>
+                  <MapView />
+                </Suspense>
+              } />
+              <Route path="/contacto" element={<Contact />} />
+              <Route path="/agendar" element={<ScheduleVisit />} />
+              <Route path="/nosotros" element={<About />} />
+              <Route path="/privacidad" element={<PrivacyPolicy />} />
+              <Route path="/terminos" element={<TermsOfService />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminDashboard />
+                </Suspense>
+              } />
+              <Route path="/admin/properties" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminProperties />
+                </Suspense>
+              } />
+              <Route path="/admin/zones" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminZones />
+                </Suspense>
+              } />
+              <Route path="/admin/inquiries" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminInquiries />
+                </Suspense>
+              } />
+              <Route path="/admin/visits" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminVisits />
+                </Suspense>
+              } />
+              <Route path="/admin/users" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminUsers />
+                </Suspense>
+              } />
+              <Route path="/admin/audit-logs" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminAuditLogs />
+                </Suspense>
+              } />
+              <Route path="/admin/settings" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminSettings />
+                </Suspense>
+              } />
+              <Route path="/admin/health" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminHealth />
+                </Suspense>
+              } />
+              <Route path="/admin/seed" element={
+                <Suspense fallback={<PageLoader />}>
+                  <DatabaseSeed />
+                </Suspense>
+              } />
+              <Route path="/componentes" element={<ComponentShowcase />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </PageTransition>
           <WhatsAppButton />
         </BrowserRouter>
