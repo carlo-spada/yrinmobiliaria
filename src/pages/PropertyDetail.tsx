@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { PropertyCard } from "@/components/PropertyCard";
 import { ShareButtons } from "@/components/ShareButtons";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { MetaTags } from "@/components/seo/MetaTags";
+import { StructuredData, getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/components/seo/StructuredData";
 import {
   ArrowLeft,
   Bed,
@@ -63,6 +65,26 @@ export default function PropertyDetail() {
     )
     .slice(0, 4);
 
+  // SEO metadata
+  const propertyTitle = `${property.title[language]} - ${new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    minimumFractionDigits: 0,
+  }).format(property.price)} - ${property.location.zone} | YR Inmobiliaria`;
+  
+  const propertyDescription = property.description[language]?.substring(0, 150) || 
+    `${property.title[language]} en ${property.location.zone}. ${property.features.bedrooms || 0} habitaciones, ${property.features.bathrooms} baños, ${property.features.constructionArea}m².`;
+  
+  const propertyImage = property.images[0] || 'https://lovable.dev/opengraph-image-p98pqg.png';
+  const propertyUrl = window.location.href;
+
+  // Structured data
+  const breadcrumbItems = [
+    { name: language === 'es' ? 'Inicio' : 'Home', url: window.location.origin },
+    { name: language === 'es' ? 'Propiedades' : 'Properties', url: `${window.location.origin}/propiedades` },
+    { name: property.title[language], url: propertyUrl },
+  ];
+
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     alert(language === "es" ? "Enlace copiado" : "Link copied");
@@ -89,6 +111,20 @@ export default function PropertyDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <MetaTags
+        title={propertyTitle}
+        description={propertyDescription}
+        image={propertyImage}
+        url={propertyUrl}
+        type="product"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData type="Organization" data={getOrganizationSchema(language)} />
+      <StructuredData type="Product" data={getProductSchema(property, language)} />
+      <StructuredData type="BreadcrumbList" data={getBreadcrumbSchema(breadcrumbItems)} />
+      
       {/* Lightbox Modal */}
       {isLightboxOpen && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">

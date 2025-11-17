@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { validateSupabaseEnv, SupabaseConfigError } from "./utils/supabaseValidation";
@@ -12,8 +13,14 @@ const validation = validateSupabaseEnv();
 
 if (!validation.isValid) {
   createRoot(document.getElementById("root")!).render(
-    <SupabaseConfigError error={validation.error!} />
+    <HelmetProvider>
+      <SupabaseConfigError error={validation.error!} />
+    </HelmetProvider>
   );
 } else {
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  );
 }

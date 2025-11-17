@@ -4,6 +4,7 @@ import { Grid, List, SlidersHorizontal, MapPin } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
+import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';
 import { SaveSearchDialog } from '@/components/SaveSearchDialog';
 import { Button } from '@/components/ui/button';
@@ -234,13 +235,7 @@ export default function Properties() {
               {/* Properties Grid/List */}
               {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="bg-muted h-64 rounded-lg mb-4"></div>
-                      <div className="bg-muted h-4 rounded w-3/4 mb-2"></div>
-                      <div className="bg-muted h-4 rounded w-1/2"></div>
-                    </div>
-                  ))}
+                  <PropertyGridSkeleton count={9} />
                 </div>
               ) : paginatedProperties.length > 0 ? (
                 <>
