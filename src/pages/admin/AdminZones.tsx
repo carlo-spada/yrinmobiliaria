@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { ImageUploadZone } from '@/components/admin/ImageUploadZone';
 import { toast } from 'sonner';
 import {
   Table,
@@ -30,6 +31,7 @@ import { logAuditEvent } from '@/utils/auditLog';
 export default function AdminZones() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingZone, setEditingZone] = useState<any>(null);
+  const [zoneImages, setZoneImages] = useState<Array<{ url: string; path?: string }>>([]);
   const queryClient = useQueryClient();
   const { register, handleSubmit, reset, setValue, watch } = useForm();
 
@@ -69,9 +71,11 @@ export default function AdminZones() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-zones'] });
+      queryClient.invalidateQueries({ queryKey: ['service-zones-public'] });
       toast.success(editingZone ? 'Zona actualizada' : 'Zona creada correctamente');
       setIsDialogOpen(false);
       setEditingZone(null);
+      setZoneImages([]);
       reset();
     },
     onError: (error: any) => {
@@ -108,14 +112,16 @@ export default function AdminZones() {
     setValue('name_en', zone.name_en);
     setValue('description_es', zone.description_es);
     setValue('description_en', zone.description_en);
-    setValue('image_url', zone.image_url || '');
     setValue('active', zone.active);
     setValue('display_order', zone.display_order);
+    // Set zone image if it exists
+    setZoneImages(zone.image_url ? [{ url: zone.image_url }] : []);
     setIsDialogOpen(true);
   };
 
   const handleNew = () => {
     setEditingZone(null);
+    setZoneImages([]);
     reset({
       active: true,
       display_order: (zones?.length || 0) + 1,
@@ -129,7 +135,7 @@ export default function AdminZones() {
       name_en: data.name_en,
       description_es: data.description_es,
       description_en: data.description_en,
-      image_url: data.image_url || null,
+      image_url: zoneImages.length > 0 ? zoneImages[0].url : null,
       active: data.active,
       display_order: parseInt(data.display_order),
     });
@@ -226,15 +232,15 @@ export default function AdminZones() {
               </div>
 
               <div>
-                <Label htmlFor="image_url">URL de Imagen</Label>
-                <Input
-                  id="image_url"
-                  type="url"
-                  placeholder="https://ejemplo.com/imagen.jpg o URL de Supabase Storage"
-                  {...register('image_url')}
+                <Label htmlFor="zone_image">Imagen de la Zona</Label>
+                <ImageUploadZone
+                  images={zoneImages}
+                  onImagesChange={setZoneImages}
+                  maxImages={1}
+                  propertyId={editingZone?.id}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Puedes usar una URL externa (Unsplash, etc.) o subir a Supabase Storage y pegar la URL
+                  Sube una imagen representativa de la zona (máximo 1 imagen)
                 </p>
               </div>
 
