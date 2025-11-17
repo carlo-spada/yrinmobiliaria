@@ -1,45 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home Page -->
   <url>
     <loc>https://your-domain.com/</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- Properties List -->
   <url>
     <loc>https://your-domain.com/propiedades</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  
+  <!-- Map View -->
   <url>
     <loc>https://your-domain.com/mapa</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  
+  <!-- About -->
   <url>
     <loc>https://your-domain.com/nosotros</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
+  
+  <!-- Contact -->
   <url>
     <loc>https://your-domain.com/contacto</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
+  
+  <!-- Schedule Visit -->
   <url>
     <loc>https://your-domain.com/agendar</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
+  
+  <!-- Favorites -->
   <url>
     <loc>https://your-domain.com/favoritos</loc>
-    <lastmod>2024-01-01</lastmod>
+    <lastmod>2025-01-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
+  
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://your-domain.com/privacidad</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Terms of Service -->
+  <url>
+    <loc>https://your-domain.com/terminos</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- 
+    Note: Individual property detail pages (/propiedad/:id) should be added dynamically
+    based on your actual property database. Priority for property pages: 0.8
+    Example:
+    <url>
+      <loc>https://your-domain.com/propiedad/abc-123</loc>
+      <lastmod>2025-01-17</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+  -->
 </urlset>

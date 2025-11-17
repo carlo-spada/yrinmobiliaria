@@ -57,7 +57,8 @@ export function PropertyCard({
             <motion.img
               src={image}
               alt={title}
-              className="w-full h-full object-cover"
+              loading="lazy"
+              className="w-full h-full object-cover image-lazy-load"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
             />
