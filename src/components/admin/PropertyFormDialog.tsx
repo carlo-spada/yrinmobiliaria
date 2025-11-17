@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -82,6 +82,21 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   const propertyType = watch('type');
   const operation = watch('operation');
   const status = watch('status');
+  const zone = watch('zone');
+
+  // Fetch available zones from database
+  const { data: zones = [], isLoading: zonesLoading } = useQuery({
+    queryKey: ['service-zones-admin'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('service_zones')
+        .select('name_es')
+        .eq('active', true)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   useEffect(() => {
     if (property) {
@@ -335,8 +350,22 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="zone">Zona</Label>
-                <Input id="zone" {...register('zone')} />
+                <Select value={zone} onValueChange={(value) => setValue('zone', value)} disabled={zonesLoading || zones.length === 0}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={zonesLoading ? "Cargando zonas..." : zones.length === 0 ? "No hay zonas disponibles" : "Selecciona una zona"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {zones.map((z) => (
+                      <SelectItem key={z.name_es} value={z.name_es}>
+                        {z.name_es}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.zone && <p className="text-sm text-destructive">{errors.zone.message as string}</p>}
+                {zones.length === 0 && !zonesLoading && (
+                  <p className="text-xs text-muted-foreground">Primero debes crear zonas en la sección de Zonas</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="neighborhood">Colonia</Label>
