@@ -108,6 +108,7 @@ export default function AdminZones() {
     setValue('name_en', zone.name_en);
     setValue('description_es', zone.description_es);
     setValue('description_en', zone.description_en);
+    setValue('image_url', zone.image_url || '');
     setValue('active', zone.active);
     setValue('display_order', zone.display_order);
     setIsDialogOpen(true);
@@ -128,6 +129,7 @@ export default function AdminZones() {
       name_en: data.name_en,
       description_es: data.description_es,
       description_en: data.description_en,
+      image_url: data.image_url || null,
       active: data.active,
       display_order: parseInt(data.display_order),
     });
@@ -221,6 +223,19 @@ export default function AdminZones() {
               <div>
                 <Label htmlFor="description_en">Descripción (Inglés)</Label>
                 <Textarea id="description_en" {...register('description_en')} />
+              </div>
+
+              <div>
+                <Label htmlFor="image_url">URL de Imagen</Label>
+                <Input
+                  id="image_url"
+                  type="url"
+                  placeholder="https://ejemplo.com/imagen.jpg o URL de Supabase Storage"
+                  {...register('image_url')}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Puedes usar una URL externa (Unsplash, etc.) o subir a Supabase Storage y pegar la URL
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

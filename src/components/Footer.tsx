@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { getSetting, isLoading } = useSiteSettings();
   const currentYear = new Date().getFullYear();
-  
+
   // Get dynamic settings with fallbacks
   const companyPhone = getSetting('company_phone', '(951) 123-4567');
   const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
@@ -24,12 +26,29 @@ export function Footer() {
     { label: t.nav?.contact || 'Contacto', href: '/contacto' },
   ];
 
-  const zones = [
-    { label: 'Centro Histórico', href: '/propiedades?zone=Centro Histórico' },
-    { label: 'Reforma San Felipe', href: '/propiedades?zone=Reforma San Felipe' },
-    { label: 'Zona Norte', href: '/propiedades?zone=Zona Norte' },
-    { label: 'Valles Centrales', href: '/propiedades?zone=Valles Centrales' },
-  ];
+  // Fetch zones from database
+  const { data: zonesData = [] } = useQuery({
+    queryKey: ['service-zones-footer'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('service_zones')
+        .select('name_es, name_en')
+        .eq('active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Transform zones data for footer
+  const zones = zonesData.map((zone) => {
+    const zoneName = language === 'es' ? zone.name_es : zone.name_en;
+    return {
+      label: zoneName,
+      href: `/propiedades?zone=${encodeURIComponent(zone.name_es)}`,
+    };
+  });
 
   const socialLinks = [
     { icon: Facebook, label: 'Facebook', url: facebookUrl },
