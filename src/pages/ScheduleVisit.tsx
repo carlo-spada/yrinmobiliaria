@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/utils/LanguageContext';
-import { properties } from '@/data/properties';
+import { useProperties } from '@/hooks/useProperties';
 import { supabase } from '@/integrations/supabase/client';
 import { sendScheduleEmail } from '@/utils/emailService';
 import { logger } from '@/utils/logger';
@@ -43,6 +43,7 @@ export default function ScheduleVisit() {
   const [searchParams] = useSearchParams();
   const { t, language } = useLanguage();
   const { toast } = useToast();
+  const { data: properties = [] } = useProperties();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [confirmedData, setConfirmedData] = useState<ScheduleFormData | null>(null);

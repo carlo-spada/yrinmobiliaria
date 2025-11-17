@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { seedProperties, clearProperties } from '@/utils/supabase-properties';
-import { properties as mockProperties } from '@/data/properties';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, Database, Trash2, Upload, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -28,41 +27,11 @@ export default function DatabaseSeed() {
   const { toast } = useToast();
 
   const handleSeed = async () => {
-    setIsSeeding(true);
-    setProgress(0);
-    setStatus('idle');
-
-    try {
-      // Simulate progress
-      const interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
-      }, 300);
-
-      const result = await seedProperties(mockProperties);
-
-      clearInterval(interval);
-      setProgress(100);
-
-      if (result.success) {
-        setStatus('success');
-        toast({
-          title: '✓ Base de datos poblada',
-          description: `${mockProperties.length} propiedades fueron agregadas exitosamente.`,
-        });
-      } else {
-        throw new Error('Seeding failed');
-      }
-    } catch (error) {
-      console.error('Error seeding database:', error);
-      setStatus('error');
-      toast({
-        title: '✗ Error al poblar',
-        description: 'Ocurrió un error al agregar las propiedades. Revisa la consola.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSeeding(false);
-    }
+    toast({
+      title: 'Función deshabilitada',
+      description: 'El seeding con datos mock está deshabilitado. Agrega propiedades reales desde la página de Propiedades.',
+      variant: 'destructive',
+    });
   };
 
   const handleClear = async () => {
@@ -120,8 +89,7 @@ export default function DatabaseSeed() {
               Poblar Base de Datos
             </CardTitle>
             <CardDescription>
-              Importa {mockProperties.length} propiedades de muestra desde el archivo de mock data
-              a la base de datos de Supabase.
+              Esta funcionalidad ha sido deshabilitada. Agrega propiedades reales desde la página de Administración de Propiedades.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -205,9 +173,9 @@ export default function DatabaseSeed() {
               <CardTitle className="text-lg">Mock Data</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold mb-2">{mockProperties.length}</p>
+              <p className="text-3xl font-bold mb-2">-</p>
               <p className="text-sm text-muted-foreground">
-                Propiedades disponibles en el archivo mock
+                Mock data deshabilitado
               </p>
             </CardContent>
           </Card>

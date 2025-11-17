@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/utils/LanguageContext";
-import { getPropertyById, properties } from "@/data/properties";
+import { useProperty, useProperties } from "@/hooks/useProperties";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input-enhanced";
@@ -28,7 +28,8 @@ export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
-  const property = id ? getPropertyById(id) : null;
+  const { data: property } = useProperty(id || '');
+  const { data: properties = [] } = useProperties();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
