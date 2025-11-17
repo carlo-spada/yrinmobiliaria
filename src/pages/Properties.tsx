@@ -244,7 +244,7 @@ export default function Properties() {
                       ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
                       : 'flex flex-col gap-6'
                   }>
-                    {paginatedProperties.map((property) => {
+                    {paginatedProperties.map((property, index) => {
                       const statusMap: Record<string, 'sale' | 'rent' | 'sold'> = {
                         venta: 'sale',
                         renta: 'rent',
@@ -259,6 +259,9 @@ export default function Properties() {
                           minimumFractionDigits: 0,
                         }).format(price);
                       };
+                      
+                      // Calculate global index for priority loading (first page, first 6 items)
+                      const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
 
                       return (
                         <PropertyCard
@@ -273,6 +276,7 @@ export default function Properties() {
                           area={property.features.constructionArea}
                           featured={property.featured}
                           status={statusMap[property.operation] || 'sale'}
+                          priority={currentPage === 1 && index < 6}
                         />
                       );
                     })}

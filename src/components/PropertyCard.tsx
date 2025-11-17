@@ -19,6 +19,7 @@ interface PropertyCardProps {
   status?: 'sale' | 'rent' | 'sold';
   className?: string;
   onClick?: () => void;
+  priority?: boolean; // For LCP optimization - eager load above-fold images
 }
 
 export function PropertyCard({
@@ -34,6 +35,7 @@ export function PropertyCard({
   status = 'sale',
   className,
   onClick,
+  priority = false,
 }: PropertyCardProps) {
   const statusLabels = {
     sale: { es: 'En Venta', en: 'For Sale' },
@@ -57,7 +59,8 @@ export function PropertyCard({
             <motion.img
               src={image}
               alt={title}
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
               className="w-full h-full object-cover image-lazy-load"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
