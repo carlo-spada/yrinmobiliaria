@@ -55,6 +55,7 @@ export function FeaturedProperties() {
                 area={property.features.constructionArea}
                 featured={property.featured}
                 status={property.operation === 'venta' ? 'sale' : 'rent'}
+                priority={index < 3}
               />
             </div>
           ))

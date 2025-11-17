@@ -65,6 +65,8 @@ export function HeroSection() {
           src={heroImage}
           alt="Oaxaca Real Estate"
           className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/60" />
       </div>
