@@ -1,4 +1,5 @@
 import emailjs from '@emailjs/browser';
+import { logger } from './logger';
 
 // EmailJS Configuration
 // Sign up at https://www.emailjs.com/ to get your credentials
@@ -41,7 +42,7 @@ export const sendContactEmail = async (data: ContactFormData): Promise<boolean> 
   try {
     // If EmailJS is not configured, simulate success in development
     if (!PUBLIC_KEY || PUBLIC_KEY === 'demo_public_key') {
-      console.log('EmailJS not configured. Form data:', data);
+      logger.info('EmailJS not configured - contact form simulated in dev');
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
@@ -60,10 +61,10 @@ export const sendContactEmail = async (data: ContactFormData): Promise<boolean> 
       }
     );
 
-    console.log('Email sent successfully:', result);
+    logger.info('Contact email sent successfully');
     return result.status === 200;
   } catch (error) {
-    console.error('Error sending email:', error);
+    logger.error('Error sending contact email', error);
     return false;
   }
 };
@@ -72,7 +73,7 @@ export const sendScheduleEmail = async (data: ScheduleFormData): Promise<boolean
   try {
     // If EmailJS is not configured, simulate success in development
     if (!PUBLIC_KEY || PUBLIC_KEY === 'demo_public_key') {
-      console.log('EmailJS not configured. Schedule data:', data);
+      logger.info('EmailJS not configured - schedule form simulated in dev');
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
@@ -94,10 +95,10 @@ export const sendScheduleEmail = async (data: ScheduleFormData): Promise<boolean
       }
     );
 
-    console.log('Schedule email sent successfully:', result);
+    logger.info('Schedule email sent successfully');
     return result.status === 200;
   } catch (error) {
-    console.error('Error sending schedule email:', error);
+    logger.error('Error sending schedule email', error);
     return false;
   }
 };

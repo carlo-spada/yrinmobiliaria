@@ -1,1 +1,7 @@
 project_id = "ewsltpqbhbohuaonwflp"
+
+[functions.submit-contact]
+verify_jwt = false
+
+[functions.submit-schedule-visit]
+verify_jwt = false

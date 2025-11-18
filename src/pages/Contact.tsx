@@ -62,42 +62,42 @@ export default function Contact() {
     setIsSubmitting(true);
     
     try {
-      // First, save to database
-      const { error: dbError } = await supabase
-        .from('contact_inquiries')
-        .insert({
+      // Submit via secure Edge Function with validation and rate limiting
+      const { data: result, error: submitError } = await supabase.functions.invoke('submit-contact', {
+        body: {
           name: data.name,
           email: data.email,
           phone: data.phone,
-          message: `${data.subject}\n\n${data.message}`,
-          status: 'new',
-        });
+          subject: data.subject,
+          message: data.message,
+        },
+      });
 
-      if (dbError) {
-        logger.error('Database error', dbError);
-        throw new Error('Failed to save inquiry');
+      if (submitError) {
+        logger.error('Submission error', submitError);
+        throw new Error(submitError.message || 'Failed to submit inquiry');
       }
 
-      // Then, send email
-      const success = await sendContactEmail({
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to submit inquiry');
+      }
+
+      // Send email notification (non-critical, don't block on failure)
+      sendContactEmail({
         name: data.name,
         email: data.email,
         phone: data.phone,
         subject: data.subject,
         message: data.message,
-      });
+      }).catch((err) => logger.error('Email notification failed', err));
       
-      if (success) {
-        toast({
-          title: t.contact?.successTitle || '¡Mensaje enviado!',
-          description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
-        });
-        reset();
-      } else {
-        throw new Error('Failed to send email');
-      }
+      toast({
+        title: t.contact?.successTitle || '¡Mensaje enviado!',
+        description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
+      });
+      reset();
     } catch (error) {
-      console.error('Error sending contact form:', error);
+      logger.error('Contact form submission failed', error);
       toast({
         title: 'Error',
         description: 'No se pudo enviar el mensaje. Por favor intenta nuevamente.',

@@ -357,6 +357,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_temp_storage_images: { Args: never; Returns: undefined }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
       has_role: {
         Args: {
