@@ -77,11 +77,21 @@ export default function AdminUsers() {
   });
 
   const handlePromoteUser = () => {
-    if (!userId.trim()) {
+    const trimmedId = userId.trim();
+    
+    if (!trimmedId) {
       toast.error('Por favor ingresa un ID de usuario válido');
       return;
     }
-    promoteUserMutation.mutate(userId);
+    
+    // Validate UUID format
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(trimmedId)) {
+      toast.error('El formato del ID no es válido. Debe ser un UUID (ej: 123e4567-e89b-12d3-a456-426614174000)');
+      return;
+    }
+    
+    promoteUserMutation.mutate(trimmedId);
   };
 
   return (
