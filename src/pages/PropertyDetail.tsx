@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/utils/LanguageContext";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { Button } from "@/components/ui/button";
@@ -26,10 +28,22 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+// UUID validation helper
+const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
+  const { getSetting } = useSiteSettings();
+  const { toast } = useToast();
+  
+  // Validate UUID format
+  if (id && !isValidUUID(id)) {
+    navigate('/404', { replace: true });
+    return null;
+  }
+  
   const { data: property } = useProperty(id || '');
   const { data: properties = [] } = useProperties();
 
@@ -87,12 +101,24 @@ export default function PropertyDetail() {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert(language === "es" ? "Enlace copiado" : "Link copied");
+    toast({
+      title: language === "es" ? "Enlace copiado" : "Link copied",
+      description: language === "es" ? "El enlace ha sido copiado al portapapeles" : "The link has been copied to clipboard",
+    });
   };
 
   const handleWhatsApp = () => {
+    const phoneNumber = getSetting('whatsapp_number') || import.meta.env.VITE_WHATSAPP_NUMBER;
+    if (!phoneNumber) {
+      toast({
+        title: language === "es" ? "Error" : "Error",
+        description: language === "es" ? "Número de WhatsApp no configurado" : "WhatsApp number not configured",
+        variant: "destructive",
+      });
+      return;
+    }
     const message = `${language === "es" ? "Hola, estoy interesado en" : "Hi, I'm interested in"}: ${property.title[language]}`;
-    window.open(`https://wa.me/5219511234567?text=${encodeURIComponent(message)}`, "_blank");
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
   const handleSubmit = (e: React.FormEvent) => {

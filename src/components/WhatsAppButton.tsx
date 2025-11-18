@@ -13,8 +13,14 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
   const { getSetting } = useSiteSettings();
   
   const defaultMessage = t('whatsapp.defaultMessage', 'Hola, me interesa una propiedad de YR Inmobiliaria');
-  // Use dynamic setting with fallback to env var, then hardcoded fallback
-  const phoneNumber = getSetting('whatsapp_number', import.meta.env.VITE_WHATSAPP_NUMBER || '5219511234567');
+  // Use dynamic setting with fallback to env var only
+  const phoneNumber = getSetting('whatsapp_number') || import.meta.env.VITE_WHATSAPP_NUMBER;
+  
+  // Don't render if no phone number configured
+  if (!phoneNumber) {
+    console.warn('WhatsApp phone number not configured');
+    return null;
+  }
   
   const handleClick = () => {
     const finalMessage = message || defaultMessage;
