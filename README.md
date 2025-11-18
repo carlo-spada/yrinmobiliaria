@@ -9,8 +9,8 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 **Last Updated:** November 17, 2025
 
 **Lighthouse Scores:**
-- Desktop: Performance **94/100** ⭐ | SEO **100/100** ✅ | Best Practices **100/100** ✅
-- Mobile: Performance 73/100 ⚠️ | SEO **100/100** ✅ | Best Practices **100/100** ✅
+- Desktop: Performance **97/100** ⭐ | Accessibility 83/100 ⚠️ | Best Practices **100/100** ✅ | SEO **100/100** ✅
+- Mobile: Performance **80/100** ⚠️ | Accessibility 83/100 ⚠️ | Best Practices **100/100** ✅ | SEO **100/100** ✅
 
 ### ✅ Recently Completed
 
@@ -49,13 +49,13 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - Yas: Add properties via `/admin/properties`
 
 **Next Sprint Priorities:**
-1. **Mobile Performance Optimization** (CRITICAL) - Fix LCP 5.1s → <2.5s
-   - Responsive images for mobile
-   - Cache header configuration
+1. **Mobile Performance Optimization** (CRITICAL) - Fix LCP 5.0s → <2.5s
+   - Cache headers configuration (803 KiB savings) - Hosting config
+   - Responsive images for mobile (216 KiB savings)
    - Mobile hero image optimization
-2. **Accessibility Improvements** (HIGH) - Score 81 → 95+
+2. **Accessibility Improvements** (HIGH) - Score 83 → 95+
    - Add ARIA labels to icon buttons
-   - Fix form label associations
+   - Fix form label associations (select elements)
    - Improve color contrast ratios
 
 **Optional:**
