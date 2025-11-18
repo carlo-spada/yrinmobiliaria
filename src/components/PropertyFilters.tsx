@@ -114,16 +114,17 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
     <div className="bg-card rounded-lg border border-border p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">
-          {t.properties?.filters || 'Filtros'}
+          {t.properties?.filters || 'Filters'}
         </h2>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleClearFilters}
           className="text-muted-foreground hover:text-foreground"
+          aria-label={t.properties?.clearFilters || 'Clear all filters'}
         >
-          <X className="h-4 w-4 mr-1" />
-          {t.properties?.clearFilters || 'Limpiar'}
+          <X className="h-4 w-4 mr-1" aria-hidden="true" />
+          {t.properties?.clearFilters || 'Clear'}
         </Button>
       </div>
 
@@ -132,15 +133,16 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
       {/* Property Type */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">
-          {t.properties?.propertyType || 'Tipo de propiedad'}
+          {t.properties?.propertyType || 'Property Type'}
         </Label>
-        <div className="space-y-2">
+        <div className="space-y-2" role="group" aria-label={t.properties?.propertyType || 'Property Type'}>
           {propertyTypes.map((type) => (
             <div key={type} className="flex items-center space-x-2">
               <Checkbox
                 id={`type-${type}`}
                 checked={localFilters.type === type}
                 onCheckedChange={() => handleTypeToggle(type)}
+                aria-label={`Filter by ${type}`}
               />
               <label
                 htmlFor={`type-${type}`}
@@ -158,9 +160,9 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
       {/* Operation */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">
-          {t.properties?.operation || 'Operación'}
+          {t.properties?.operation || 'Operation'}
         </Label>
-        <div className="space-y-2">
+        <div className="space-y-2" role="radiogroup" aria-label={t.properties?.operation || 'Operation'}>
           {operations.map((operation) => (
             <div key={operation} className="flex items-center space-x-2">
               <input
@@ -170,6 +172,7 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
                 checked={localFilters.operation === operation}
                 onChange={() => handleOperationChange(operation)}
                 className="w-4 h-4 text-primary"
+                aria-label={`Filter by ${operation}`}
               />
               <label
                 htmlFor={`operation-${operation}`}
@@ -212,33 +215,39 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
 
       {/* Price Range */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium">
-          {t.properties?.priceRange || 'Rango de precio'}
+        <Label htmlFor="price-slider" className="text-sm font-medium">
+          {t.properties?.priceRange || 'Price Range'}
         </Label>
         <div className="space-y-4">
           <Slider
+            id="price-slider"
             min={0}
             max={10000000}
             step={100000}
             value={priceRange}
             onValueChange={handlePriceChange}
             className="w-full"
+            aria-label="Price range filter"
           />
           <div className="grid grid-cols-2 gap-3">
             <Input
+              id="min-price"
               type="number"
-              label={t.properties?.minPrice || 'Mínimo'}
+              label={t.properties?.minPrice || 'Minimum'}
               value={priceRange[0]}
               onChange={(e) => handlePriceChange([Number(e.target.value), priceRange[1]])}
+              aria-label="Minimum price"
             />
             <Input
+              id="max-price"
               type="number"
-              label={t.properties?.maxPrice || 'Máximo'}
+              label={t.properties?.maxPrice || 'Maximum'}
               value={priceRange[1]}
               onChange={(e) => handlePriceChange([priceRange[0], Number(e.target.value)])}
+              aria-label="Maximum price"
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground" aria-live="polite">
             {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
           </p>
         </div>

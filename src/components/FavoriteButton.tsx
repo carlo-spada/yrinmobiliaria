@@ -38,16 +38,18 @@ export function FavoriteButton({ propertyId, variant = 'icon', className }: Favo
         variant={favorite ? 'default' : 'outline'}
         onClick={handleClick}
         className={className}
+        aria-label={favorite ? (t.favorites?.remove || 'Remove from favorites') : (t.favorites?.add || 'Add to favorites')}
       >
         <Heart
           className={cn(
             'h-4 w-4 mr-2',
             favorite && 'fill-current'
           )}
+          aria-hidden="true"
         />
         {favorite 
-          ? (t.favorites?.remove || 'Eliminar de favoritos')
-          : (t.favorites?.add || 'Agregar a favoritos')
+          ? (t.favorites?.remove || 'Remove from favorites')
+          : (t.favorites?.add || 'Add to favorites')
         }
       </Button>
     );
@@ -62,7 +64,8 @@ export function FavoriteButton({ propertyId, variant = 'icon', className }: Favo
       )}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      aria-label={favorite ? (t.favorites?.remove || 'Eliminar de favoritos') : (t.favorites?.add || 'Agregar a favoritos')}
+      aria-label={favorite ? (t.favorites?.remove || 'Remove from favorites') : (t.favorites?.add || 'Add to favorites')}
+      title={favorite ? (t.favorites?.remove || 'Remove from favorites') : (t.favorites?.add || 'Add to favorites')}
     >
       <motion.div
         initial={false}
@@ -74,6 +77,7 @@ export function FavoriteButton({ propertyId, variant = 'icon', className }: Favo
             'h-5 w-5 transition-colors',
             favorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
           )}
+          aria-hidden="true"
         />
       </motion.div>
     </motion.button>
