@@ -84,28 +84,31 @@ export default function ScheduleVisit() {
     setIsSubmitting(true);
     
     try {
-      // First, save to database
-      const { error: dbError } = await supabase
-        .from('scheduled_visits')
-        .insert({
-          property_id: data.propertyId,
+      // Submit via secure Edge Function with validation and rate limiting
+      const { data: result, error: submitError } = await supabase.functions.invoke('submit-schedule-visit', {
+        body: {
+          propertyId: data.propertyId,
           name: data.name,
           email: data.email,
           phone: data.phone,
-          preferred_date: format(data.date, 'yyyy-MM-dd'),
-          preferred_time: data.timeSlot,
-          message: data.notes || null,
-          status: 'pending',
-        });
+          date: format(data.date, 'yyyy-MM-dd'),
+          timeSlot: data.timeSlot,
+          notes: data.notes || null,
+        },
+      });
 
-      if (dbError) {
-        logger.error('Database error', dbError);
-        throw new Error('Failed to save visit');
+      if (submitError) {
+        logger.error('Submission error', submitError);
+        throw new Error(submitError.message || 'Failed to schedule visit');
       }
 
-      // Then, send email
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to schedule visit');
+      }
+
+      // Send email notification (non-critical, don't block on failure)
       const property = properties.find(p => p.id === data.propertyId);
-      const success = await sendScheduleEmail({
+      sendScheduleEmail({
         propertyId: data.propertyId,
         propertyName: property?.title[language] || '',
         name: data.name,
@@ -114,21 +117,17 @@ export default function ScheduleVisit() {
         date: format(data.date, 'PPP', { locale: language === 'es' ? es : undefined }),
         timeSlot: data.timeSlot,
         notes: data.notes,
-      });
+      }).catch((err) => logger.error('Email notification failed', err));
       
-      if (success) {
-        setConfirmedData(data);
-        setIsConfirmed(true);
-        
-        toast({
-          title: t.schedule?.successTitle || '¡Cita agendada!',
-          description: t.schedule?.successMessage || 'Te enviaremos una confirmación por email.',
-        });
-      } else {
-        throw new Error('Failed to send email');
-      }
+      setConfirmedData(data);
+      setIsConfirmed(true);
+      
+      toast({
+        title: t.schedule?.successTitle || '¡Cita agendada!',
+        description: t.schedule?.successMessage || 'Te enviaremos una confirmación por email.',
+      });
     } catch (error) {
-      console.error('Error scheduling visit:', error);
+      logger.error('Visit scheduling failed', error);
       toast({
         title: 'Error',
         description: 'No se pudo agendar la cita. Por favor intenta nuevamente.',
