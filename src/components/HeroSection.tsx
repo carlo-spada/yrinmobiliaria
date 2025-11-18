@@ -3,7 +3,6 @@ import { useLanguage } from '@/utils/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
-import heroImage from '@/assets/hero-oaxaca.jpg';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,11 +61,15 @@ export function HeroSection() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src={heroImage}
-          alt="Oaxaca Real Estate"
+          srcSet="/hero-mobile.webp 640w, /hero-tablet.webp 1024w, /hero-desktop.webp 1920w"
+          sizes="100vw"
+          src="/hero-desktop.webp"
+          alt="Oaxaca Real Estate - Beautiful colonial architecture and modern properties"
           className="w-full h-full object-cover"
           loading="eager"
           fetchPriority="high"
+          width="1920"
+          height="1080"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/60" />
       </div>

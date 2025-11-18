@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { ResponsiveImage } from '@/components/ResponsiveImage';
 
 interface PropertyCardProps {
   id: string;
@@ -44,7 +45,7 @@ export function PropertyCard({
   };
 
   return (
-    <Link to={`/propiedad/${id}`} onClick={onClick}>
+    <Link to={`/propiedad/${id}`} onClick={onClick} aria-label={`View details for ${title}`}>
       <motion.div
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
@@ -56,15 +57,21 @@ export function PropertyCard({
           )}
         >
           <div className="relative overflow-hidden aspect-[4/3]">
-            <motion.img
-              src={image}
-              alt={title}
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
-              className="w-full h-full object-cover image-lazy-load"
+            <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
-            />
+              className="w-full h-full"
+            >
+              <ResponsiveImage
+                src={image}
+                alt={`${title} - ${location}`}
+                priority={priority}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="w-full h-full object-cover"
+                width={400}
+                height={300}
+              />
+            </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Badges */}

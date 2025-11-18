@@ -177,11 +177,19 @@ export function Header() {
           <div className="flex items-center gap-3">
             {/* Favorites Button */}
             <Link to="/favoritos" className="hidden md:block relative">
-              <Button variant="ghost" size="icon" className="relative">
-                <Heart className={cn(
-                  'h-5 w-5',
-                  favoritesCount > 0 && 'fill-red-500 text-red-500'
-                )} />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative"
+                aria-label={`View favorites${favoritesCount > 0 ? ` (${favoritesCount} properties)` : ''}`}
+              >
+                <Heart 
+                  className={cn(
+                    'h-5 w-5',
+                    favoritesCount > 0 && 'fill-red-500 text-red-500'
+                  )} 
+                  aria-hidden="true"
+                />
                 {favoritesCount > 0 && (
                   <Badge 
                     className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
@@ -197,7 +205,7 @@ export function Header() {
             
             <Link to="/agendar" className="hidden md:block">
               <Button size="sm" className="gap-2">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-4 w-4" aria-hidden="true" />
                 {t('header.scheduleVisit')}
               </Button>
             </Link>
@@ -205,11 +213,15 @@ export function Header() {
             {/* Mobile Menu */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  aria-label={isMobileMenuOpen ? t('nav.closeMenu', 'Close menu') : t('nav.openMenu', 'Open menu')}
+                >
                   {isMobileMenuOpen ? (
-                    <X className="h-6 w-6" />
+                    <X className="h-6 w-6" aria-hidden="true" />
                   ) : (
-                    <Menu className="h-6 w-6" />
+                    <Menu className="h-6 w-6" aria-hidden="true" />
                   )}
                 </Button>
               </SheetTrigger>

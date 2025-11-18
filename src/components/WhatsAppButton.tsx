@@ -39,9 +39,10 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 1, duration: 0.3 }}
-      aria-label={t('whatsapp.buttonLabel', 'Contactar por WhatsApp')}
+      aria-label={t('whatsapp.buttonLabel', 'Contact us via WhatsApp')}
+      title={t('whatsapp.buttonLabel', 'Contact us via WhatsApp')}
     >
-      <MessageCircle className="h-6 w-6" />
+      <MessageCircle className="h-6 w-6" aria-hidden="true" />
       
       {/* Pulse animation */}
       <motion.span
