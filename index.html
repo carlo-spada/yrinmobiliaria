@@ -32,7 +32,22 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Critical LCP image - discoverable immediately for faster paint -->
+      <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;">
+        <img 
+          srcset="/hero-mobile.webp 640w, /hero-tablet.webp 1024w, /hero-desktop.webp 1920w" 
+          sizes="100vw"
+          src="/hero-tablet.webp"
+          alt="Oaxaca Real Estate - Beautiful colonial architecture and modern properties" 
+          style="width: 100%; height: 100%; object-fit: cover;"
+          loading="eager"
+          fetchpriority="high"
+          width="1920" 
+          height="1080"
+        />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
