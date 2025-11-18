@@ -139,6 +139,22 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
   const mutation = useMutation({
     mutationFn: async (formData: any) => {
+      // Validate that zone exists in service_zones table
+      const { data: zoneExists, error: zoneError } = await supabase
+        .from('service_zones')
+        .select('id')
+        .eq('name_es', formData.zone)
+        .eq('active', true)
+        .maybeSingle();
+      
+      if (zoneError) {
+        throw new Error('Error al validar la zona');
+      }
+      
+      if (!zoneExists) {
+        throw new Error('La zona seleccionada no existe o no está activa. Por favor actualiza la página.');
+      }
+      
       // Validate that we have at least one image
       if (images.length === 0) {
         throw new Error('Debes subir al menos una imagen');
