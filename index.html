@@ -17,9 +17,9 @@
     <link rel="preload" as="image" href="/hero-tablet.webp" media="(min-width: 641px) and (max-width: 1024px)" />
     <link rel="preload" as="image" href="/hero-desktop.webp" media="(min-width: 1025px)" />
     
-    <!-- Preload critical fonts (reduces render blocking) -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" as="style">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Load fonts asynchronously to prevent render blocking -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"></noscript>
 
     <meta property="og:title" content="YR Inmobiliaria - Bienes Raíces en Oaxaca" />
     <meta property="og:description" content="Expertos en bienes raíces en Oaxaca con más de 10 años de experiencia. Encuentra tu hogar perfecto." />
