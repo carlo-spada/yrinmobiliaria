@@ -138,7 +138,7 @@ export default function MapView() {
   const urlType = searchParams.get("type") || "all";
   const urlZone = searchParams.get("zone") || "all";
   const urlMinPrice = searchParams.get("minPrice") || "0";
-  const urlMaxPrice = searchParams.get("maxPrice") || "10000000";
+  const urlMaxPrice = searchParams.get("maxPrice") || "100000000";
   const urlPropertyId = searchParams.get("propertyId");
 
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
@@ -214,7 +214,7 @@ export default function MapView() {
     if (filters.type !== "all") params.set("type", filters.type);
     if (filters.zone !== "all") params.set("zone", filters.zone);
     if (filters.priceRange[0] !== 0) params.set("minPrice", filters.priceRange[0].toString());
-    if (filters.priceRange[1] !== 10000000) params.set("maxPrice", filters.priceRange[1].toString());
+    if (filters.priceRange[1] !== 100000000) params.set("maxPrice", filters.priceRange[1].toString());
     if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
     
     setSearchParams(params, { replace: true });
@@ -303,7 +303,7 @@ export default function MapView() {
     } else if (filterType === 'zone') {
       setFilters({ ...filters, zone: "all" });
     } else if (filterType === 'price') {
-      setFilters({ ...filters, priceRange: [0, 10000000] });
+      setFilters({ ...filters, priceRange: [0, 100000000] });
     }
   }, [filters]);
 
@@ -325,7 +325,7 @@ export default function MapView() {
     if (filters.zone !== "all") {
       badges.push({ type: 'zone' as const, label: filters.zone });
     }
-    if (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 10000000) {
+    if (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 100000000) {
       badges.push({ 
         type: 'price' as const, 
         label: `$${(filters.priceRange[0] / 1000000).toFixed(1)}M - $${(filters.priceRange[1] / 1000000).toFixed(1)}M` 
@@ -441,9 +441,9 @@ export default function MapView() {
 
   return (
     <MapErrorBoundary language={language}>
-      <div className="h-screen flex flex-col pt-20">
+      <div className="h-screen flex flex-col">
         {/* Map-specific header (below fixed site header) */}
-        <div className="bg-background border-b z-10 px-4 py-3 flex items-center justify-between">
+        <div className="bg-background border-b z-10 px-4 py-3 flex items-center justify-between mt-20">
           <h1 className="text-xl font-bold">
             {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
           </h1>
@@ -540,7 +540,7 @@ export default function MapView() {
               </label>
               <Slider
                 min={0}
-                max={10000000}
+                max={100000000}
                 step={100000}
                 value={filters.priceRange}
                 onValueChange={(value) => setFilters({ ...filters, priceRange: value as [number, number] })}
@@ -560,7 +560,7 @@ export default function MapView() {
                 setFilters({
                   type: "all",
                   zone: "all",
-                  priceRange: [0, 10000000],
+                  priceRange: [0, 100000000],
                 })
               }
             >
@@ -634,7 +634,7 @@ export default function MapView() {
                     setFilters({
                       type: "all",
                       zone: "all",
-                      priceRange: [0, 10000000],
+                      priceRange: [0, 100000000],
                     })
                   }
                 >
