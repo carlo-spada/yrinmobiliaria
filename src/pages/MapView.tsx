@@ -30,6 +30,7 @@ import {
   Loader2,
   AlertCircle,
   Navigation,
+  Maximize2,
 } from "lucide-react";
 
 // Property type colors
@@ -82,11 +83,13 @@ const normalizeCoord = (value: any): number | null => {
   return typeof num === "number" && isFinite(num) ? num : null;
 };
 
-// Component to handle map bounds changes
+// Component to handle map bounds changes and click-to-deselect
 function MapBoundsTracker({ 
-  onBoundsChange 
+  onBoundsChange,
+  onMapClick
 }: { 
-  onBoundsChange: (bounds: LatLngBounds) => void 
+  onBoundsChange: (bounds: LatLngBounds) => void;
+  onMapClick: () => void;
 }) {
   const map = useMapEvents({
     moveend: () => {
@@ -94,6 +97,9 @@ function MapBoundsTracker({
     },
     zoomend: () => {
       onBoundsChange(map.getBounds());
+    },
+    click: () => {
+      onMapClick();
     },
   });
 
@@ -272,6 +278,62 @@ export default function MapView() {
     }, 400);
   }, []);
 
+  // Handle map click to deselect
+  const handleMapClick = useCallback(() => {
+    setSelectedPropertyId(null);
+  }, []);
+
+  // Handle reset view to show all properties
+  const handleResetView = useCallback(() => {
+    if (filteredProperties.length > 0) {
+      const bounds = new LatLngBounds(
+        filteredProperties.map(p => [
+          normalizeCoord(p.location.coordinates.lat)!,
+          normalizeCoord(p.location.coordinates.lng)!
+        ])
+      );
+      setFlyToCenter([bounds.getCenter().lat, bounds.getCenter().lng]);
+    }
+  }, [filteredProperties]);
+
+  // Clear specific filter
+  const clearFilter = useCallback((filterType: 'type' | 'zone' | 'price') => {
+    if (filterType === 'type') {
+      setFilters({ ...filters, type: "all" });
+    } else if (filterType === 'zone') {
+      setFilters({ ...filters, zone: "all" });
+    } else if (filterType === 'price') {
+      setFilters({ ...filters, priceRange: [0, 10000000] });
+    }
+  }, [filters]);
+
+  // Get active filters for badges
+  const activeFilters = useMemo(() => {
+    const badges = [];
+    if (filters.type !== "all") {
+      badges.push({ 
+        type: 'type' as const, 
+        label: filters.type === "casa"
+          ? language === "es" ? "Casa" : "House"
+          : filters.type === "departamento"
+          ? language === "es" ? "Departamento" : "Apartment"
+          : filters.type === "local"
+          ? language === "es" ? "Local" : "Commercial"
+          : language === "es" ? "Oficina" : "Office"
+      });
+    }
+    if (filters.zone !== "all") {
+      badges.push({ type: 'zone' as const, label: filters.zone });
+    }
+    if (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 10000000) {
+      badges.push({ 
+        type: 'price' as const, 
+        label: `$${(filters.priceRange[0] / 1000000).toFixed(1)}M - $${(filters.priceRange[1] / 1000000).toFixed(1)}M` 
+      });
+    }
+    return badges;
+  }, [filters, language]);
+
   // Memoized markers for performance
   const markers = useMemo(() => {
     return filteredProperties.map((property) => {
@@ -379,13 +441,23 @@ export default function MapView() {
 
   return (
     <MapErrorBoundary language={language}>
-      <div className="h-screen flex flex-col">
-        {/* Header */}
+      <div className="h-screen flex flex-col pt-20">
+        {/* Map-specific header (below fixed site header) */}
         <div className="bg-background border-b z-10 px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold">
             {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
           </h1>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetView}
+              className="hidden md:flex"
+              title={language === "es" ? "Centrar vista" : "Reset view"}
+            >
+              <Maximize2 className="h-4 w-4 mr-2" />
+              {language === "es" ? "Centrar" : "Reset"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -418,7 +490,23 @@ export default function MapView() {
           `}
         >
           {/* Filters */}
-          <div className="p-4 border-b space-y-4 overflow-y-auto">
+          <div className="p-4 border-b space-y-4 flex-shrink-0">
+            {/* Active filters badges */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {activeFilters.map((filter) => (
+                  <Badge 
+                    key={filter.type} 
+                    variant="secondary"
+                    className="flex items-center gap-1 cursor-pointer hover:bg-secondary/80"
+                    onClick={() => clearFilter(filter.type)}
+                  >
+                    {filter.label}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+              </div>
+            )}
             <h3 className="font-semibold text-sm">
               {language === "es" ? "Filtros" : "Filters"}
             </h3>
@@ -455,7 +543,7 @@ export default function MapView() {
                 max={10000000}
                 step={100000}
                 value={filters.priceRange}
-                onValueChange={(value) => setFilters({ ...filters, priceRange: value })}
+                onValueChange={(value) => setFilters({ ...filters, priceRange: value as [number, number] })}
                 className="mb-2"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -512,13 +600,15 @@ export default function MapView() {
 
           {/* Properties List */}
           <div className="flex-1 overflow-y-auto p-4" ref={listRef}>
-            <h3 className="font-semibold text-sm mb-3">
-              {isLoading
-                ? (language === "es" ? "Cargando..." : "Loading...")
-                : `${filteredProperties.length} ${
-                    language === "es" ? "propiedades" : "properties"
-                  }`}
-            </h3>
+            <div className="mb-3">
+              <h3 className="font-semibold text-sm">
+                {isLoading
+                  ? (language === "es" ? "Cargando..." : "Loading...")
+                  : language === "es" 
+                    ? `Mostrando ${filteredProperties.length} de ${validProperties.length} propiedades`
+                    : `Showing ${filteredProperties.length} of ${validProperties.length} properties`}
+              </h3>
+            </div>
             {isLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -616,7 +706,7 @@ export default function MapView() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
-            <MapBoundsTracker onBoundsChange={handleBoundsChange} />
+            <MapBoundsTracker onBoundsChange={handleBoundsChange} onMapClick={handleMapClick} />
             <FlyToLocation center={flyToCenter} />
 
             {/* Conditional clustering: only use clustering if >20 properties */}
