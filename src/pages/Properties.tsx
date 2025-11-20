@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal, MapPin } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
@@ -8,6 +8,7 @@ import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';
 import { SaveSearchDialog } from '@/components/SaveSearchDialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select } from '@/components/ui/select-enhanced';
 import { useLanguage } from '@/utils/LanguageContext';
@@ -174,7 +175,7 @@ export default function Properties() {
                       {t.properties?.title || 'Propiedades'}
                     </h1>
                     <p className="text-muted-foreground">
-                      {filteredProperties.length} {t.properties?.results || 'resultados encontrados'}
+                      {language === 'es' ? 'Mostrando' : 'Showing'} {filteredProperties.length} {language === 'es' ? 'de' : 'of'} {allProperties.length} {t.properties?.results || 'propiedades'}
                     </p>
                   </div>
 
@@ -203,6 +204,59 @@ export default function Properties() {
                     </SheetContent>
                   </Sheet>
                 </div>
+
+                {/* Active Filters */}
+                {(filters.type || filters.operation || filters.zone || filters.minPrice || filters.maxPrice || filters.minBedrooms || filters.minBathrooms) && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {filters.type && (
+                      <Badge variant="secondary" className="gap-1">
+                        {filters.type}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters({ ...filters, type: undefined })} />
+                      </Badge>
+                    )}
+                    {filters.operation && (
+                      <Badge variant="secondary" className="gap-1">
+                        {filters.operation}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters({ ...filters, operation: undefined })} />
+                      </Badge>
+                    )}
+                    {filters.zone && (
+                      <Badge variant="secondary" className="gap-1">
+                        {filters.zone}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters({ ...filters, zone: undefined })} />
+                      </Badge>
+                    )}
+                    {(filters.minPrice || filters.maxPrice) && (
+                      <Badge variant="secondary" className="gap-1">
+                        {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 }).format(filters.minPrice || 0)} - {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 }).format(filters.maxPrice || 10000000)}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters({ ...filters, minPrice: undefined, maxPrice: undefined })} />
+                      </Badge>
+                    )}
+                    {filters.minBedrooms && (
+                      <Badge variant="secondary" className="gap-1">
+                        {filters.minBedrooms}+ {language === 'es' ? 'habitaciones' : 'bedrooms'}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters({ ...filters, minBedrooms: undefined })} />
+                      </Badge>
+                    )}
+                    {filters.minBathrooms && (
+                      <Badge variant="secondary" className="gap-1">
+                        {filters.minBathrooms}+ {language === 'es' ? 'baños' : 'bathrooms'}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters({ ...filters, minBathrooms: undefined })} />
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setFilters({});
+                        setSearchParams({}, { replace: true });
+                      }}
+                      className="h-7"
+                    >
+                      {language === 'es' ? 'Limpiar filtros' : 'Clear filters'}
+                    </Button>
+                  </div>
+                )}
 
                 {/* Controls */}
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
