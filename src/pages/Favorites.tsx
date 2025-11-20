@@ -7,7 +7,7 @@ import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/utils/LanguageContext';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer';
 import {
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Favorites() {
-  const { t, i18n } = useTranslation();
+  const { language, t } = useLanguage();
   const { favorites, clearFavorites } = useFavorites();
   const { data: properties = [] } = useProperties();
   const [viewMode] = useState<'grid' | 'list'>('grid');
@@ -46,16 +46,16 @@ export default function Favorites() {
                   <Heart className="h-8 w-8 text-primary fill-primary" />
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                  {t('favorites.title', 'Mis Favoritos')}
+                  {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
                 </h1>
                 <p className="text-lg text-muted-foreground">
-                  {t('favorites.subtitle', 'Propiedades que has guardado para revisar después')}
+                  {language === 'es' ? 'Propiedades que has guardado para revisar después' : 'Properties you have saved to review later'}
                 </p>
                 <div className="flex items-center justify-center gap-4 pt-4">
                   <Link to="/propiedades">
                     <Button variant="outline">
                       <ArrowLeft className="mr-2 h-4 w-4" />
-                      {t('favorites.backToProperties', 'Ver más propiedades')}
+                      {language === 'es' ? 'Ver más propiedades' : 'View more properties'}
                     </Button>
                   </Link>
                   {favorites.length > 0 && (
@@ -63,24 +63,24 @@ export default function Favorites() {
                       <AlertDialogTrigger asChild>
                         <Button variant="outline">
                           <Trash2 className="mr-2 h-4 w-4" />
-                          {t('favorites.clearAll', 'Limpiar todo')}
+                          {language === 'es' ? 'Limpiar todo' : 'Clear all'}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            {t('favorites.clearConfirmTitle', '¿Eliminar todos los favoritos?')}
+                            {language === 'es' ? '¿Eliminar todos los favoritos?' : 'Remove all favorites?'}
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            {t('favorites.clearConfirmDesc', 'Esta acción no se puede deshacer. Se eliminarán todas las propiedades de tu lista de favoritos.')}
+                            {language === 'es' ? 'Esta acción no se puede deshacer. Se eliminarán todas las propiedades de tu lista de favoritos.' : 'This action cannot be undone. All properties will be removed from your favorites list.'}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>
-                            {t('common.cancel', 'Cancelar')}
+                            {language === 'es' ? 'Cancelar' : 'Cancel'}
                           </AlertDialogCancel>
                           <AlertDialogAction onClick={clearFavorites}>
-                            {t('favorites.clearAll', 'Limpiar todo')}
+                            {language === 'es' ? 'Limpiar todo' : 'Clear all'}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -102,14 +102,14 @@ export default function Favorites() {
                     <Heart className="h-12 w-12 text-muted-foreground" />
                   </div>
                   <h2 className="text-2xl font-bold text-foreground">
-                    {t('favorites.empty', 'No tienes favoritos aún')}
+                    {language === 'es' ? 'No tienes favoritos aún' : 'No favorites yet'}
                   </h2>
                   <p className="text-muted-foreground">
-                    {t('favorites.emptyDesc', 'Explora nuestro catálogo y guarda las propiedades que más te gusten.')}
+                    {language === 'es' ? 'Explora nuestro catálogo y guarda las propiedades que más te gusten.' : 'Browse our catalog and save the properties you like the most.'}
                   </p>
                   <Link to="/propiedades">
                     <Button variant="primary">
-                      {t('favorites.exploreCatalog', 'Explorar catálogo')}
+                      {language === 'es' ? 'Explorar catálogo' : 'Browse catalog'}
                     </Button>
                   </Link>
                 </div>
@@ -118,7 +118,7 @@ export default function Favorites() {
               <>
                 <div className="mb-6">
                   <p className="text-muted-foreground">
-                    {favoriteProperties.length} {t('favorites.countLabel', 'propiedades guardadas')}
+                    {favoriteProperties.length} {language === 'es' ? 'propiedades guardadas' : 'saved properties'}
                   </p>
                 </div>
 
@@ -136,7 +136,7 @@ export default function Favorites() {
                           id={property.id}
                           image={property.images[0]}
                           variants={property.imageVariants?.[0]?.variants}
-                          title={property.title[i18n.language as 'es' | 'en']}
+                          title={property.title[language as 'es' | 'en']}
                           price={`$${property.price.toLocaleString()}`}
                           location={property.location.address}
                           bedrooms={property.features.bedrooms}
