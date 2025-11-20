@@ -196,6 +196,10 @@ export default function MapView() {
   // Apply filters (including bounds filtering client-side)
   const filteredProperties = useMemo(() => {
     return validProperties.filter((p) => {
+      // Guard required fields
+      if (!p.location || !p.location.zone) return false;
+      if (typeof p.price !== "number" || isNaN(p.price)) return false;
+
       if (filters.type !== "all" && p.type !== filters.type) return false;
       if (filters.zone !== "all" && p.location.zone !== filters.zone) return false;
       if (p.price < filters.priceRange[0] || p.price > filters.priceRange[1]) return false;
