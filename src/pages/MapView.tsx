@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Fragment } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
@@ -530,7 +530,8 @@ export default function MapView() {
             <FlyToLocation center={flyToCenter} />
 
             {/* Render markers directly without clustering for stability */}
-            {filteredProperties.map((property) => {
+            <Fragment>
+              {filteredProperties.map((property) => {
               // Normalize and validate coordinates
               const lat = normalizeCoord(property.location.coordinates.lat);
               const lng = normalizeCoord(property.location.coordinates.lng);
@@ -592,6 +593,7 @@ export default function MapView() {
                 </Marker>
               );
             })}
+            </Fragment>
 
             {/* User location marker */}
             {userLocation && (
