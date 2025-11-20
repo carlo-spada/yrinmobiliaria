@@ -8,6 +8,9 @@ export interface AuditLogEntry {
   changes?: Record<string, any>;
 }
 
+// NOTE: The user_id is enforced by RLS policy on the audit_logs table.
+// The policy (auth.uid() = user_id) ensures that users can only create audit logs
+// with their own user_id, preventing manipulation even if client code is modified.
 export const logAuditEvent = async (entry: AuditLogEntry) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
