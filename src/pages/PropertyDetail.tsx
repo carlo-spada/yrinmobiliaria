@@ -112,9 +112,16 @@ export default function PropertyDetail() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast({
-      title: language === "es" ? "Enlace copiado" : "Link copied",
-      description: language === "es" ? "El enlace ha sido copiado al portapapeles" : "The link has been copied to clipboard",
-    });
+        title: language === "es" ? "Enlace copiado" : "Link copied",
+        description: language === "es" ? "El enlace ha sido copiado al portapapeles" : "The link has been copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: language === "es" ? "Error" : "Error",
+        description: language === "es" ? "No se pudo copiar el enlace" : "Could not copy link",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleWhatsApp = () => {

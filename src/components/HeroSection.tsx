@@ -170,14 +170,16 @@ export function HeroSection() {
                   {t.hero.priceRange}
                 </label>
                 <span className="text-sm font-semibold text-primary">
-                  Hasta {formatPrice(priceRange[0])}
+                  {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
                 </span>
               </div>
               <Slider
                 id="hero-price-slider"
                 value={priceRange}
                 onValueChange={setPriceRange}
-                max={100}
+                min={0}
+                max={10000000}
+                step={100000}
                 step={5}
                 className="w-full"
                 aria-label={t.hero.priceRange}
