@@ -22,13 +22,13 @@ import TermsOfService from "./pages/TermsOfService";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import AcceptInvitation from "./pages/auth/AcceptInvitation";
-import CompleteProfile from "./pages/onboarding/CompleteProfile";
-import AgentDashboard from "./pages/agent/AgentDashboard";
-import EditProfile from "./pages/agent/EditProfile";
 
-// Lazy load only truly heavy components (Map with Leaflet, Admin pages)
+// Lazy load heavy components and all auth/admin/agent pages to avoid import cycles
 const MapView = lazy(() => import("./pages/MapView"));
+const AcceptInvitation = lazy(() => import("./pages/auth/AcceptInvitation"));
+const CompleteProfile = lazy(() => import("./pages/onboarding/CompleteProfile"));
+const AgentDashboard = lazy(() => import("./pages/agent/AgentDashboard"));
+const EditProfile = lazy(() => import("./pages/agent/EditProfile"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
 const AdminAgents = lazy(() => import("./pages/admin/AdminAgents"));
@@ -100,10 +100,26 @@ const App = () => (
               <Route path="/privacidad" element={<PrivacyPolicy />} />
               <Route path="/terminos" element={<TermsOfService />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/accept-invitation" element={<AcceptInvitation />} />
-              <Route path="/onboarding/complete-profile" element={<CompleteProfile />} />
-              <Route path="/agent/dashboard" element={<AgentDashboard />} />
-              <Route path="/agent/profile/edit" element={<EditProfile />} />
+              <Route path="/auth/accept-invitation" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AcceptInvitation />
+                </Suspense>
+              } />
+              <Route path="/onboarding/complete-profile" element={
+                <Suspense fallback={<PageLoader />}>
+                  <CompleteProfile />
+                </Suspense>
+              } />
+              <Route path="/agent/dashboard" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AgentDashboard />
+                </Suspense>
+              } />
+              <Route path="/agent/profile/edit" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EditProfile />
+                </Suspense>
+              } />
               <Route path="/admin" element={
                 <Suspense fallback={<PageLoader />}>
                   <AdminDashboard />
