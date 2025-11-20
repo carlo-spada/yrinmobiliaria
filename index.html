@@ -13,9 +13,9 @@
     <link rel="preconnect" href="https://ewsltpqbhbohuaonwflp.supabase.co">
     
     <!-- Preload critical hero images for LCP optimization -->
-    <link rel="preload" as="image" href="/hero-mobile.webp" media="(max-width: 640px)" />
-    <link rel="preload" as="image" href="/hero-tablet.webp" media="(min-width: 641px) and (max-width: 1024px)" />
-    <link rel="preload" as="image" href="/hero-desktop.webp" media="(min-width: 1025px)" />
+    <link rel="preload" as="image" href="/hero-mobile.webp" media="(max-width: 640px)" imagesrcset="/hero-mobile.webp" imagesizes="100vw" />
+    <link rel="preload" as="image" href="/hero-tablet.webp" media="(min-width: 641px) and (max-width: 1024px)" imagesrcset="/hero-tablet.webp" imagesizes="100vw" />
+    <link rel="preload" as="image" href="/hero-desktop.webp" media="(min-width: 1025px)" imagesrcset="/hero-desktop.webp" imagesizes="100vw" />
     
     <!-- Load fonts asynchronously to prevent render blocking -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -32,22 +32,7 @@
   </head>
 
   <body>
-    <div id="root">
-      <!-- Critical LCP image - discoverable immediately for faster paint -->
-      <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;">
-        <img 
-          srcset="/hero-mobile.webp 640w, /hero-tablet.webp 1024w, /hero-desktop.webp 1920w" 
-          sizes="100vw"
-          src="/hero-tablet.webp"
-          alt="Oaxaca Real Estate - Beautiful colonial architecture and modern properties" 
-          style="width: 100%; height: 100%; object-fit: cover;"
-          loading="eager"
-          fetchpriority="high"
-          width="1920" 
-          height="1080"
-        />
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

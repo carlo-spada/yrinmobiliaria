@@ -181,7 +181,12 @@ export default function Properties() {
                   {/* Mobile Filter Button */}
                   <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                     <SheetTrigger asChild>
-                      <Button variant="outline" size="sm" className="lg:hidden">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="lg:hidden"
+                        aria-label={language === 'es' ? 'Abrir filtros' : 'Open filters'}
+                      >
                         <SlidersHorizontal className="h-4 w-4 mr-2" />
                         {t.properties?.filters || 'Filtros'}
                       </Button>
@@ -201,16 +206,22 @@ export default function Properties() {
 
                 {/* Controls */}
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                  <Select
-                    options={sortOptions}
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-full sm:w-64"
-                  />
+                <Select
+                  label={language === 'es' ? 'Ordenar por' : 'Sort by'}
+                  options={sortOptions}
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="w-full sm:w-64"
+                />
 
                   <div className="flex gap-2">
                     <Link to="/mapa">
-                      <Button variant="outline" size="icon" title={t.nav.map}>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        title={t.nav.map}
+                        aria-label={language === 'es' ? 'Ver propiedades en el mapa' : 'View properties on map'}
+                      >
                         <MapPin className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -218,6 +229,8 @@ export default function Properties() {
                       variant={viewMode === 'grid' ? 'default' : 'outline'}
                       size="icon"
                       onClick={() => setViewMode('grid')}
+                      aria-label={language === 'es' ? 'Vista de cuadrícula' : 'Grid view'}
+                      title={language === 'es' ? 'Vista de cuadrícula' : 'Grid view'}
                     >
                       <Grid className="h-4 w-4" />
                     </Button>
@@ -225,6 +238,8 @@ export default function Properties() {
                       variant={viewMode === 'list' ? 'default' : 'outline'}
                       size="icon"
                       onClick={() => setViewMode('list')}
+                      aria-label={language === 'es' ? 'Vista de lista' : 'List view'}
+                      title={language === 'es' ? 'Vista de lista' : 'List view'}
                     >
                       <List className="h-4 w-4" />
                     </Button>

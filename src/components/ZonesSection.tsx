@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ResponsiveImage } from '@/components/ResponsiveImage';
 
 export function ZonesSection() {
   const { t, language } = useLanguage();
@@ -68,7 +69,7 @@ export function ZonesSection() {
                 >
                   <Card className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      <img
+                      <ResponsiveImage
                         src={imageUrl}
                         alt={zoneName}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

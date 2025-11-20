@@ -1,14 +1,27 @@
 import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
 import { FeaturedProperties } from '@/components/FeaturedProperties';
-import { ZonesSection } from '@/components/ZonesSection';
-import { WhyChooseUs } from '@/components/WhyChooseUs';
-import { StatsSection } from '@/components/StatsSection';
-import { FinalCTA } from '@/components/FinalCTA';
+import { LazySection } from '@/components/LazySection';
 import { Footer } from '@/components/Footer';
 import { MetaTags } from '@/components/seo/MetaTags';
 import { StructuredData, getOrganizationSchema, getLocalBusinessSchema } from '@/components/seo/StructuredData';
 import { useLanguage } from '@/utils/LanguageContext';
+import { lazy, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load below-the-fold sections for better initial page load
+const ZonesSection = lazy(() => import('@/components/ZonesSection').then(m => ({ default: m.ZonesSection })));
+const WhyChooseUs = lazy(() => import('@/components/WhyChooseUs').then(m => ({ default: m.WhyChooseUs })));
+const StatsSection = lazy(() => import('@/components/StatsSection').then(m => ({ default: m.StatsSection })));
+const FinalCTA = lazy(() => import('@/components/FinalCTA').then(m => ({ default: m.FinalCTA })));
+
+const SectionFallback = () => (
+  <div className="py-20">
+    <div className="container mx-auto px-4 lg:px-8">
+      <Skeleton className="h-64 w-full" />
+    </div>
+  </div>
+);
 
 const Index = () => {
   const { language } = useLanguage();
@@ -32,10 +45,31 @@ const Index = () => {
       <main>
         <HeroSection />
         <FeaturedProperties />
-        <ZonesSection />
-        <WhyChooseUs />
-        <StatsSection />
-        <FinalCTA />
+        
+        {/* Lazy load below-the-fold sections */}
+        <LazySection>
+          <Suspense fallback={<SectionFallback />}>
+            <ZonesSection />
+          </Suspense>
+        </LazySection>
+        
+        <LazySection>
+          <Suspense fallback={<SectionFallback />}>
+            <WhyChooseUs />
+          </Suspense>
+        </LazySection>
+        
+        <LazySection>
+          <Suspense fallback={<SectionFallback />}>
+            <StatsSection />
+          </Suspense>
+        </LazySection>
+        
+        <LazySection>
+          <Suspense fallback={<SectionFallback />}>
+            <FinalCTA />
+          </Suspense>
+        </LazySection>
       </main>
       <Footer />
     </div>

@@ -2,9 +2,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/utils/LanguageContext';
 
 export function ScrollToTop() {
+  const { language } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
+  
+  const ariaLabel = language === 'es' 
+    ? 'Volver al inicio de la página' 
+    : 'Scroll back to top of page';
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -43,6 +49,8 @@ export function ScrollToTop() {
             onClick={scrollToTop}
             size="icon"
             className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+            aria-label={ariaLabel}
+            title={ariaLabel}
           >
             <ArrowUp className="h-5 w-5" />
           </Button>

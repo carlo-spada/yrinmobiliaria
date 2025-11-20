@@ -122,10 +122,17 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
   };
 
   if (variant === 'icon') {
+    const shareLabel = t('share.share', 'Compartir');
+    
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button 
+            variant="outline" 
+            size="icon"
+            aria-label={shareLabel}
+            title={shareLabel}
+          >
             <Share2 className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -177,14 +184,14 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
           </>
         )}
       </Button>
-      <Button variant="outline" onClick={handleShareFacebook}>
+      <Button variant="outline" onClick={handleShareFacebook} aria-label="Share on Facebook" title="Facebook">
         <Facebook className="h-4 w-4" />
       </Button>
-      <Button variant="outline" onClick={handleShareTwitter}>
+      <Button variant="outline" onClick={handleShareTwitter} aria-label="Share on Twitter" title="Twitter">
         <Twitter className="h-4 w-4" />
       </Button>
       {navigator.share && (
-        <Button variant="outline" onClick={handleNativeShare}>
+        <Button variant="outline" onClick={handleNativeShare} aria-label={t('share.more', 'Más opciones')} title={t('share.more', 'Más opciones')}>
           <Share2 className="h-4 w-4" />
         </Button>
       )}

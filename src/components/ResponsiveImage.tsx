@@ -30,14 +30,31 @@ export function ResponsiveImage({
   // Check if image is from Supabase Storage
   const isSupabase = src.includes('supabase.co/storage');
   
-  // Framework for future Supabase image transformation
-  // When implemented, this will generate multiple sizes using Supabase's transformation API
-  // Example: src?width=640, src?width=1024, src?width=1920
+  /**
+   * Generate Supabase image transformation srcSet
+   * Uses Supabase's image transformation API for optimal performance
+   * - Multiple widths: 480, 768, 1080, 1440
+   * - WebP format for better compression
+   * - Quality: 75 for optimal file size/quality balance
+   * - Resize mode: cover for consistent aspect ratios
+   */
   const generateSupabaseSrcset = (url: string): string => {
-    // Future implementation: Use Supabase image transformation
-    // For now, return the original URL
-    // TODO: Implement when Supabase transformation is configured
-    return url;
+    if (!isSupabase) return '';
+    
+    const widths = [480, 768, 1080, 1440];
+    const baseUrl = url.split('?')[0]; // Remove existing query params
+    
+    const srcsetParts = widths.map(width => {
+      const params = new URLSearchParams({
+        width: width.toString(),
+        format: 'webp',
+        quality: '75',
+        resize: 'cover'
+      });
+      return `${baseUrl}?${params.toString()} ${width}w`;
+    });
+    
+    return srcsetParts.join(', ');
   };
   
   const srcset = isSupabase ? generateSupabaseSrcset(src) : undefined;
