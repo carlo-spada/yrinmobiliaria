@@ -27,110 +27,106 @@ export default function About() {
       title: language === 'es' ? 'Confianza' : 'Trust',
       description:
         language === 'es'
-          ? 'Construimos relaciones duraderas basadas en la honestidad y el respeto mutuo con cada cliente.'
-          : 'We build lasting relationships based on honesty and mutual respect with each client.',
+          ? 'Relaciones duraderas basadas en honestidad y respeto. Acompañamos de principio a fin.'
+          : 'Lasting relationships built on honesty and respect. We stay with you from start to finish.',
     },
     {
       icon: Shield,
       title: language === 'es' ? 'Transparencia' : 'Transparency',
       description:
         language === 'es'
-          ? 'Información clara y completa en cada transacción. Sin sorpresas, sin letra pequeña.'
-          : 'Clear and complete information in every transaction. No surprises, no fine print.',
+          ? 'Información clara en cada etapa. Sin letra pequeña, sin sorpresas.'
+          : 'Clear information at every stage. No fine print, no surprises.',
     },
     {
       icon: MapPin,
       title: language === 'es' ? 'Compromiso Local' : 'Local Commitment',
       description:
         language === 'es'
-          ? 'Orgullosos de ser parte de Oaxaca. Conocemos cada rincón de nuestra ciudad y su gente.'
-          : 'Proud to be part of Oaxaca. We know every corner of our city and its people.',
+          ? 'Somos de Oaxaca, conocemos sus barrios y buscamos que el crecimiento beneficie a la gente de aquí.'
+          : 'We are from Oaxaca, know its neighborhoods, and work to ensure growth benefits locals.',
+    },
+    {
+      icon: Users,
+      title: language === 'es' ? 'Innovación' : 'Innovation',
+      description:
+        language === 'es'
+          ? 'Usamos tecnología e IA para decisiones basadas en datos y procesos más claros.'
+          : 'We use technology and AI for data-driven decisions and clearer processes.',
+    },
+    {
+      icon: Heart,
+      title: language === 'es' ? 'Calidez' : 'Warmth',
+      description:
+        language === 'es'
+          ? 'Cada operación es un momento de vida. Cuidamos el trato cercano y humano.'
+          : 'Every transaction is a life moment. We keep the experience personal and human.',
     },
   ];
 
   const team = [
     {
-      name: 'Yolanda Ramírez',
-      position: language === 'es' ? 'Directora General' : 'General Director',
-      email: 'yolanda@yrinmobiliaria.com',
+      name: 'Yas Ruiz Vásquez',
+      position: language === 'es' ? 'Co-fundadora · Asesora inmobiliaria' : 'Co-founder · Real estate advisor',
+      email: 'contacto@yrinmobiliaria.com',
       bio:
         language === 'es'
-          ? 'Con más de 15 años de experiencia en el sector inmobiliario de Oaxaca, Yolanda fundó YR Inmobiliaria con la visión de crear un servicio personalizado y de confianza.'
-          : 'With over 15 years of experience in the Oaxaca real estate sector, Yolanda founded YR Real Estate with the vision of creating a personalized and trustworthy service.',
-      image: 'https://ui-avatars.com/api/?name=Yolanda+Ramirez&background=C85A3C&color=fff&size=200',
+          ? 'Yas es co-fundadora de YR Inmobiliaria y asesora en los Valles Centrales de Oaxaca desde 2019. Acompaña a familias e inversionistas con conocimiento local, seguimiento cercano y procesos claros.'
+          : 'Yas is co-founder of YR Inmobiliaria and an advisor in Oaxaca’s Central Valleys since 2019. She guides families and investors with local insight, close follow-up, and clear processes.',
+      image: 'https://ui-avatars.com/api/?name=Yas+Ruiz&background=C85A3C&color=fff&size=200',
     },
     {
-      name: 'Roberto Martínez',
-      position: language === 'es' ? 'Agente Senior' : 'Senior Agent',
-      email: 'roberto@yrinmobiliaria.com',
+      name: 'Carlo Spada Tello',
+      position: language === 'es' ? 'Co-fundador · Estrategia digital y datos' : 'Co-founder · Digital strategy & data',
+      email: 'carlo@yrinmobiliaria.com',
       bio:
         language === 'es'
-          ? 'Especialista en propiedades comerciales y residenciales de alto valor. Roberto conoce el mercado oaxaqueño como la palma de su mano.'
-          : 'Specialist in commercial and high-value residential properties. Roberto knows the Oaxaca market like the back of his hand.',
-      image: 'https://ui-avatars.com/api/?name=Roberto+Martinez&background=2D5E4F&color=fff&size=200',
-    },
-    {
-      name: 'Carmen López',
-      position: language === 'es' ? 'Agente Inmobiliario' : 'Real Estate Agent',
-      email: 'carmen@yrinmobiliaria.com',
-      bio:
-        language === 'es'
-          ? 'Experta en propiedades para familias y primeros compradores. Carmen se destaca por su paciencia y dedicación con cada cliente.'
-          : 'Expert in family properties and first-time buyers. Carmen stands out for her patience and dedication to each client.',
-      image: 'https://ui-avatars.com/api/?name=Carmen+Lopez&background=D4A574&color=fff&size=200',
-    },
-    {
-      name: 'Miguel Hernández',
-      position: language === 'es' ? 'Agente Inmobiliario' : 'Real Estate Agent',
-      email: 'miguel@yrinmobiliaria.com',
-      bio:
-        language === 'es'
-          ? 'Especializado en inversiones y propiedades para renta. Miguel ayuda a los inversionistas a maximizar el retorno de sus propiedades.'
-          : 'Specialized in investments and rental properties. Miguel helps investors maximize the return on their properties.',
-      image: 'https://ui-avatars.com/api/?name=Miguel+Hernandez&background=C85A3C&color=fff&size=200',
+          ? 'Carlo es co-fundador y responsable de la estrategia digital y de datos. Diseña procesos claros y confiables usando tecnología e IA para decisiones mejor fundamentadas.'
+          : 'Carlo is co-founder and leads digital and data strategy. He designs clearer, more reliable processes using technology and AI for better-grounded decisions.',
+      image: 'https://ui-avatars.com/api/?name=Carlo+Spada&background=2D5E4F&color=fff&size=200',
     },
   ];
 
   const benefits = [
     {
       icon: Award,
-      title: language === 'es' ? 'Experiencia en mercado oaxaqueño' : 'Experience in Oaxaca market',
+      title: language === 'es' ? 'Plataforma clara y moderna' : 'Clear, modern platform',
       description:
         language === 'es'
-          ? 'Más de 10 años asesorando en compra, venta y renta de propiedades en toda la región.'
-          : 'Over 10 years advising on buying, selling and renting properties throughout the region.',
+          ? 'Propiedades bien presentadas, información organizada y procesos digitales que ahorran tiempo.'
+          : 'Well-presented listings, organized info, and digital flows that save time.',
     },
     {
       icon: Users,
-      title: language === 'es' ? 'Atención personalizada' : 'Personalized attention',
+      title: language === 'es' ? 'Asesoría cercana y honesta' : 'Close, honest guidance',
       description:
         language === 'es'
-          ? 'Cada cliente es único. Adaptamos nuestro servicio a tus necesidades específicas.'
-          : 'Each client is unique. We adapt our service to your specific needs.',
+          ? 'Te acompañamos como si la operación fuera nuestra, compartiendo lo bueno y los matices.'
+          : 'We guide you as if it were our own deal, sharing the good and the tradeoffs.',
     },
     {
       icon: Building,
-      title: language === 'es' ? 'Base de datos amplia' : 'Extensive database',
+      title: language === 'es' ? 'Red de aliados profesionales' : 'Network of professionals',
       description:
         language === 'es'
-          ? 'Acceso a cientos de propiedades exclusivas en las mejores zonas de Oaxaca.'
-          : 'Access to hundreds of exclusive properties in the best areas of Oaxaca.',
+          ? 'Notarios, abogados y especialistas respaldan cada operación para seguridad jurídica.'
+          : 'Notaries, lawyers, and specialists back each transaction for legal certainty.',
     },
     {
       icon: FileCheck,
-      title: language === 'es' ? 'Acompañamiento legal' : 'Legal support',
+      title: language === 'es' ? 'Enfoque local, visión grande' : 'Local focus, big vision',
       description:
         language === 'es'
-          ? 'Te guiamos en todo el proceso legal y documentación necesaria para una transacción segura.'
-          : 'We guide you through the entire legal process and necessary documentation for a secure transaction.',
+          ? 'Nacimos en los Valles Centrales y queremos consolidarnos en todo Oaxaca y más allá.'
+          : 'Born in the Central Valleys, aiming to serve all of Oaxaca and beyond.',
     },
     {
       icon: Languages,
-      title: language === 'es' ? 'Servicio bilingüe' : 'Bilingual service',
+      title: language === 'es' ? 'Tecnología e IA a tu favor' : 'Tech & AI on your side',
       description:
         language === 'es'
-          ? 'Atendemos en español e inglés para mejor servicio a clientes nacionales e internacionales.'
-          : 'We serve in Spanish and English for better service to national and international clients.',
+          ? 'Búsqueda y análisis basados en datos e IA para opciones más acertadas.'
+          : 'Search and analysis powered by data and AI to surface better options.',
     },
   ];
 
@@ -179,19 +175,29 @@ export default function About() {
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>
                     {language === 'es'
-                      ? 'YR Inmobiliaria nació hace más de 10 años del sueño de una familia oaxaqueña apasionada por su tierra. Yolanda Ramírez, fundadora de la empresa, identificó la necesidad de un servicio inmobiliario que realmente entendiera las particularidades del mercado local y pusiera al cliente en el centro de cada transacción.'
-                      : 'YR Real Estate was born over 10 years ago from the dream of an Oaxacan family passionate about their land. Yolanda Ramírez, founder of the company, identified the need for a real estate service that truly understood the particularities of the local market and put the client at the center of every transaction.'}
+                      ? 'YR Inmobiliaria nació en diciembre de 2025, fundada por Yas Ruiz Vásquez y Carlo Spada Tello. Tras años colaborando con asesores, desarrolladores y familias en los Valles Centrales de Oaxaca, vimos una brecha: muchas personas buscando vender o comprar, pero pocas inmobiliarias usando datos y automatización para hacerlo más claro y confiable.'
+                      : 'YR Inmobiliaria was founded in December 2025 by Yas Ruiz Vásquez and Carlo Spada Tello. After years working with advisors, developers, and families in Oaxaca’s Central Valleys, we saw a gap: many people buying or selling, but few agencies using data and automation to make it clearer and more trustworthy.'}
                   </p>
                   <p>
                     {language === 'es'
-                      ? 'Desde entonces, hemos ayudado a cientos de familias a encontrar su hogar ideal, y a inversionistas a descubrir las mejores oportunidades en el mercado inmobiliario oaxaqueño. Nuestro conocimiento profundo de la ciudad, desde el Centro Histórico hasta las zonas residenciales emergentes, nos permite ofrecer un servicio personalizado y de alto valor.'
-                      : 'Since then, we have helped hundreds of families find their ideal home, and investors discover the best opportunities in the Oaxaca real estate market. Our deep knowledge of the city, from the Historic Center to emerging residential areas, allows us to offer personalized and high-value service.'}
+                      ? 'Así surge YR: una firma que combina cercanía humana con enfoque tecnológico, para transacciones transparentes y decisiones mejor fundamentadas.'
+                      : 'YR was born to blend human closeness with a tech-forward approach, delivering transparent transactions and better-grounded decisions.'}
                   </p>
                   <p>
                     {language === 'es'
-                      ? 'Hoy, YR Inmobiliaria se ha consolidado como una de las agencias más confiables de la región, manteniendo siempre nuestros valores fundacionales: honestidad, cercanía y compromiso con nuestra comunidad.'
-                      : 'Today, YR Real Estate has established itself as one of the most trusted agencies in the region, always maintaining our founding values: honesty, closeness and commitment to our community.'}
+                      ? 'Antes del lanzamiento oficial, el equipo ya había acompañado a decenas de familias y cientos de clientes en operaciones en los Valles Centrales. Hoy queremos consolidarnos en todo Oaxaca y, con el tiempo, llegar a más regiones de México.'
+                      : 'Even before launch, the team had guided dozens of families and hundreds of clients in the Central Valleys. Now we aim to serve all of Oaxaca and, over time, more regions of Mexico.'}
                   </p>
+                  <div className="rounded-xl border border-border bg-card/60 p-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      {language === 'es' ? 'Nuestra misión' : 'Our mission'}
+                    </h3>
+                    <p>
+                      {language === 'es'
+                        ? 'Ayudar a familias e inversionistas a tomar decisiones inmobiliarias seguras en Oaxaca, combinando confianza y transparencia con el uso inteligente de tecnología e inteligencia artificial.'
+                        : 'Help families and investors make safe real estate decisions in Oaxaca, combining trust and transparency with smart use of technology and AI.'}
+                    </p>
+                  </div>
                 </div>
               </div>
               <div className="relative">
