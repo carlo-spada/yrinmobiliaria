@@ -33,10 +33,10 @@ This means:
 ## 📊 PROJECT SNAPSHOT
 
 ### Current State
-- **Completion**: 97% - Production Ready 🚀
-- **Phase**: Mobile Optimization & Accessibility Sprint
-- **Last Major Update**: Nov 17, 2025 (Latest Lighthouse Analysis)
-- **Status**: SEO perfect (100/100), Desktop excellent (97/100), Mobile improving (80/100, LCP critical)
+- **Completion**: 98% - Production Ready 🚀
+- **Phase**: Image Pipeline & Map Refinement
+- **Last Major Update**: Nov 19, 2025 (Hero Image Optimization Complete)
+- **Status**: SEO perfect (100/100), Desktop excellent (97/100), Mobile LCP fix deployed (awaiting verification)
 
 ### Lighthouse Scores (Nov 17, 2025 - Updated)
 **Desktop:** Performance 97 ⭐ | Accessibility 83 ⚠️ | Best Practices 100 ✅ | SEO 100 ✅
@@ -64,19 +64,30 @@ This means:
 - ✅ Priority image loading for LCP optimization
 - ✅ Font optimization with preload hints
 
+**Phase 5 (Nov 19):**
+- ✅ **Hero Image Pipeline** - AVIF/WebP variants at 6 breakpoints (480-1920w)
+- ✅ **ResponsiveImage Component** - Supports variants + Supabase transform fallback
+- ✅ **HeroSection Optimized** - AVIF-first with proper srcset/preloads
+- ✅ **image_variants Migration** - JSONB column ready for property images
+- ✅ **Sharp Generation Script** - `node scripts/generate-hero-images.js`
+- ✅ **Edge Function Stub** - Ready for WASM/Transform API implementation
+- ✅ **IMAGE_PIPELINE_PROPOSAL.md** - Architecture decision documented
+
 ### Critical Next Steps
-1. **CRITICAL**: Mobile Performance Optimization (LCP 5.0s → <2.5s)
-   - Cache header configuration (803 KiB mobile / 1,025 KiB desktop) - Hosting config needed
-   - Responsive images for mobile (216 KiB mobile / 456 KiB desktop)
-   - Mobile hero image optimization
-   - Unused JavaScript (193 KiB)
+1. **HIGH**: Map Experience Fixes
+   - Fix invalid JSON path in bounds filter (`location->>coordinates->>lat`)
+   - Import cluster CSS (MarkerCluster.css, MarkerCluster.Default.css)
+   - Implement map decisions (bounds-synced list, location toggle)
 2. **HIGH**: Accessibility Improvements (83 → 95+)
    - Buttons without accessible names (icon buttons need aria-label)
    - Select elements without associated labels
    - ARIA input fields without accessible names
    - Contrast ratio fixes
-3. **Content**: Yas & Carlo sign up and add properties
-4. **Optional**: EmailJS configuration (forms work without it)
+3. **MEDIUM**: Edge Function Upload Pipeline
+   - Implement WASM-based optimization or Supabase Transform API
+   - Zero-friction property photo uploads
+4. **Content**: Yas & Carlo sign up and add properties
+5. **Verify**: Run Lighthouse to confirm LCP improvement (target <2.5s)
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind + shadcn/ui
