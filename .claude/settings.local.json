@@ -18,7 +18,12 @@
       "Bash(node scripts/generate-hero-images.js:*)",
       "WebSearch",
       "WebFetch(domain:docs.lovable.dev)",
-      "Bash(__NEW_LINE__ echo \"=== Checking price range consistency ===\" echo \"From priceSliderHelpers.ts:\" grep \"MIN_PRICE\\|MAX_PRICE\" /Users/carlo/Desktop/Projects/yrinmobiliaria/src/utils/priceSliderHelpers.ts)"
+      "Bash(__NEW_LINE__ echo \"=== Checking price range consistency ===\" echo \"From priceSliderHelpers.ts:\" grep \"MIN_PRICE\\|MAX_PRICE\" /Users/carlo/Desktop/Projects/yrinmobiliaria/src/utils/priceSliderHelpers.ts)",
+      "Bash(STRATEGIC_ROADMAP.md NEXT_STEPS.md CODE_AUDIT_NOV20.md CODE_QUALITY_REPORT.md )",
+      "Bash(ANIMATIONS_GUIDE.md CLIENT_GUIDE.md DEPLOYMENT.md HERO_IMAGE_OPTIMIZATION_GUIDE.md )",
+      "Bash(I18N_IMPLEMENTATION.md IMAGE_OPTIMIZATION.md IMAGE_PIPELINE_PROPOSAL.md )",
+      "Bash(IMPLEMENTED_FEATURES.md LOVABLE_CLOUD_GUIDE.md MIGRATION_GUIDE.md )",
+      "Bash(PERFORMANCE_OPTIMIZATION.md SUPABASE_SETUP.md)"
     ],
     "deny": [],
     "ask": []
