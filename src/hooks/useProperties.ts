@@ -76,10 +76,10 @@ export const useProperties = (filters?: PropertyFilters) => {
         if (filters?.bounds) {
           const buffer = 0.1; // Add 0.1 degree buffer to catch properties near edges
           query = query
-            .gte('location->>coordinates->>lat', (filters.bounds.minLat - buffer).toString())
-            .lte('location->>coordinates->>lat', (filters.bounds.maxLat + buffer).toString())
-            .gte('location->>coordinates->>lng', (filters.bounds.minLng - buffer).toString())
-            .lte('location->>coordinates->>lng', (filters.bounds.maxLng + buffer).toString());
+            .gte('location->coordinates->>lat', (filters.bounds.minLat - buffer).toString())
+            .lte('location->coordinates->>lat', (filters.bounds.maxLat + buffer).toString())
+            .gte('location->coordinates->>lng', (filters.bounds.minLng - buffer).toString())
+            .lte('location->coordinates->>lng', (filters.bounds.maxLng + buffer).toString());
         }
 
         // Execute query

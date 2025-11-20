@@ -4,6 +4,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "re
 import { Icon, LatLngBounds } from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./MapView.css";
 import { useLanguage } from "@/utils/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
@@ -251,14 +253,16 @@ export default function MapView() {
   };
 
   // Debounced bounds change handler
+  const debounceRef = useRef<number>();
   const handleBoundsChange = useCallback((bounds: LatLngBounds) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
     // Debounce to avoid excessive fetches during pan/zoom
-    const timer = setTimeout(() => {
+    debounceRef.current = window.setTimeout(() => {
       setMapBounds(bounds);
       console.warn(`[Map Diagnostics] Bounds changed - fetching properties in viewport`);
-    }, 500);
-    
-    return () => clearTimeout(timer);
+    }, 400);
   }, []);
 
   // Loading state
