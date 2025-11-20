@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail, Heart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelectorNew';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useLanguage } from '@/utils/LanguageContext';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const location = useLocation();
   const { count: favoritesCount } = useFavorites();
   const { getSetting } = useSiteSettings();
@@ -39,9 +39,9 @@ export function Header() {
   }, []);
 
   const propertyTypes = [
-    { label: t('propertyTypes.houses'), value: 'casa', icon: '🏠' },
-    { label: t('propertyTypes.apartments'), value: 'departamento', icon: '🏢' },
-    { label: t('propertyTypes.commercial'), value: 'local', icon: '🏪' },
+    { label: t.propertyTypes.houses, value: 'casa', icon: '🏠' },
+    { label: t.propertyTypes.apartments, value: 'departamento', icon: '🏢' },
+    { label: t.propertyTypes.commercial, value: 'local', icon: '🏪' },
   ];
 
   const zones = [
@@ -87,7 +87,7 @@ export function Header() {
                   : 'text-foreground hover:text-primary hover:bg-muted'
               )}
             >
-              {t('nav.home')}
+              {t.nav.home}
             </Link>
 
             {/* Properties Dropdown */}
@@ -95,13 +95,13 @@ export function Header() {
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="h-10 px-4">
-                    {t('nav.properties')}
+                    {t.nav.properties}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid gap-3 p-4 w-[400px] bg-background">
                       <div className="space-y-2">
                         <h4 className="text-sm font-semibold text-foreground">
-                          {t('propertyTypes.title')}
+                          {t.propertyTypes.title}
                         </h4>
                         <div className="grid gap-2">
                           {propertyTypes.map((type) => (
@@ -126,7 +126,7 @@ export function Header() {
                         className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors group"
                       >
                         <span className="text-sm font-medium text-foreground group-hover:text-primary">
-                          {t('propertyTypes.viewAll')}
+                          {t.propertyTypes.viewAll}
                         </span>
                         <ChevronDown className="h-4 w-4 rotate-[-90deg] text-muted-foreground group-hover:text-primary" />
                       </Link>
@@ -145,7 +145,7 @@ export function Header() {
                   : 'text-foreground hover:text-primary hover:bg-muted'
               )}
             >
-              {t('nav.map')}
+              {t.nav.map}
             </Link>
 
             <Link
@@ -157,7 +157,7 @@ export function Header() {
                   : 'text-foreground hover:text-primary hover:bg-muted'
               )}
             >
-              {t('nav.about')}
+              {t.nav.about}
             </Link>
 
             <Link
@@ -169,7 +169,7 @@ export function Header() {
                   : 'text-foreground hover:text-primary hover:bg-muted'
               )}
             >
-              {t('nav.contact')}
+              {t.nav.contact}
             </Link>
           </div>
 
@@ -181,7 +181,8 @@ export function Header() {
                 variant="ghost" 
                 size="icon" 
                 className="relative"
-                aria-label={`View favorites${favoritesCount > 0 ? ` (${favoritesCount} properties)` : ''}`}
+                aria-label={`${t.header.viewFavorites}${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
+                title={`${t.header.viewFavorites}${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
               >
                 <Heart 
                   className={cn(
@@ -191,7 +192,7 @@ export function Header() {
                   aria-hidden="true"
                 />
                 {favoritesCount > 0 && (
-                  <Badge 
+                  <Badge
                     className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                     variant="destructive"
                   >
@@ -206,7 +207,7 @@ export function Header() {
             <Link to="/agendar" className="hidden md:block">
               <Button size="sm" className="gap-2">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
-                {t('header.scheduleVisit')}
+                {t.header.scheduleVisit}
               </Button>
             </Link>
 
@@ -216,7 +217,8 @@ export function Header() {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  aria-label={isMobileMenuOpen ? t('nav.closeMenu', 'Close menu') : t('nav.openMenu', 'Open menu')}
+                  aria-label={isMobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
+                  title={isMobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
                 >
                   {isMobileMenuOpen ? (
                     <X className="h-6 w-6" aria-hidden="true" />
@@ -248,12 +250,12 @@ export function Header() {
                           : 'text-foreground hover:bg-muted'
                       )}
                     >
-                      {t('nav.home')}
+                      {t.nav.home}
                     </Link>
 
                     <div className="space-y-1">
                       <div className="px-4 py-2 text-sm font-semibold text-muted-foreground">
-                        {t('nav.properties')}
+                        {t.nav.properties}
                       </div>
                       {propertyTypes.map((type) => (
                         <Link
@@ -271,7 +273,7 @@ export function Header() {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 ml-4 text-sm rounded-lg hover:bg-muted transition-colors font-medium"
                       >
-                        {t('propertyTypes.viewAll')}
+                        {t.propertyTypes.viewAll}
                       </Link>
                     </div>
 
@@ -282,10 +284,10 @@ export function Header() {
                         'px-4 py-3 text-base font-medium rounded-lg transition-colors',
                         isActive('/mapa')
                           ? 'text-primary bg-primary/10'
-                          : 'text-foreground hover:bg-muted'
+                        : 'text-foreground hover:bg-muted'
                       )}
                     >
-                      {t('nav.map')}
+                      {t.nav.map}
                     </Link>
 
                     <Link
@@ -298,7 +300,7 @@ export function Header() {
                           : 'text-foreground hover:bg-muted'
                       )}
                     >
-                      {t('nav.about')}
+                      {t.nav.about}
                     </Link>
 
                     <Link
@@ -311,7 +313,7 @@ export function Header() {
                           : 'text-foreground hover:bg-muted'
                       )}
                     >
-                      {t('nav.contact')}
+                      {t.nav.contact}
                     </Link>
                   </div>
 
@@ -321,7 +323,7 @@ export function Header() {
                   <Link to="/agendar" onClick={() => setIsMobileMenuOpen(false)}>
                     <Button className="w-full gap-2">
                       <Calendar className="h-4 w-4" />
-                      {t('header.scheduleVisit')}
+                      {t.header.scheduleVisit}
                     </Button>
                   </Link>
 
@@ -330,7 +332,7 @@ export function Header() {
                   {/* Contact Info */}
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold text-foreground">
-                      {t('footer.contact')}
+                      {t.footer.contact}
                     </h4>
                     <div className="space-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">

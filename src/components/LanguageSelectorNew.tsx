@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,17 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useLanguage } from '@/utils/LanguageContext';
 
 export function LanguageSelector() {
-  const { i18n } = useTranslation();
-
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-  };
-  
-  const ariaLabel = i18n.language === 'es' 
-    ? 'Cambiar idioma' 
-    : 'Change language';
+  const { language, setLanguage, t } = useLanguage();
 
   return (
     <DropdownMenu>
@@ -26,23 +18,23 @@ export function LanguageSelector() {
           variant="ghost" 
           size="icon" 
           className="text-foreground"
-          aria-label={ariaLabel}
-          title={ariaLabel}
+          aria-label={t.header.changeLanguage}
+          title={t.header.changeLanguage}
         >
-          <Globe className="h-5 w-5" />
+          <Globe className="h-5 w-5" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => changeLanguage('es')}
-          className={i18n.language === 'es' ? 'bg-muted' : ''}
+          onClick={() => setLanguage('es')}
+          className={language === 'es' ? 'bg-muted' : ''}
         >
           <span className="mr-2">🇲🇽</span>
           Español
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => changeLanguage('en')}
-          className={i18n.language === 'en' ? 'bg-muted' : ''}
+          onClick={() => setLanguage('en')}
+          className={language === 'en' ? 'bg-muted' : ''}
         >
           <span className="mr-2">🇺🇸</span>
           English
