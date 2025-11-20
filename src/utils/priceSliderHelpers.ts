@@ -1,10 +1,10 @@
 /**
  * Non-linear price slider helpers for wide MXN ranges.
- * UI range: slider 0–100 maps to prices 0–100,000,000 MXN.
+ * UI range: slider 0–100 maps to prices 1,000–100,000,000 MXN.
  * Pure log curve for smooth progression: small steps at the low end, large at the high end.
  */
 
-const MIN_PRICE = 100; // logical minimum for log scale
+const MIN_PRICE = 1000; // logical minimum for log scale and slider start
 const MAX_PRICE = 100000000; // 100M MXN
 
 /**
@@ -12,7 +12,7 @@ const MAX_PRICE = 100000000; // 100M MXN
  */
 export const toLogPrice = (sliderValue: number): number => {
   const pos = Math.max(0, Math.min(100, sliderValue));
-  if (pos === 0) return 0;
+  if (pos === 0) return MIN_PRICE;
   const ratio = pos / 100; // 0..1
   const price = MIN_PRICE * Math.pow(MAX_PRICE / MIN_PRICE, ratio);
   // Round to nearest 1k for cleaner values
