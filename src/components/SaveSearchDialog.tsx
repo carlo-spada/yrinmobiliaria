@@ -15,14 +15,14 @@ import { Label } from '@/components/ui/label';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { PropertyFilters } from '@/types/property';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/utils/LanguageContext';
 
 interface SaveSearchDialogProps {
   filters: PropertyFilters;
 }
 
 export function SaveSearchDialog({ filters }: SaveSearchDialogProps) {
-  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { saveSearch } = useSavedSearches();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -31,8 +31,8 @@ export function SaveSearchDialog({ filters }: SaveSearchDialogProps) {
   const handleSave = () => {
     if (!searchName.trim()) {
       toast({
-        title: t('savedSearches.errorTitle', 'Error'),
-        description: t('savedSearches.errorName', 'Debes ingresar un nombre para la búsqueda'),
+        title: language === 'es' ? 'Error' : 'Error',
+        description: language === 'es' ? 'Debes ingresar un nombre para la búsqueda' : 'You must enter a name for the search',
         variant: 'destructive',
       });
       return;
@@ -41,8 +41,8 @@ export function SaveSearchDialog({ filters }: SaveSearchDialogProps) {
     saveSearch(searchName.trim(), filters);
     
     toast({
-      title: t('savedSearches.saved', 'Búsqueda guardada'),
-      description: t('savedSearches.savedDesc', 'Puedes acceder a ella desde tu lista de búsquedas guardadas'),
+      title: language === 'es' ? 'Búsqueda guardada' : 'Search saved',
+      description: language === 'es' ? 'Puedes acceder a ella desde tu lista de búsquedas guardadas' : 'You can access it from your saved searches list',
     });
 
     setSearchName('');
@@ -54,24 +54,26 @@ export function SaveSearchDialog({ filters }: SaveSearchDialogProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Save className="mr-2 h-4 w-4" />
-          {t('savedSearches.save', 'Guardar búsqueda')}
+          {language === 'es' ? 'Guardar búsqueda' : 'Save search'}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('savedSearches.saveTitle', 'Guardar búsqueda')}</DialogTitle>
+          <DialogTitle>{language === 'es' ? 'Guardar búsqueda' : 'Save search'}</DialogTitle>
           <DialogDescription>
-            {t('savedSearches.saveDesc', 'Dale un nombre a esta búsqueda para acceder rápidamente a ella en el futuro.')}
+            {language === 'es' 
+              ? 'Dale un nombre a esta búsqueda para acceder rápidamente a ella en el futuro.'
+              : 'Give this search a name to quickly access it in the future.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="search-name">
-              {t('savedSearches.nameLabel', 'Nombre de la búsqueda')}
+              {language === 'es' ? 'Nombre de la búsqueda' : 'Search name'}
             </Label>
             <Input
               id="search-name"
-              placeholder={t('savedSearches.namePlaceholder', 'Ej: Casas en Centro Histórico')}
+              placeholder={language === 'es' ? 'Ej: Casas en Centro Histórico' : 'Ex: Houses in Historic Center'}
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
@@ -80,10 +82,10 @@ export function SaveSearchDialog({ filters }: SaveSearchDialogProps) {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            {t('common.cancel', 'Cancelar')}
+            {language === 'es' ? 'Cancelar' : 'Cancel'}
           </Button>
           <Button onClick={handleSave}>
-            {t('savedSearches.save', 'Guardar búsqueda')}
+            {language === 'es' ? 'Guardar búsqueda' : 'Save search'}
           </Button>
         </DialogFooter>
       </DialogContent>
