@@ -143,13 +143,13 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
                 id={`type-${type}`}
                 checked={localFilters.type === type}
                 onCheckedChange={() => handleTypeToggle(type)}
-                aria-label={`Filter by ${type}`}
+                aria-label={`${t.properties.filters} ${t.properties.types[type]}`}
               />
               <label
                 htmlFor={`type-${type}`}
-                className="text-sm text-foreground cursor-pointer capitalize"
+                className="text-sm text-foreground cursor-pointer"
               >
-                {type}
+                {t.properties.types[type]}
               </label>
             </div>
           ))}
@@ -173,13 +173,13 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
                 checked={localFilters.operation === operation}
                 onChange={() => handleOperationChange(operation)}
                 className="w-4 h-4 text-primary"
-                aria-label={`Filter by ${operation}`}
+                aria-label={`${t.properties.filters} ${t.properties.operations[operation]}`}
               />
               <label
                 htmlFor={`operation-${operation}`}
-                className="text-sm text-foreground cursor-pointer capitalize"
+                className="text-sm text-foreground cursor-pointer"
               >
-                {operation}
+                {t.properties.operations[operation]}
               </label>
             </div>
           ))}

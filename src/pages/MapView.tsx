@@ -454,8 +454,9 @@ export default function MapView() {
               onClick={handleResetView}
               className="hidden md:flex"
               title={language === "es" ? "Centrar vista" : "Reset view"}
+              aria-label={language === "es" ? "Centrar vista en el mapa" : "Reset map view"}
             >
-              <Maximize2 className="h-4 w-4 mr-2" />
+              <Maximize2 className="h-4 w-4 mr-2" aria-hidden="true" />
               {language === "es" ? "Centrar" : "Reset"}
             </Button>
             <Button
@@ -464,8 +465,9 @@ export default function MapView() {
               onClick={handleUseMyLocation}
               className="hidden md:flex"
               title={language === "es" ? "Usar mi ubicación" : "Use my location"}
+              aria-label={language === "es" ? "Usar mi ubicación actual" : "Use my current location"}
             >
-              <Navigation className="h-4 w-4 mr-2" />
+              <Navigation className="h-4 w-4 mr-2" aria-hidden="true" />
               {language === "es" ? "Mi ubicación" : "My location"}
             </Button>
             <Button
@@ -473,8 +475,9 @@ export default function MapView() {
               size="sm"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="lg:hidden"
+              aria-label={isSidebarOpen ? (language === "es" ? "Cerrar lista de propiedades" : "Close property list") : (language === "es" ? "Abrir lista de propiedades" : "Open property list")}
             >
-              {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {isSidebarOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
             </Button>
           </div>
         </div>

@@ -380,22 +380,37 @@ export default function PropertyDetail() {
               </div>
             </div>
 
-            {/* Map Placeholder */}
+            {/* Map with Coordinates */}
             <div>
               <h2 className="text-xl font-semibold mb-3">
                 {language === "es" ? "Ubicación" : "Location"}
               </h2>
-              <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-12 w-12 text-primary mx-auto mb-2" />
-                  <p className="text-muted-foreground">{property.location.zone}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {language === "es"
-                      ? "Ubicación aproximada por privacidad"
-                      : "Approximate location for privacy"}
-                  </p>
+              {property.location.coordinates && 
+               property.location.coordinates.lat !== 0 && 
+               property.location.coordinates.lng !== 0 ? (
+                <div className="h-[300px] bg-muted rounded-lg relative overflow-hidden">
+                  <iframe
+                    title={language === "es" ? "Mapa de ubicación de la propiedad" : "Property location map"}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${property.location.coordinates.lng - 0.01},${property.location.coordinates.lat - 0.01},${property.location.coordinates.lng + 0.01},${property.location.coordinates.lat + 0.01}&layer=mapnik&marker=${property.location.coordinates.lat},${property.location.coordinates.lng}`}
+                    width="100%"
+                    height="100%"
+                    className="border-0"
+                    loading="lazy"
+                  />
                 </div>
-              </div>
+              ) : (
+                <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="h-12 w-12 text-primary mx-auto mb-2" />
+                    <p className="text-muted-foreground">{property.location.zone}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {language === "es"
+                        ? "Ubicación aproximada por privacidad"
+                        : "Approximate location for privacy"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

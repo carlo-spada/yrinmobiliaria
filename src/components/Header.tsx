@@ -230,7 +230,7 @@ export function Header() {
                     <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                       <span className="text-xl font-bold text-primary-foreground">YR</span>
                     </div>
-                    <span className="text-lg font-semibold">Inmobiliaria</span>
+                    <span className="text-lg font-semibold">{companyName}</span>
                   </SheetTitle>
                 </SheetHeader>
 
