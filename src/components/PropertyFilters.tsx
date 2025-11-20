@@ -194,21 +194,24 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
           {t.properties?.zone || 'Zona'}
         </Label>
         <div className="space-y-2">
-          {zones.map((zone) => (
-            <div key={zone} className="flex items-center space-x-2">
-              <Checkbox
-                id={`zone-${zone}`}
-                checked={localFilters.zone === zone}
-                onCheckedChange={() => handleZoneChange(zone)}
-              />
-              <label
-                htmlFor={`zone-${zone}`}
-                className="text-sm text-foreground cursor-pointer"
-              >
-                {zone}
-              </label>
-            </div>
-          ))}
+          {zonesData.map((zone) => {
+            const zoneName = language === 'es' ? zone.name_es : zone.name_en;
+            return (
+              <div key={zone.name_es} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`zone-${zone.name_es}`}
+                  checked={localFilters.zone === zone.name_es}
+                  onCheckedChange={() => handleZoneChange(zone.name_es)}
+                />
+                <label
+                  htmlFor={`zone-${zone.name_es}`}
+                  className="text-sm text-foreground cursor-pointer"
+                >
+                  {zoneName}
+                </label>
+              </div>
+            );
+          })}
         </div>
       </div>
 
