@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Share2, Facebook, Twitter, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/utils/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ interface ShareButtonsProps {
 }
 
 export function ShareButtons({ url, title, description, variant = 'default' }: ShareButtonsProps) {
-  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
@@ -37,7 +37,9 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
   };
 
   if (!isValidUrl(shareUrl)) {
-    console.error('Invalid URL format for sharing');
+    if (import.meta.env.DEV) {
+      console.error('Invalid URL format for sharing');
+    }
     return null;
   }
 
@@ -46,8 +48,8 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast({
-        title: t('share.linkCopied', 'Enlace copiado'),
-        description: t('share.linkCopiedDesc', 'El enlace se copió al portapapeles'),
+        title: language === 'es' ? 'Enlace copiado' : 'Link copied',
+        description: language === 'es' ? 'El enlace se copió al portapapeles' : 'The link was copied to clipboard',
       });
       
       setTimeout(() => setCopied(false), 2000);
@@ -62,8 +64,8 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
       }
     } catch (error) {
       toast({
-        title: t('share.error', 'Error'),
-        description: t('share.errorDesc', 'No se pudo copiar el enlace'),
+        title: language === 'es' ? 'Error' : 'Error',
+        description: language === 'es' ? 'No se pudo copiar el enlace' : 'Could not copy link',
         variant: 'destructive',
       });
     }
@@ -122,7 +124,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
   };
 
   if (variant === 'icon') {
-    const shareLabel = t('share.share', 'Compartir');
+    const shareLabel = language === 'es' ? 'Compartir' : 'Share';
     
     return (
       <DropdownMenu>
@@ -141,12 +143,12 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
             {copied ? (
               <>
                 <Check className="mr-2 h-4 w-4 text-green-600" />
-                {t('share.copied', 'Copiado')}
+                {language === 'es' ? 'Copiado' : 'Copied'}
               </>
             ) : (
               <>
                 <Copy className="mr-2 h-4 w-4" />
-                {t('share.copyLink', 'Copiar enlace')}
+                {language === 'es' ? 'Copiar enlace' : 'Copy link'}
               </>
             )}
           </DropdownMenuItem>
@@ -161,7 +163,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
           {navigator.share && (
             <DropdownMenuItem onClick={handleNativeShare}>
               <Share2 className="mr-2 h-4 w-4" />
-              {t('share.more', 'Más opciones')}
+              {language === 'es' ? 'Más opciones' : 'More options'}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -175,28 +177,28 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
         {copied ? (
           <>
             <Check className="mr-2 h-4 w-4" />
-            {t('share.copied', 'Copiado')}
+            {language === 'es' ? 'Copiado' : 'Copied'}
           </>
         ) : (
           <>
             <Copy className="mr-2 h-4 w-4" />
-            {t('share.copyLink', 'Copiar enlace')}
+            {language === 'es' ? 'Copiar enlace' : 'Copy link'}
           </>
         )}
       </Button>
       <Button 
         variant="outline" 
         onClick={handleShareFacebook} 
-        aria-label={t('share.facebook', 'Compartir en Facebook')} 
-        title={t('share.facebook', 'Compartir en Facebook')}
+        aria-label={language === 'es' ? 'Compartir en Facebook' : 'Share on Facebook'} 
+        title={language === 'es' ? 'Compartir en Facebook' : 'Share on Facebook'}
       >
         <Facebook className="h-4 w-4" />
       </Button>
       <Button 
         variant="outline" 
         onClick={handleShareTwitter} 
-        aria-label={t('share.twitter', 'Compartir en Twitter')} 
-        title={t('share.twitter', 'Compartir en Twitter')}
+        aria-label={language === 'es' ? 'Compartir en Twitter' : 'Share on Twitter'} 
+        title={language === 'es' ? 'Compartir en Twitter' : 'Share on Twitter'}
       >
         <Twitter className="h-4 w-4" />
       </Button>
@@ -204,8 +206,8 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
         <Button 
           variant="outline" 
           onClick={handleNativeShare} 
-          aria-label={t('share.more', 'Más opciones')} 
-          title={t('share.more', 'Más opciones')}
+          aria-label={language === 'es' ? 'Más opciones' : 'More options'} 
+          title={language === 'es' ? 'Más opciones' : 'More options'}
         >
           <Share2 className="h-4 w-4" />
         </Button>

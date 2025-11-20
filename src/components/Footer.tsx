@@ -26,9 +26,9 @@ export function Footer() {
     { label: t.nav?.contact || 'Contacto', href: '/contacto' },
   ];
 
-  // Fetch zones from database
+  // Fetch zones from database with consistent cache key
   const { data: zonesData = [] } = useQuery({
-    queryKey: ['service-zones-footer'],
+    queryKey: ['service-zones'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('service_zones')

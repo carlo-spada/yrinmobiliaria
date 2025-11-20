@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/utils/LanguageContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface WhatsAppButtonProps {
@@ -9,16 +9,21 @@ interface WhatsAppButtonProps {
 }
 
 export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
-  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { getSetting } = useSiteSettings();
   
-  const defaultMessage = t('whatsapp.defaultMessage', 'Hola, me interesa una propiedad de YR Inmobiliaria');
+  const defaultMessage = language === 'es' 
+    ? 'Hola, me interesa una propiedad de YR Inmobiliaria' 
+    : 'Hello, I am interested in a property from YR Real Estate';
+  
   // Use dynamic setting with fallback to env var only
   const phoneNumber = getSetting('whatsapp_number') || import.meta.env.VITE_WHATSAPP_NUMBER;
   
   // Don't render if no phone number configured
   if (!phoneNumber) {
-    console.warn('WhatsApp phone number not configured');
+    if (import.meta.env.DEV) {
+      console.warn('WhatsApp phone number not configured');
+    }
     return null;
   }
   
@@ -27,7 +32,9 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
     
     // Validate message length for security
     if (finalMessage.length > 500) {
-      console.warn('WhatsApp message exceeds maximum length');
+      if (import.meta.env.DEV) {
+        console.warn('WhatsApp message exceeds maximum length');
+      }
       return;
     }
     
@@ -35,6 +42,8 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
+
+  const buttonLabel = language === 'es' ? 'Contáctanos por WhatsApp' : 'Contact us via WhatsApp';
 
   return (
     <motion.button
@@ -45,8 +54,8 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 1, duration: 0.3 }}
-      aria-label={t('whatsapp.buttonLabel', 'Contact us via WhatsApp')}
-      title={t('whatsapp.buttonLabel', 'Contact us via WhatsApp')}
+      aria-label={buttonLabel}
+      title={buttonLabel}
     >
       <MessageCircle className="h-6 w-6" aria-hidden="true" />
       
