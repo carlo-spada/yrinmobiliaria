@@ -12,15 +12,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://ewsltpqbhbohuaonwflp.supabase.co">
     
-    <!-- Preload critical hero images for LCP optimization - AVIF preferred -->
-    <link rel="preload" as="image" href="/hero-mobile-480.avif" media="(max-width: 640px)" imagesrcset="/hero-mobile-480.avif 480w, /hero-mobile-640.avif 640w" imagesizes="100vw" type="image/avif" />
-    <link rel="preload" as="image" href="/hero-tablet-768.avif" media="(min-width: 641px) and (max-width: 1024px)" imagesrcset="/hero-tablet-768.avif 768w, /hero-tablet-1024.avif 1024w" imagesizes="100vw" type="image/avif" />
-    <link rel="preload" as="image" href="/hero-desktop-1280.avif" media="(min-width: 1025px)" imagesrcset="/hero-desktop-1280.avif 1280w, /hero-desktop-1920.avif 1920w" imagesizes="100vw" type="image/avif" />
-    
-    <!-- WebP fallback preloads for browsers without AVIF support -->
-    <link rel="preload" as="image" href="/hero-mobile-480.webp" media="(max-width: 640px)" imagesrcset="/hero-mobile-480.webp 480w, /hero-mobile-640.webp 640w" imagesizes="100vw" type="image/webp" />
-    <link rel="preload" as="image" href="/hero-tablet-768.webp" media="(min-width: 641px) and (max-width: 1024px)" imagesrcset="/hero-tablet-768.webp 768w, /hero-tablet-1024.webp 1024w" imagesizes="100vw" type="image/webp" />
-    <link rel="preload" as="image" href="/hero-desktop-1280.webp" media="(min-width: 1025px)" imagesrcset="/hero-desktop-1280.webp 1280w, /hero-desktop-1920.webp 1920w" imagesizes="100vw" type="image/webp" />
+    <!-- Preload critical hero images for LCP optimization -->
+    <link rel="preload" as="image" href="/hero-mobile.webp" media="(max-width: 640px)" type="image/webp" />
+    <link rel="preload" as="image" href="/hero-tablet.webp" media="(min-width: 641px) and (max-width: 1024px)" type="image/webp" />
+    <link rel="preload" as="image" href="/hero-desktop.webp" media="(min-width: 1025px)" type="image/webp" />
     
     <!-- Load fonts asynchronously to prevent render blocking -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
