@@ -30,14 +30,10 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: 'assets/[name].[hash].js',
       },
     },
-    // Minification and optimization
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs in production
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.debug'],
-      },
+    // Minification and optimization with esbuild (faster than terser)
+    minify: 'esbuild',
+    esbuild: {
+      drop: ['console', 'debugger'], // Remove console.logs and debuggers in production
     },
     // Set chunk size warning limit
     chunkSizeWarningLimit: 600,
