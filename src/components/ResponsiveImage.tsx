@@ -36,19 +36,26 @@ export function ResponsiveImage({
    * - Multiple widths: 480, 768, 1080, 1440
    * - WebP format for better compression
    * - Quality: 75 for optimal balance
-   * - Uses resize=fit to avoid requiring explicit height
+   * - Uses resize=cover with calculated height for proper aspect ratio
+   * - Assumes 4:3 aspect ratio for property images (standard for listings)
    */
   const generateSupabaseSrcset = (url: string): string => {
     if (!isSupabase) return '';
     
     const widths = [480, 768, 1080, 1440];
+    const aspectRatio = 4 / 3; // Standard property image aspect ratio
     
     const srcsetParts = widths.map(width => {
+      const height = Math.round(width / aspectRatio);
       const supabaseUrl = new URL(url);
+      
+      // Preserve existing query params by only setting/overwriting transform params
       supabaseUrl.searchParams.set('width', width.toString());
+      supabaseUrl.searchParams.set('height', height.toString());
       supabaseUrl.searchParams.set('format', 'webp');
       supabaseUrl.searchParams.set('quality', '75');
-      supabaseUrl.searchParams.set('resize', 'fit');
+      supabaseUrl.searchParams.set('resize', 'cover');
+      
       return `${supabaseUrl.toString()} ${width}w`;
     });
     
