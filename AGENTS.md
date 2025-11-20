@@ -1,11 +1,24 @@
 # Repository Guidelines
 
+> **Primary Reference**: See `CLAUDE.md` for complete project philosophy, workflow, and Lovable prompt engineering guidelines.
+
+## Critical Constraint: Lovable-First Development
+
+This project uses **Lovable Cloud** with managed Supabase. All code changes must go through Lovable prompts.
+
+- ❌ Do NOT edit code directly in this repo
+- ❌ Do NOT create `supabase/migrations/` or `supabase/functions/`
+- ❌ Do NOT use react-leaflet v5.x (requires React 19)
+- ✅ DO coordinate with Claude Code for prompt drafting
+- ✅ DO use react-leaflet 4.x (compatible with React 18)
+- ✅ DO use `--legacy-peer-deps` flag if npm install fails
+
 ## Project Structure & Modules
 - Frontend: `src/` (React 18 + TypeScript, Vite). Key areas: `components/`, `pages/`, `hooks/`, `utils/`, `integrations/`.
-- Assets: Optimized hero images live in `/public` (AVIF/WebP). Other public assets also live here.
+- Assets: Optimized hero images in `/public` (AVIF/WebP). Generate with `node scripts/generate-hero-images.js`.
 - Styling/config: `tailwind.config.ts`, `postcss.config.js`.
-- Routing & maps: `src/pages/MapView.tsx` uses React Leaflet + clustering.
-- Docs: project guides and optimization notes in the repo root.
+- Maps: `src/pages/MapView.tsx` uses React Leaflet 4.x + optional clustering.
+- Docs: `CLAUDE.md` (primary), `AUDIT.md` (status), guides in repo root.
 
 ## Build, Test, and Development
 - Install deps: `npm install`.
@@ -16,8 +29,9 @@
 
 ## Coding Style & Naming
 - TypeScript strict; avoid `any`.
- - Components/hooks in `PascalCase.tsx` / `camelCase.ts`.
-- Use existing utilities: `ResponsiveImage` for images; `LanguageContext` for i18n strings.
+- Components/hooks in `PascalCase.tsx` / `camelCase.ts`.
+- **Bilingual required**: All UI text must support ES/EN via `LanguageContext`. No hardcoded strings.
+- Use existing utilities: `ResponsiveImage` for images; `LanguageContext` for i18n.
 - JSX: prefer functional components; keep props typed.
 - Assets: use pre-optimized AVIF/WebP in `/public`; do not reintroduce large unoptimized files.
 
@@ -31,9 +45,16 @@
 - PRs should include: summary of changes, impact on build/perf, and manual checks performed (e.g., `/mapa` render, hero LCP-sensitive areas).
 
 ## Architecture Notes (Agents)
-- Backend/Supabase is managed via Lovable Cloud; do **not** add migrations or edge functions here—request changes through Lovable prompts.
-- Map page: keep React Leaflet versions compatible with React 18; clustering optional when property count is small.
-- Image pipeline: use `ResponsiveImage` with `imageVariants` when available; fallback to Supabase transform is acceptable. Keep hero `<picture>` AVIF-first.
+- **Backend**: Managed via Lovable Cloud. Do NOT add migrations or edge functions—request through Lovable prompts.
+- **Map page**:
+  - Use react-leaflet 4.x (NOT 5.x which requires React 19)
+  - Client-side filtering only (do NOT add server-side bounds filtering)
+  - Clustering optional for small datasets (≤20 properties)
+- **Image pipeline**:
+  - Use `ResponsiveImage` with `imageVariants` when available
+  - Supabase transform API as fallback
+  - Hero uses `<picture>` with AVIF-first srcset
+- **Current phase**: Map UX polish, then Oaxaca coordinate validation (bounds: lat 15.6-18.7, lng -98.6 to -93.8)
 
 ## Security & Configuration
 - Do not commit secrets. Environment/config is managed in Lovable Cloud.
