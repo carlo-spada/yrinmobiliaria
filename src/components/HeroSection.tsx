@@ -5,13 +5,17 @@ import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useServiceZones } from '@/hooks/useServiceZones';
 
 export function HeroSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const [priceRange, setPriceRange] = useState([0]);
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [selectedType, setSelectedType] = useState('all');
   const [selectedZone, setSelectedZone] = useState('all');
+
+  // Fetch zones from database
+  const { data: zonesData = [] } = useServiceZones();
 
   const propertyTypes = [
     { value: 'all', label: t.hero.allTypes },
@@ -23,10 +27,10 @@ export function HeroSection() {
 
   const zones = [
     { value: 'all', label: t.hero.allZones },
-    { value: 'Centro Histórico', label: 'Centro Histórico' },
-    { value: 'Reforma San Felipe', label: 'Reforma San Felipe' },
-    { value: 'Zona Norte', label: 'Zona Norte' },
-    { value: 'Valles Centrales', label: 'Valles Centrales' },
+    ...zonesData.map(zone => ({
+      value: zone.name_es,
+      label: language === 'es' ? zone.name_es : zone.name_en,
+    })),
   ];
 
   const handleSearch = () => {
@@ -41,7 +45,11 @@ export function HeroSection() {
     }
     
     if (priceRange[0] > 0) {
-      params.set('maxPrice', (priceRange[0] * 100000).toString());
+      params.set('minPrice', priceRange[0].toString());
+    }
+    
+    if (priceRange[1] < 10000000) {
+      params.set('maxPrice', priceRange[1].toString());
     }
     
     navigate(`/propiedades?${params.toString()}`);
@@ -53,7 +61,7 @@ export function HeroSection() {
       currency: 'MXN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value * 100000);
+    }).format(value);
   };
 
   return (

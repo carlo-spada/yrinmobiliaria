@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +27,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Copy,
+  Check,
 } from "lucide-react";
+
+const PropertyMiniMap = lazy(() => import('@/components/PropertyMiniMap').then(m => ({ default: m.PropertyMiniMap })));
 
 // UUID validation helper
 const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -50,6 +54,7 @@ export default function PropertyDetail() {
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -101,9 +106,12 @@ export default function PropertyDetail() {
     { name: property.title[language], url: propertyUrl },
   ];
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast({
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({
       title: language === "es" ? "Enlace copiado" : "Link copied",
       description: language === "es" ? "El enlace ha sido copiado al portapapeles" : "The link has been copied to clipboard",
     });
@@ -380,22 +388,32 @@ export default function PropertyDetail() {
               </div>
             </div>
 
-            {/* Map Placeholder */}
+            {/* Map */}
             <div>
               <h2 className="text-xl font-semibold mb-3">
                 {language === "es" ? "Ubicación" : "Location"}
               </h2>
-              <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-12 w-12 text-primary mx-auto mb-2" />
-                  <p className="text-muted-foreground">{property.location.zone}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {language === "es"
-                      ? "Ubicación aproximada por privacidad"
-                      : "Approximate location for privacy"}
-                  </p>
+              <Suspense fallback={
+                <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="h-12 w-12 text-primary mx-auto mb-2 animate-pulse" />
+                    <p className="text-muted-foreground">
+                      {language === "es" ? "Cargando mapa..." : "Loading map..."}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              }>
+                <PropertyMiniMap
+                  lat={property.location.coordinates.lat}
+                  lng={property.location.coordinates.lng}
+                  zone={property.location.zone}
+                />
+              </Suspense>
+              <p className="text-sm text-muted-foreground mt-2">
+                {language === "es"
+                  ? "Ubicación aproximada por privacidad"
+                  : "Approximate location for privacy"}
+              </p>
             </div>
           </div>
 
