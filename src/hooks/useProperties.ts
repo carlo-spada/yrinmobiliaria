@@ -73,9 +73,6 @@ export const useProperties = (filters?: PropertyFilters) => {
           query = query.lte('price', filters.maxPrice);
         }
 
-        // Note: Bounds filtering is done client-side in MapView for reliability
-        // Server-side filtering removed due to JSON path syntax issues
-
         // Execute query
         const { data, error } = await query;
 
