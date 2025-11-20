@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "re
 import { Icon, LatLngBounds } from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
+import "react-leaflet-cluster/dist/styles.min.css";
 import "./MapView.css";
 import { useLanguage } from "@/utils/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
@@ -54,18 +55,28 @@ const createCustomIcon = (type: PropertyType, selected: boolean = false) => {
   });
 };
 
-// Helper to check if coordinates are valid
+// Helper to check if coordinates are valid (with string coercion)
 const isValidCoordinate = (lat: any, lng: any): boolean => {
+  // Coerce strings to numbers
+  const numLat = typeof lat === "string" ? parseFloat(lat) : lat;
+  const numLng = typeof lng === "string" ? parseFloat(lng) : lng;
+  
   return (
-    typeof lat === "number" &&
-    typeof lng === "number" &&
-    isFinite(lat) &&
-    isFinite(lng) &&
-    lat >= -90 &&
-    lat <= 90 &&
-    lng >= -180 &&
-    lng <= 180
+    typeof numLat === "number" &&
+    typeof numLng === "number" &&
+    isFinite(numLat) &&
+    isFinite(numLng) &&
+    numLat >= -90 &&
+    numLat <= 90 &&
+    numLng >= -180 &&
+    numLng <= 180
   );
+};
+
+// Normalize coordinates to numbers
+const normalizeCoord = (value: any): number | null => {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  return typeof num === "number" && isFinite(num) ? num : null;
 };
 
 // Component to handle map bounds changes
@@ -121,12 +132,24 @@ export default function MapView() {
   const urlMaxPrice = searchParams.get("maxPrice") || "10000000";
   const urlPropertyId = searchParams.get("propertyId");
 
-  const { data: allProperties = [], isLoading, error } = useProperties({ featured: false });
+  const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
+  
+  // Bounds-aware property fetching with debounce
+  const boundsFilter = mapBounds ? {
+    minLat: mapBounds.getSouth(),
+    maxLat: mapBounds.getNorth(),
+    minLng: mapBounds.getWest(),
+    maxLng: mapBounds.getEast(),
+  } : undefined;
+
+  const { data: allProperties = [], isLoading, error } = useProperties({ 
+    featured: false,
+    bounds: boundsFilter,
+  });
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(urlPropertyId);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
-  const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   // Filters
@@ -151,6 +174,14 @@ export default function MapView() {
       p.location?.coordinates &&
       isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
   );
+
+  // Diagnostics: Log property counts
+  useEffect(() => {
+    console.warn(`[Map Diagnostics] Total properties: ${allProperties.length}, Valid coords: ${validProperties.length}, Filtered: ${filteredProperties.length}`);
+    if (allProperties.length > validProperties.length) {
+      console.warn(`[Map Diagnostics] ${allProperties.length - validProperties.length} properties have invalid/missing coordinates`);
+    }
+  }, [allProperties.length, validProperties.length]);
 
   // Apply filters
   const filteredProperties = validProperties.filter((p) => {
@@ -220,8 +251,15 @@ export default function MapView() {
     }
   };
 
+  // Debounced bounds change handler
   const handleBoundsChange = useCallback((bounds: LatLngBounds) => {
-    setMapBounds(bounds);
+    // Debounce to avoid excessive fetches during pan/zoom
+    const timer = setTimeout(() => {
+      setMapBounds(bounds);
+      console.warn(`[Map Diagnostics] Bounds changed - fetching properties in viewport`);
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Loading state
@@ -487,79 +525,85 @@ export default function MapView() {
             <MapBoundsTracker onBoundsChange={handleBoundsChange} />
             <FlyToLocation center={flyToCenter} />
 
-            <MarkerClusterGroup
-              chunkedLoading
-              maxClusterRadius={50}
-              spiderfyOnMaxZoom={true}
-              showCoverageOnHover={false}
-              zoomToBoundsOnClick={true}
-            >
-              {filteredProperties.map((property) => {
-                if (
-                  !isValidCoordinate(
-                    property.location.coordinates.lat,
-                    property.location.coordinates.lng
-                  )
-                ) {
-                  return null;
-                }
-
-                const isSelected = selectedPropertyId === property.id;
-                
+            {/* Cluster with defensive error handling */}
+            {(() => {
+              try {
                 return (
-                  <Marker
-                    key={property.id}
-                    position={[
-                      property.location.coordinates.lat,
-                      property.location.coordinates.lng,
-                    ]}
-                    icon={createCustomIcon(property.type, isSelected)}
-                    eventHandlers={{
-                      click: () => handlePropertyClick(property),
-                    }}
+                  <MarkerClusterGroup
+                    chunkedLoading
+                    maxClusterRadius={50}
+                    spiderfyOnMaxZoom={true}
+                    showCoverageOnHover={false}
+                    zoomToBoundsOnClick={true}
                   >
-                    <Popup>
-                      <div className="w-64">
-                        <ResponsiveImage
-                          src={property.images[0]}
-                          alt={
-                            property.imagesAlt?.[0]?.[language] || property.title[language]
-                          }
-                          className="w-full h-32 object-cover rounded mb-2"
-                        />
-                        <h3 className="font-semibold text-sm mb-1">
-                          {property.title[language]}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {property.location.neighborhood}, {property.location.zone}
-                        </p>
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-lg font-bold text-primary">
-                            ${property.price.toLocaleString()}
-                          </span>
-                          <Badge
-                            variant={
-                              property.operation === "venta" ? "default" : "secondary"
-                            }
-                          >
-                            {property.operation === "venta"
-                              ? language === "es" ? "Venta" : "Sale"
-                              : language === "es" ? "Renta" : "Rent"}
-                          </Badge>
-                        </div>
-                        <Link to={`/propiedad/${property.id}`}>
-                          <Button variant="primary" size="sm" className="w-full">
-                            {language === "es" ? "Ver detalles" : "View details"}
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </Popup>
-                  </Marker>
+                    {filteredProperties.map((property) => {
+                      // Normalize and validate coordinates
+                      const lat = normalizeCoord(property.location.coordinates.lat);
+                      const lng = normalizeCoord(property.location.coordinates.lng);
+                      
+                      if (!lat || !lng || !isValidCoordinate(lat, lng)) {
+                        return null;
+                      }
+
+                      const isSelected = selectedPropertyId === property.id;
+                      
+                      return (
+                        <Marker
+                          key={property.id}
+                          position={[lat, lng]}
+                          icon={createCustomIcon(property.type, isSelected)}
+                          eventHandlers={{
+                            click: () => handlePropertyClick(property),
+                          }}
+                        >
+                          <Popup>
+                            <div className="w-64">
+                              <ResponsiveImage
+                                src={property.images[0]}
+                                alt={
+                                  property.imagesAlt?.[0]?.[language] || property.title[language]
+                                }
+                                className="w-full h-32 object-cover rounded mb-2"
+                              />
+                              <h3 className="font-semibold text-sm mb-1">
+                                {property.title[language]}
+                              </h3>
+                              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {property.location.neighborhood}, {property.location.zone}
+                              </p>
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-lg font-bold text-primary">
+                                  ${property.price.toLocaleString()}
+                                </span>
+                                <Badge
+                                  variant={
+                                    property.operation === "venta" ? "default" : "secondary"
+                                  }
+                                >
+                                  {property.operation === "venta"
+                                    ? language === "es" ? "Venta" : "Sale"
+                                    : language === "es" ? "Renta" : "Rent"}
+                                </Badge>
+                              </div>
+                              <Link to={`/propiedad/${property.id}`}>
+                                <Button variant="primary" size="sm" className="w-full">
+                                  {language === "es" ? "Ver detalles" : "View details"}
+                                  <ChevronRight className="h-4 w-4 ml-1" />
+                                </Button>
+                              </Link>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
+                  </MarkerClusterGroup>
                 );
-              })}
-            </MarkerClusterGroup>
+              } catch (error) {
+                console.error("[Map Error] Cluster rendering failed:", error);
+                return null;
+              }
+            })()}
 
             {/* User location marker */}
             {userLocation && (

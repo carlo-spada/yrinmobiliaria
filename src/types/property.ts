@@ -52,4 +52,10 @@ export interface PropertyFilters {
   minBedrooms?: number;
   minBathrooms?: number;
   featured?: boolean;
+  bounds?: {
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  };
 }
