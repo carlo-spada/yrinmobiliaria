@@ -32,26 +32,24 @@ export function ResponsiveImage({
   
   /**
    * Generate Supabase image transformation srcSet
-   * Uses Supabase's image transformation API for optimal performance
+   * - Preserves existing query params (e.g., signed URLs)
    * - Multiple widths: 480, 768, 1080, 1440
    * - WebP format for better compression
-   * - Quality: 75 for optimal file size/quality balance
-   * - Resize mode: cover for consistent aspect ratios
+   * - Quality: 75 for optimal balance
+   * - Uses resize=fit to avoid requiring explicit height
    */
   const generateSupabaseSrcset = (url: string): string => {
     if (!isSupabase) return '';
     
     const widths = [480, 768, 1080, 1440];
-    const baseUrl = url.split('?')[0]; // Remove existing query params
     
     const srcsetParts = widths.map(width => {
-      const params = new URLSearchParams({
-        width: width.toString(),
-        format: 'webp',
-        quality: '75',
-        resize: 'cover'
-      });
-      return `${baseUrl}?${params.toString()} ${width}w`;
+      const supabaseUrl = new URL(url);
+      supabaseUrl.searchParams.set('width', width.toString());
+      supabaseUrl.searchParams.set('format', 'webp');
+      supabaseUrl.searchParams.set('quality', '75');
+      supabaseUrl.searchParams.set('resize', 'fit');
+      return `${supabaseUrl.toString()} ${width}w`;
     });
     
     return srcsetParts.join(', ');

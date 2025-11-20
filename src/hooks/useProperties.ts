@@ -22,6 +22,10 @@ const transformProperty = (row: any): Property => {
     features: row.features || {},
     amenities: row.amenities || [],
     images: row.property_images?.map((img: any) => img.image_url) || [],
+    imagesAlt: row.property_images?.map((img: any) => ({
+      es: img.alt_text_es || '',
+      en: img.alt_text_en || '',
+    })) || [],
     status: row.status,
     featured: row.featured,
     publishedDate: row.published_date,

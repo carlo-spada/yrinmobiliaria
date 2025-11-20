@@ -92,6 +92,7 @@ export default function PropertyDetail() {
   
   const propertyImage = property.images[0] || 'https://lovable.dev/opengraph-image-p98pqg.png';
   const propertyUrl = window.location.href;
+  const getImageAlt = (index: number) => property.imagesAlt?.[index]?.[language] || property.title[language];
 
   // Structured data
   const breadcrumbItems = [
@@ -228,7 +229,7 @@ export default function PropertyDetail() {
           >
             <ResponsiveImage
               src={property.images[selectedImageIndex]}
-              alt={property.title[language]}
+              alt={getImageAlt(selectedImageIndex)}
               className="w-full h-full object-cover"
               priority
             />
@@ -248,11 +249,11 @@ export default function PropertyDetail() {
                 }`}
                 aria-label={`${language === "es" ? "Ver imagen" : "View image"} ${index + 1} ${language === "es" ? "de" : "of"} ${property.images.length}`}
               >
-                <ResponsiveImage
-                  src={image}
-                  alt={`${property.title[language]} ${index + 1}`}
-                  className="h-full w-full object-cover rounded-md"
-                />
+              <ResponsiveImage
+                src={image}
+                alt={getImageAlt(index)}
+                className="h-full w-full object-cover rounded-md"
+              />
               </button>
             ))}
           </div>

@@ -283,6 +283,7 @@ export default function Properties() {
                           key={property.id}
                           id={property.id}
                           image={property.images[0]}
+                          alt={property.imagesAlt?.[0]?.[language] || `${property.title[language]} - ${property.location.zone}`}
                           title={property.title[language]}
                           price={formatPrice(property.price)}
                           location={`${property.location.neighborhood}, ${property.location.zone}`}

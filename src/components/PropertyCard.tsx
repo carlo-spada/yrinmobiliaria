@@ -10,6 +10,7 @@ import { ResponsiveImage } from '@/components/ResponsiveImage';
 interface PropertyCardProps {
   id: string;
   image: string;
+  alt?: string;
   title: string;
   price: string;
   location: string;
@@ -26,6 +27,7 @@ interface PropertyCardProps {
 export function PropertyCard({
   id,
   image,
+  alt,
   title,
   price,
   location,
@@ -61,13 +63,13 @@ export function PropertyCard({
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
               className="w-full h-full"
-            >
-              <ResponsiveImage
-                src={image}
-                alt={`${title} - ${location}`}
-                priority={priority}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="w-full h-full object-cover"
+          >
+            <ResponsiveImage
+              src={image}
+              alt={alt || `${title} - ${location}`}
+              priority={priority}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="w-full h-full object-cover"
                 width={400}
                 height={300}
               />

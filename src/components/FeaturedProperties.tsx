@@ -43,6 +43,7 @@ export function FeaturedProperties() {
               <PropertyCard
                 id={property.id}
                 image={property.images[0]}
+                alt={property.imagesAlt?.[0]?.[language] || `${property.title[language]} - ${property.location.zone}`}
                 title={property.title[language]}
                 price={new Intl.NumberFormat('es-MX', {
                   style: 'currency',

@@ -37,6 +37,7 @@ export interface Property {
   features: PropertyFeatures;
   amenities: string[];
   images: string[];
+  imagesAlt?: { es: string; en: string }[];
   status: PropertyStatus;
   featured: boolean;
   publishedDate: string;

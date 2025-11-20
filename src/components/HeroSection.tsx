@@ -108,12 +108,16 @@ export function HeroSection() {
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
                 className="bg-background"
+                label={t.hero.propertyType}
+                aria-label={t.hero.propertyType}
               />
               <Select
                 options={zones}
                 value={selectedZone}
                 onChange={(e) => setSelectedZone(e.target.value)}
                 className="bg-background"
+                label={t.hero.zone}
+                aria-label={t.hero.zone}
               />
             </div>
             

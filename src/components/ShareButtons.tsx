@@ -184,14 +184,29 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
           </>
         )}
       </Button>
-      <Button variant="outline" onClick={handleShareFacebook} aria-label="Share on Facebook" title="Facebook">
+      <Button 
+        variant="outline" 
+        onClick={handleShareFacebook} 
+        aria-label={t('share.facebook', 'Compartir en Facebook')} 
+        title={t('share.facebook', 'Compartir en Facebook')}
+      >
         <Facebook className="h-4 w-4" />
       </Button>
-      <Button variant="outline" onClick={handleShareTwitter} aria-label="Share on Twitter" title="Twitter">
+      <Button 
+        variant="outline" 
+        onClick={handleShareTwitter} 
+        aria-label={t('share.twitter', 'Compartir en Twitter')} 
+        title={t('share.twitter', 'Compartir en Twitter')}
+      >
         <Twitter className="h-4 w-4" />
       </Button>
       {navigator.share && (
-        <Button variant="outline" onClick={handleNativeShare} aria-label={t('share.more', 'Más opciones')} title={t('share.more', 'Más opciones')}>
+        <Button 
+          variant="outline" 
+          onClick={handleNativeShare} 
+          aria-label={t('share.more', 'Más opciones')} 
+          title={t('share.more', 'Más opciones')}
+        >
           <Share2 className="h-4 w-4" />
         </Button>
       )}
