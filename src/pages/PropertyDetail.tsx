@@ -14,6 +14,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { MetaTags } from "@/components/seo/MetaTags";
 import { StructuredData, getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/components/seo/StructuredData";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 import {
   ArrowLeft,
   Bed,
@@ -159,6 +160,8 @@ export default function PropertyDetail() {
             size="icon"
             className="absolute top-4 right-4 text-white"
             onClick={() => setIsLightboxOpen(false)}
+            aria-label={language === "es" ? "Cerrar galería" : "Close gallery"}
+            title={language === "es" ? "Cerrar galería" : "Close gallery"}
           >
             <X className="h-6 w-6" />
           </Button>
@@ -167,6 +170,8 @@ export default function PropertyDetail() {
             size="icon"
             className="absolute left-4 text-white"
             onClick={prevImage}
+            aria-label={language === "es" ? "Imagen anterior" : "Previous image"}
+            title={language === "es" ? "Imagen anterior" : "Previous image"}
           >
             <ChevronLeft className="h-8 w-8" />
           </Button>
@@ -175,14 +180,17 @@ export default function PropertyDetail() {
             size="icon"
             className="absolute right-4 text-white"
             onClick={nextImage}
+            aria-label={language === "es" ? "Siguiente imagen" : "Next image"}
+            title={language === "es" ? "Siguiente imagen" : "Next image"}
           >
             <ChevronRight className="h-8 w-8" />
           </Button>
           <div className="max-w-6xl w-full px-4">
-            <img
+            <ResponsiveImage
               src={property.images[selectedImageIndex]}
               alt={property.title[language]}
               className="w-full h-auto max-h-[80vh] object-contain"
+              priority
             />
             <p className="text-white text-center mt-4">
               {selectedImageIndex + 1} / {property.images.length}
@@ -208,11 +216,21 @@ export default function PropertyDetail() {
           <div
             className="relative h-[400px] lg:h-[500px] rounded-lg overflow-hidden cursor-pointer"
             onClick={() => setIsLightboxOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label={language === "es" ? "Abrir galería de imágenes" : "Open image gallery"}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsLightboxOpen(true);
+              }
+            }}
           >
-            <img
+            <ResponsiveImage
               src={property.images[selectedImageIndex]}
               alt={property.title[language]}
               className="w-full h-full object-cover"
+              priority
             />
             <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-md">
               {selectedImageIndex + 1} / {property.images.length}
@@ -220,17 +238,22 @@ export default function PropertyDetail() {
           </div>
           <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
             {property.images.map((image, index) => (
-              <img
+              <button
                 key={index}
-                src={image}
-                alt={`${property.title[language]} ${index + 1}`}
-                className={`h-20 w-28 object-cover rounded-md cursor-pointer transition-all ${
+                onClick={() => setSelectedImageIndex(index)}
+                className={`h-20 w-28 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
                   selectedImageIndex === index
                     ? "ring-2 ring-primary"
                     : "opacity-70 hover:opacity-100"
                 }`}
-                onClick={() => setSelectedImageIndex(index)}
-              />
+                aria-label={`${language === "es" ? "Ver imagen" : "View image"} ${index + 1} ${language === "es" ? "de" : "of"} ${property.images.length}`}
+              >
+                <ResponsiveImage
+                  src={image}
+                  alt={`${property.title[language]} ${index + 1}`}
+                  className="h-full w-full object-cover rounded-md"
+                />
+              </button>
             ))}
           </div>
         </div>

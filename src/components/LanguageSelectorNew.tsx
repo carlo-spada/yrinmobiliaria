@@ -14,11 +14,21 @@ export function LanguageSelector() {
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
   };
+  
+  const ariaLabel = i18n.language === 'es' 
+    ? 'Cambiar idioma' 
+    : 'Change language';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-foreground">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-foreground"
+          aria-label={ariaLabel}
+          title={ariaLabel}
+        >
           <Globe className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>

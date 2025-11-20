@@ -58,19 +58,32 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay */}
+      {/* Background Image with Overlay - Optimized for LCP */}
       <div className="absolute inset-0 z-0">
-        <img
-          srcSet="/hero-mobile.webp 640w, /hero-tablet.webp 1024w, /hero-desktop.webp 1920w"
-          sizes="100vw"
-          src="/hero-desktop.webp"
-          alt="Oaxaca Real Estate - Beautiful colonial architecture and modern properties"
-          className="w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
-          width="1920"
-          height="1080"
-        />
+        <picture>
+          <source 
+            media="(max-width: 640px)" 
+            srcSet="/hero-mobile.webp"
+            width="640"
+            height="853"
+          />
+          <source 
+            media="(max-width: 1024px)" 
+            srcSet="/hero-tablet.webp"
+            width="1024"
+            height="768"
+          />
+          <img
+            src="/hero-desktop.webp"
+            alt="Oaxaca Real Estate - Beautiful colonial architecture and modern properties"
+            className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </picture>
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/60" />
       </div>
 
@@ -106,7 +119,10 @@ export function HeroSection() {
             
             <div className="space-y-3 mb-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">
+                <label 
+                  htmlFor="hero-price-slider"
+                  className="text-sm font-medium text-foreground"
+                >
                   {t.hero.priceRange}
                 </label>
                 <span className="text-sm font-semibold text-primary">
@@ -114,11 +130,13 @@ export function HeroSection() {
                 </span>
               </div>
               <Slider
+                id="hero-price-slider"
                 value={priceRange}
                 onValueChange={setPriceRange}
                 max={100}
                 step={5}
                 className="w-full"
+                aria-label={t.hero.priceRange}
               />
             </div>
 
