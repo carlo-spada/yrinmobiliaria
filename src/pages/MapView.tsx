@@ -4,7 +4,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "re
 import { Icon, LatLngBounds } from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
-import "react-leaflet-cluster/dist/styles.min.css";
 import "./MapView.css";
 import { useLanguage } from "@/utils/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
