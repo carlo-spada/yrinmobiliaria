@@ -2,12 +2,35 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
+import { useQuery } from '@tanstack/react-query';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Fetch user profile
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        logger.error('Error fetching profile', error);
+        return null;
+      }
+
+      return data;
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
     // Set up auth state listener
@@ -104,6 +127,7 @@ export const useAuth = () => {
     session,
     loading,
     isAdmin,
+    profile,
     signIn,
     signUp,
     signOut,

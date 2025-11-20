@@ -22,11 +22,16 @@ import TermsOfService from "./pages/TermsOfService";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import AcceptInvitation from "./pages/auth/AcceptInvitation";
+import CompleteProfile from "./pages/onboarding/CompleteProfile";
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import EditProfile from "./pages/agent/EditProfile";
 
 // Lazy load only truly heavy components (Map with Leaflet, Admin pages)
 const MapView = lazy(() => import("./pages/MapView"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
+const AdminAgents = lazy(() => import("./pages/admin/AdminAgents"));
 const AdminZones = lazy(() => import("./pages/admin/AdminZones"));
 const AdminInquiries = lazy(() => import("./pages/admin/AdminInquiries"));
 const AdminVisits = lazy(() => import("./pages/admin/AdminVisits"));
@@ -95,6 +100,10 @@ const App = () => (
               <Route path="/privacidad" element={<PrivacyPolicy />} />
               <Route path="/terminos" element={<TermsOfService />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/accept-invitation" element={<AcceptInvitation />} />
+              <Route path="/onboarding/complete-profile" element={<CompleteProfile />} />
+              <Route path="/agent/dashboard" element={<AgentDashboard />} />
+              <Route path="/agent/profile/edit" element={<EditProfile />} />
               <Route path="/admin" element={
                 <Suspense fallback={<PageLoader />}>
                   <AdminDashboard />
@@ -103,6 +112,11 @@ const App = () => (
               <Route path="/admin/properties" element={
                 <Suspense fallback={<PageLoader />}>
                   <AdminProperties />
+                </Suspense>
+              } />
+              <Route path="/admin/agents" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdminAgents />
                 </Suspense>
               } />
               <Route path="/admin/zones" element={
