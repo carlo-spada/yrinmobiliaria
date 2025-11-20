@@ -38,6 +38,16 @@ export interface Property {
   amenities: string[];
   images: string[];
   imagesAlt?: { es: string; en: string }[];
+  imageVariants?: Array<{
+    id: string;
+    variants: {
+      avif: Record<number, string>;
+      webp: Record<number, string>;
+    };
+    alt_es?: string;
+    alt_en?: string;
+    order: number;
+  }>;
   status: PropertyStatus;
   featured: boolean;
   publishedDate: string;

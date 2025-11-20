@@ -481,6 +481,7 @@ export default function MapView() {
                       <div className="flex gap-3">
                         <ResponsiveImage
                           src={property.images[0]}
+                          variants={property.imageVariants?.[0]?.variants}
                           alt={
                             property.imagesAlt?.[0]?.[language] || property.title[language]
                           }

@@ -97,6 +97,7 @@ export type Database = {
           featured: boolean | null
           features: Json
           id: string
+          image_variants: Json | null
           location: Json
           operation: Database["public"]["Enums"]["property_operation"]
           price: number
@@ -115,6 +116,7 @@ export type Database = {
           featured?: boolean | null
           features?: Json
           id?: string
+          image_variants?: Json | null
           location?: Json
           operation: Database["public"]["Enums"]["property_operation"]
           price: number
@@ -133,6 +135,7 @@ export type Database = {
           featured?: boolean | null
           features?: Json
           id?: string
+          image_variants?: Json | null
           location?: Json
           operation?: Database["public"]["Enums"]["property_operation"]
           price?: number

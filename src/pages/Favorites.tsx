@@ -135,6 +135,7 @@ export default function Favorites() {
                         <PropertyCard
                           id={property.id}
                           image={property.images[0]}
+                          variants={property.imageVariants?.[0]?.variants}
                           title={property.title[i18n.language as 'es' | 'en']}
                           price={`$${property.price.toLocaleString()}`}
                           location={property.location.address}

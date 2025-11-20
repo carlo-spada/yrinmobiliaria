@@ -5,8 +5,22 @@ import { uploadImage, deleteImage, extractPathFromUrl } from '@/utils/imageUploa
 import { toast } from 'sonner';
 
 interface ImageUploadZoneProps {
-  images: Array<{ url: string; path?: string }>;
-  onImagesChange: (images: Array<{ url: string; path?: string }>) => void;
+  images: Array<{ 
+    url: string; 
+    path?: string;
+    variants?: {
+      avif: Record<number, string>;
+      webp: Record<number, string>;
+    };
+  }>;
+  onImagesChange: (images: Array<{ 
+    url: string; 
+    path?: string;
+    variants?: {
+      avif: Record<number, string>;
+      webp: Record<number, string>;
+    };
+  }>) => void;
   propertyId?: string;
   maxImages?: number;
 }
@@ -31,7 +45,14 @@ export const ImageUploadZone = ({
     }
 
     setUploading(true);
-    const uploadedImages: Array<{ url: string; path: string }> = [];
+    const uploadedImages: Array<{ 
+      url: string; 
+      path: string;
+      variants?: {
+        avif: Record<number, string>;
+        webp: Record<number, string>;
+      };
+    }> = [];
 
     try {
       // Upload files sequentially to avoid overwhelming the server

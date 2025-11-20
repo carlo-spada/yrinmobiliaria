@@ -7,6 +7,10 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 export interface ImageUploadResult {
   url: string;
   path: string;
+  variants?: {
+    avif: Record<number, string>;
+    webp: Record<number, string>;
+  };
 }
 
 /**
@@ -81,7 +85,7 @@ export const optimizeImage = (file: File, maxWidth = 1920, maxHeight = 1920, qua
 };
 
 /**
- * Uploads an image to Supabase Storage
+ * Uploads an image to Supabase Storage and generates optimized variants
  */
 export const uploadImage = async (file: File, propertyId?: string): Promise<ImageUploadResult> => {
   // Validate file
@@ -94,13 +98,14 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
     // Optimize image
     const optimizedBlob = await optimizeImage(file);
     
-    // Generate unique filename
+    // Generate unique filename and image ID
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 8);
+    const imageId = `${timestamp}-${randomString}`;
     const extension = 'webp'; // Always use webp after optimization
     const fileName = propertyId 
-      ? `${propertyId}/${timestamp}-${randomString}.${extension}`
-      : `temp/${timestamp}-${randomString}.${extension}`;
+      ? `${propertyId}/${imageId}.${extension}`
+      : `temp/${imageId}.${extension}`;
     
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
@@ -118,9 +123,36 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
       .from(BUCKET_NAME)
       .getPublicUrl(data.path);
     
+    // Generate optimized variants using edge function (only for property images)
+    let variants;
+    if (propertyId) {
+      try {
+        const { data: variantsData, error: variantsError } = await supabase.functions.invoke(
+          'optimize-property-image',
+          {
+            body: {
+              propertyId,
+              imageId,
+              imagePath: data.path
+            }
+          }
+        );
+
+        if (variantsError) {
+          console.warn('Failed to generate variants, will use transform fallback:', variantsError);
+        } else if (variantsData?.variants) {
+          variants = variantsData.variants;
+          console.log('Generated image variants:', variants);
+        }
+      } catch (err) {
+        console.warn('Error calling optimization function, will use transform fallback:', err);
+      }
+    }
+    
     return {
       url: publicUrl,
-      path: data.path
+      path: data.path,
+      variants
     };
   } catch (error) {
     console.error('Error uploading image:', error);

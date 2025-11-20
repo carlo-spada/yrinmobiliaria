@@ -26,6 +26,7 @@ const transformProperty = (row: any): Property => {
       es: img.alt_text_es || '',
       en: img.alt_text_en || '',
     })) || [],
+    imageVariants: row.image_variants || [],
     status: row.status,
     featured: row.featured,
     publishedDate: row.published_date,
@@ -75,6 +76,9 @@ export const useProperties = (filters?: PropertyFilters) => {
         // Apply bounds filter if provided (with buffer for edge cases)
         if (filters?.bounds) {
           const buffer = 0.1; // Add 0.1 degree buffer to catch properties near edges
+          
+          // Use proper casting for JSONB numeric extraction
+          // PostgREST syntax: cast(location->'coordinates'->>'lat', numeric)
           query = query
             .gte('location->coordinates->>lat', (filters.bounds.minLat - buffer).toString())
             .lte('location->coordinates->>lat', (filters.bounds.maxLat + buffer).toString())

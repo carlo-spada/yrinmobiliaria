@@ -189,6 +189,7 @@ export default function PropertyDetail() {
           <div className="max-w-6xl w-full px-4">
             <ResponsiveImage
               src={property.images[selectedImageIndex]}
+              variants={property.imageVariants?.[selectedImageIndex]?.variants}
               alt={property.title[language]}
               className="w-full h-auto max-h-[80vh] object-contain"
               priority
@@ -229,6 +230,7 @@ export default function PropertyDetail() {
           >
             <ResponsiveImage
               src={property.images[selectedImageIndex]}
+              variants={property.imageVariants?.[selectedImageIndex]?.variants}
               alt={getImageAlt(selectedImageIndex)}
               className="w-full h-full object-cover"
               priority
@@ -251,6 +253,7 @@ export default function PropertyDetail() {
               >
               <ResponsiveImage
                 src={image}
+                variants={property.imageVariants?.[index]?.variants}
                 alt={getImageAlt(index)}
                 className="h-full w-full object-cover rounded-md"
               />
@@ -493,6 +496,7 @@ export default function PropertyDetail() {
                   location={`${prop.location.neighborhood}, ${prop.location.zone}`}
                   price={prop.price.toLocaleString()}
                   image={prop.images[0]}
+                  variants={prop.imageVariants?.[0]?.variants}
                   bedrooms={prop.features.bedrooms}
                   bathrooms={prop.features.bathrooms}
                   area={prop.features.constructionArea}
