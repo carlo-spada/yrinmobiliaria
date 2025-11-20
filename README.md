@@ -9,8 +9,8 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 **Last Updated:** November 20, 2025
 
 **Lighthouse Scores:**
-- Desktop: Performance **97/100** ⭐ | Accessibility 83/100 ⚠️ | Best Practices **100/100** ✅ | SEO **100/100** ✅
-- Mobile: Performance **80/100** ⚠️ | Accessibility 83/100 ⚠️ | Best Practices **100/100** ✅ | SEO **100/100** ✅
+- Desktop: Performance **97/100** ⭐ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
+- Mobile: Performance **80/100** ⚠️ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
 
 **Bundle Size:** 811 KB (optimized from 814 KB)
 

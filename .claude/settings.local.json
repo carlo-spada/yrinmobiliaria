@@ -17,7 +17,8 @@
       "Bash(mkdir:*)",
       "Bash(node scripts/generate-hero-images.js:*)",
       "WebSearch",
-      "WebFetch(domain:docs.lovable.dev)"
+      "WebFetch(domain:docs.lovable.dev)",
+      "Bash(__NEW_LINE__ echo \"=== Checking price range consistency ===\" echo \"From priceSliderHelpers.ts:\" grep \"MIN_PRICE\\|MAX_PRICE\" /Users/carlo/Desktop/Projects/yrinmobiliaria/src/utils/priceSliderHelpers.ts)"
     ],
     "deny": [],
     "ask": []
