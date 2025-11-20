@@ -2,6 +2,33 @@
 
 > **Primary Reference**: See `CLAUDE.md` for complete project philosophy, workflow, and Lovable prompt engineering guidelines.
 
+**Last Updated:** November 20, 2025
+
+---
+
+## 🚨 DOCUMENTATION DISCIPLINE
+
+**CRITICAL RULE: Maximum 5 documentation files, 20,000 words each.**
+
+**Before creating ANY new document:**
+- ❌ **STOP** - Can this be added to existing docs?
+- ❌ **STOP** - Is there an old doc you can delete first?
+- ❌ **STOP** - Will this doc exist beyond today?
+
+**Every document you modify:**
+- ✅ Update "Last Updated: [date]" at the top
+- ✅ Keep content under 20,000 words
+- ✅ Synthesize and consolidate
+
+**Current Docs (3/5 slots):**
+1. README.md
+2. CLAUDE.md
+3. AGENTS.md (this file)
+
+**If you need slot 4 or 5:** Delete a temporary doc first.
+
+---
+
 ## Critical Constraint: Lovable-First Development
 
 This project uses **Lovable Cloud** with managed Supabase. All code changes must go through Lovable prompts.

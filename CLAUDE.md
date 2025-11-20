@@ -2,7 +2,29 @@
 
 > **Philosophy**: We're not here to write code. We're here to orchestrate excellence through Lovable.dev and create something insanely great.
 
+**Last Updated:** November 20, 2025
+
 ---
+
+## ⚡ CRITICAL CONSTRAINTS
+
+### 0. Documentation Discipline: LESS IS MORE
+**Maximum 5 documentation files. Maximum 20,000 words each. Keep it lean.**
+
+**Documentation Rules:**
+- ✅ Every doc MUST have "Last Updated: [date]" at the top
+- ✅ Update this date EVERY time you modify the file
+- ✅ Synthesize and consolidate - never create new docs without deleting old ones
+- ✅ If you can't fit it in 5 docs × 20k words, it doesn't belong
+- ❌ NEVER create temporary docs, reports, or guides
+- ❌ NEVER let documentation proliferate beyond 5 files
+
+**Current Essential Docs:**
+1. **README.md** - Project overview, status, quick start
+2. **CLAUDE.md** - This file - workflow and strategic planning (you're reading it)
+3. **AGENTS.md** - Guidelines for Codex/other agents
+
+**Slots remaining:** 2 files (use wisely, delete when done)
 
 ## ⚡ CRITICAL CONSTRAINTS
 

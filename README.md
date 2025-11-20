@@ -2,6 +2,10 @@
 
 A modern, bilingual (Spanish/English) real estate website built with React, TypeScript, and Tailwind CSS, showcasing properties in Oaxaca, Mexico.
 
+**Last Updated:** November 20, 2025
+
+---
+
 ## 📊 Project Status
 
 **Overall Completion:** 98% 🚀
