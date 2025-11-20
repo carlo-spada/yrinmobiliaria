@@ -2,14 +2,14 @@
 
 A modern, bilingual (Spanish/English) real estate website built with React, TypeScript, and Tailwind CSS, showcasing properties in Oaxaca, Mexico.
 
-**Last Updated:** November 20, 2025 (Multi-Tenant Foundation Complete)
+**Last Updated:** November 20, 2025 (Agent Management UI Complete)
 
 ---
 
 ## 📊 Project Status
 
 **Overall Completion:** 98% 🚀
-**Current Phase:** Production Ready - Bug Fixes & Strategic Planning
+**Current Phase:** Multi-Agent Platform - Email Routing & Property Assignment (Phase 3 of 5)
 **Last Updated:** November 20, 2025
 
 **Lighthouse Scores:**
@@ -48,28 +48,35 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - ✅ **Font Optimization** - Preconnect & preload hints for Google Fonts
 - ✅ **Route Progress Bar** - Visual feedback during navigation
 
-**Phase 4 (Nov 19-20 Optimization & Planning):**
+**Phase 4 (Nov 19-20 Optimization & Multi-Tenant Foundation):**
 - ✅ **Bundle Optimization** - Removed unused deps (i18next, embla, cmdk, chart, carousel)
 - ✅ **Global Filter Improvements** - Consistent filter behavior across pages
 - ✅ **i18n Translations** - Added missing translation keys
 - ✅ **Security Fixes** - Enhanced data validation and guards
 - ✅ **Data Integrity** - Improved null/undefined handling
-- ✅ **Testing Manual Created** - Comprehensive manual testing checklist (TESTING_MANUAL.md)
-- ✅ **Strategic Roadmap** - Multi-agent platform architecture and feature planning (STRATEGIC_ROADMAP.md)
 - ✅ **Email Integration (Resend)** - Beautiful bilingual email templates for contact & visit forms
 - ✅ **Multi-Tenant Foundation** - Database architecture for multi-agent platform (orgs, profiles, roles)
+
+**Phase 5 (Nov 20 Agent Management UI):**
+- ✅ **Admin Agents Page** - View, search, and invite agents
+- ✅ **Agent Invitation System** - Email invitations with magic link flow (7-day token)
+- ✅ **Agent Onboarding Wizard** - 5-step profile completion (photo, bio, contact, zones, social)
+- ✅ **Profile Completion Guard** - Redirects incomplete profiles to onboarding
+- ✅ **Agent Dashboard** - Protected dashboard with stats (properties, inquiries, visits)
+- ✅ **Edit Profile Page** - Agents can update their profile anytime
 
 ### 🎯 Next Steps
 
 **Immediate (This Week):**
-- **Multi-Agent Platform (Phase 1):**
+- **Multi-Agent Platform (Phases 3-5):**
   - ✅ Multi-tenant foundation (organizations, profiles, roles) - COMPLETE
-  - 🚧 Agent management UI (invite agents, profile completion) - IN PROGRESS
-  - ⏳ Email routing updates (property → agent email)
+  - ✅ Agent management UI (invite agents, profile completion) - COMPLETE
+  - 🚧 Email routing updates (property → agent email) - IN PROGRESS
+  - ⏳ Property assignment (auto-assign, reassignment UI, multi-language)
   - ⏳ User features (favorites, account management)
-  - ⏳ Agent directory & property assignment UI
+  - ⏳ Agent directory & public profiles
 - **Content Updates** (NO LOVABLE NEEDED):
-  - Yas & Carlo: Complete profiles at `/admin/agents`
+  - Yas & Carlo: Complete profiles at `/onboarding/complete-profile`
   - Yas: Add properties via `/admin/properties`
   - Write real About Us content
 
@@ -111,6 +118,7 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 ### Admin Features
 - **Admin Dashboard** - Stats overview and activity monitoring
 - **Property Management** - Full CRUD with image uploads (WebP optimized)
+- **Agent Management** - ✨ Invite, view, and manage agents (Nov 20)
 - **Inquiry Management** - ✨ View contact form submissions from database
 - **Visit Scheduling** - ✨ View scheduled visits from database
 - **User Management** - Role-based access control
@@ -118,6 +126,12 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - **Audit Logs** - Activity tracking
 - **Settings** - Platform configuration
 - **Health Check** - ✨ Monitor 5 critical services with response times
+
+### Agent Features ← **NEW!**
+- **Agent Dashboard** - Protected dashboard with stats (properties, inquiries, visits)
+- **Profile Management** - Complete and edit profile (photo, bio, contact, zones, social)
+- **Onboarding Wizard** - 5-step profile completion flow
+- **Profile Completion Guard** - Automatic redirect to onboarding if incomplete
 
 ## 🚀 Quick Start
 
@@ -149,6 +163,7 @@ Access admin panel at `/admin` (requires admin role)
 **Admin Routes:**
 - `/admin` - Dashboard
 - `/admin/properties` - Property management
+- `/admin/agents` - ✨ **NEW!** Agent management (invite, view, search)
 - `/admin/inquiries` - Contact inquiries (from database)
 - `/admin/visits` - Scheduled visits (from database)
 - `/admin/users` - User roles
@@ -158,9 +173,15 @@ Access admin panel at `/admin` (requires admin role)
 - `/admin/health` - ✨ Health check (5 service monitors)
 - `/admin/seed` - Database seed (🔒 Protected)
 
+**Agent Routes:** ← **NEW!**
+- `/agent/dashboard` - Agent dashboard (protected by ProfileCompletionGuard)
+- `/agent/profile/edit` - Edit agent profile
+- `/onboarding/complete-profile` - 5-step onboarding wizard
+- `/auth/accept-invitation` - Accept agent invitation (magic link)
+
 **Status:** ✅ Fully operational! Auto-admin for ruizvasquezyazmin@gmail.com and carlo.spada22@gmail.com
 
-**Security:** ✅ All admin routes protected with authentication + role checks
+**Security:** ✅ All admin/agent routes protected with authentication + role checks
 
 ## 🔧 Configuration
 
