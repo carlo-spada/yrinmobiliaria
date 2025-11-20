@@ -136,17 +136,9 @@ export default function MapView() {
 
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   
-  // Bounds-aware property fetching with debounce
-  const boundsFilter = mapBounds ? {
-    minLat: mapBounds.getSouth(),
-    maxLat: mapBounds.getNorth(),
-    minLng: mapBounds.getWest(),
-    maxLng: mapBounds.getEast(),
-  } : undefined;
-
+  // Fetch all properties (bounds filtering done client-side)
   const { data: allProperties = [], isLoading, error } = useProperties({ 
     featured: false,
-    bounds: boundsFilter,
   });
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -465,7 +457,30 @@ export default function MapView() {
               {filteredProperties.length}{" "}
               {language === "es" ? "propiedades" : "properties"}
             </h3>
-            <div className="space-y-3">
+            {filteredProperties.length === 0 ? (
+              <div className="text-center py-8">
+                <MapPin className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  {language === "es"
+                    ? "No se encontraron propiedades con los filtros actuales."
+                    : "No properties found with current filters."}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setFilters({
+                      type: "all",
+                      zone: "all",
+                      priceRange: [0, 10000000],
+                    })
+                  }
+                >
+                  {language === "es" ? "Limpiar filtros" : "Clear filters"}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
               {filteredProperties.map((property) => {
                 const Icon = propertyTypeIcons[property.type];
                 const isSelected = selectedPropertyId === property.id;
@@ -513,6 +528,7 @@ export default function MapView() {
                 );
               })}
             </div>
+            )}
           </div>
         </div>
 
