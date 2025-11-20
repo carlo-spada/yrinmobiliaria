@@ -1,5 +1,7 @@
 # 🗄️ Guía de Configuración de Supabase - YR Inmobiliaria
 
+> ⚠️ **LOVABLE CLOUD**: This project uses Lovable Cloud (managed Supabase). You cannot run SQL directly or access the Supabase dashboard. All schema changes must go through Lovable prompts. This document is for reference only.
+
 Guía completa para trabajar con la base de datos de propiedades.
 
 ## 📊 Schema de Base de Datos

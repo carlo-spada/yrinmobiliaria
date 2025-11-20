@@ -25,7 +25,30 @@ This means:
 - Planning is MORE important than speed
 - Quality over quantity, always
 
-### 3. The Golden Rule
+### 3. Backend: Lovable Cloud (NOT Direct Supabase)
+**This project uses Lovable Cloud - the managed backend where Lovable controls the Supabase instance.**
+
+**Critical implications:**
+- ❌ **NO direct Supabase dashboard access** - Cannot run SQL manually
+- ❌ **NO manual migrations** - Must ask Lovable to modify schema
+- ❌ **NO direct Edge Function deployment** - Must describe in Lovable prompts
+- ❌ **NO service role keys or DB URLs** - System secrets managed by Lovable
+- ❌ **Cannot revert** - Once on Cloud, you're committed
+
+**What DOES work:**
+- ✅ Static assets in `/public` (images, fonts, etc.)
+- ✅ Frontend code changes (components, hooks, pages)
+- ✅ Supabase public APIs (transforms, storage URLs)
+- ✅ Asking Lovable to create tables, columns, functions, policies
+
+**NEVER create these files (they can't be used):**
+- `supabase/migrations/*.sql` - Can't run manually
+- `supabase/functions/*` - Can't deploy directly
+- Direct database scripts or RPC definitions
+
+**All backend changes must be Lovable prompts.**
+
+### 4. The Golden Rule
 **Think Different → Plan Like Da Vinci → Craft Through Lovable → Verify Obsessively → Iterate Relentlessly**
 
 ---

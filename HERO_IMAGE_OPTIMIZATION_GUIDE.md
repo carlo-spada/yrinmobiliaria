@@ -1,13 +1,31 @@
 # Hero Image Optimization Guide
 
-## Current Status
-✅ **Fixed**: Hero images now reference existing files (hero-mobile.webp, hero-tablet.webp, hero-desktop.webp)  
-✅ **Fixed**: No more 404 errors for missing image assets  
-✅ **Fixed**: Proper preload hints in index.html match actual files  
+## Current Status (Nov 19, 2025)
 
-## Further Optimization: Multi-Breakpoint AVIF/WebP
+✅ **COMPLETE**: Multi-breakpoint AVIF/WebP optimization implemented
+✅ **COMPLETE**: HeroSection updated with proper `<picture>` srcset
+✅ **COMPLETE**: index.html preloads updated for AVIF-first
+✅ **COMPLETE**: Generation script at `scripts/generate-hero-images.js`
 
-To achieve optimal LCP (<2.5s) and reduce file sizes, generate additional breakpoint-specific images:
+### Quick Usage
+
+To regenerate hero images (e.g., after getting a new AI-generated hero):
+
+```bash
+# Use default source (src/assets/hero-oaxaca.jpg)
+node scripts/generate-hero-images.js
+
+# Or specify a custom source
+node scripts/generate-hero-images.js path/to/new-hero.jpg
+```
+
+The script generates 12 optimized variants (6 AVIF + 6 WebP) at 16:9 aspect ratio.
+
+---
+
+## Reference: Multi-Breakpoint AVIF/WebP
+
+For LCP <2.5s, we generate breakpoint-specific images:
 
 ### Required Files
 

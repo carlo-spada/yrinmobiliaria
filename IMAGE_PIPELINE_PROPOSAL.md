@@ -1,5 +1,17 @@
 # Image Pipeline Proposal (Server/CI-Centric)
 
+> ⚠️ **LOVABLE CLOUD CONSTRAINT**: This project uses Lovable Cloud (managed Supabase). You cannot deploy Edge Functions or run migrations directly. Backend changes (columns, functions, policies) must be requested via Lovable prompts.
+
+## What's Implementable Now vs Later
+
+| Component | Status | How to Implement |
+|-----------|--------|------------------|
+| Hero optimization (Sharp script) | ✅ **Done** | `node scripts/generate-hero-images.js` |
+| ResponsiveImage component | ✅ **Done** | Frontend code |
+| Supabase transform fallback | ✅ **Done** | Uses public API |
+| `image_variants` column | ⏳ **Needs Lovable** | Prompt to add JSONB column |
+| Upload optimization | ⏳ **Needs Lovable** | Prompt for Edge Function |
+
 ## Goal
 Deterministic, site-wide image optimization (current + future assets) that is fast on mobile, LCP-friendly, and enforceable.
 
@@ -36,7 +48,8 @@ Deterministic, site-wide image optimization (current + future assets) that is fa
 
 6) **Editor Workflow**
    - Editors drop a master; pipeline/CI produces derivatives automatically.
-   - Optional: an edge function/worker can generate the same variants on upload (so admins “upload and forget”) without client CPU cost.
+   - **For property uploads**: Need to ask Lovable to create an Edge Function that generates variants on upload (so admins "upload and forget") without client CPU cost.
+   - **Note**: Since we use Lovable Cloud, the Edge Function must be created via a Lovable prompt describing the optimization logic (AVIF/WebP generation, EXIF stripping, size targets).
 
 ## Why Not Client-Side Compression Only
 - Heavy on mobile admins; quality control is weaker; WebP-only; fixed widths; no enforcement of size budgets; still uploads the big original before compression.
