@@ -180,7 +180,6 @@ export function HeroSection() {
                 min={0}
                 max={10000000}
                 step={100000}
-                step={5}
                 className="w-full"
                 aria-label={t.hero.priceRange}
               />
