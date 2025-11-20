@@ -147,10 +147,125 @@ serve(async (req) => {
 
     console.log('Contact inquiry saved successfully');
 
+    // Send email notification via Resend (non-blocking)
+    try {
+      const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+      if (resendApiKey) {
+        const emailHtml = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Contacto - YR Inmobiliaria</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">YR Inmobiliaria</h1>
+      <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">Nueva Consulta de Contacto</p>
+    </div>
+
+    <!-- Content -->
+    <div style="padding: 40px 30px;">
+      <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
+        <p style="margin: 0; color: #6c757d; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Asunto</p>
+        <p style="margin: 8px 0 0 0; color: #212529; font-size: 18px; font-weight: 600;">${subject}</p>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #212529; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">Información del Cliente</h2>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef;">
+              <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Nombre:</span>
+            </td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef; text-align: right;">
+              <span style="color: #212529; font-size: 15px; font-weight: 600;">${sanitizedData.name}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef;">
+              <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Email:</span>
+            </td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef; text-align: right;">
+              <a href="mailto:${sanitizedData.email}" style="color: #667eea; font-size: 15px; text-decoration: none;">${sanitizedData.email}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0;">
+              <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Teléfono:</span>
+            </td>
+            <td style="padding: 12px 0; text-align: right;">
+              <a href="tel:${sanitizedData.phone}" style="color: #667eea; font-size: 15px; text-decoration: none;">${sanitizedData.phone}</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #212529; font-size: 20px; font-weight: 600; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">Mensaje</h2>
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; line-height: 1.6;">
+          <p style="margin: 0; color: #495057; font-size: 15px; white-space: pre-wrap;">${message}</p>
+        </div>
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align: center; margin-top: 40px;">
+        <a href="mailto:${sanitizedData.email}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);">
+          Responder por Email
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+      <p style="margin: 0 0 5px 0; color: #6c757d; font-size: 13px;">Esta consulta fue enviada desde</p>
+      <p style="margin: 0; color: #667eea; font-weight: 600; font-size: 14px;">yrinmobiliaria.com</p>
+      <p style="margin: 15px 0 0 0; color: #adb5bd; font-size: 12px;">
+        © ${new Date().getFullYear()} YR Inmobiliaria. Todos los derechos reservados.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'YR Inmobiliaria <contacto@yrinmobiliaria.com>',
+            to: ['contacto@yrinmobiliaria.com'],
+            subject: `[Contacto Web] ${subject} - ${sanitizedData.name}`,
+            html: emailHtml,
+            reply_to: sanitizedData.email,
+          }),
+        });
+
+        if (response.ok) {
+          console.log('Email notification sent successfully via Resend');
+        } else {
+          const error = await response.text();
+          console.error('Resend API error:', error);
+        }
+      } else {
+        console.warn('RESEND_API_KEY not configured - skipping email notification');
+      }
+    } catch (emailError) {
+      // Don't fail the request if email fails
+      console.error('Error sending email notification:', emailError);
+    }
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        message: 'Contact inquiry submitted successfully' 
+        message: 'Contact inquiry submitted successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

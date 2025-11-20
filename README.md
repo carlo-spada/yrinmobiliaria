@@ -56,6 +56,7 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - ✅ **Data Integrity** - Improved null/undefined handling
 - ✅ **Testing Manual Created** - Comprehensive manual testing checklist (TESTING_MANUAL.md)
 - ✅ **Strategic Roadmap** - Multi-agent platform architecture and feature planning (STRATEGIC_ROADMAP.md)
+- ✅ **Email Integration (Resend)** - Beautiful bilingual email templates for contact & visit forms
 
 ### 🎯 Next Steps
 
@@ -73,12 +74,11 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
   - Write real About Us content
 
 **Next Sprint Priorities:**
-1. **Email Setup** (HIGH) - Configure Resend for contacto@yrinmobiliaria.com
-2. **Accessibility Improvements** (HIGH) - Score 83 → 95+
+1. **Accessibility Improvements** (HIGH) - Score 83 → 95+
    - Add ARIA labels to icon buttons
    - Fix form label associations
    - Improve color contrast ratios
-3. **Mobile Performance Optimization** (MEDIUM) - Fix LCP 5.0s → <2.5s
+2. **Mobile Performance Optimization** (MEDIUM) - Fix LCP 5.0s → <2.5s
    - Cache headers configuration
    - Responsive images for mobile
 
@@ -100,8 +100,8 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - **Interactive Map** - Leaflet map with property markers (lazy loaded)
 - **Favorites System** - ✨ Syncs to Supabase for authenticated users!
 - **WhatsApp Integration** - Instant contact button
-- **Contact Forms** - ✨ Saves to database + Email setup planned (Resend)
-- **Schedule Visits** - ✨ Saves to database + Email setup planned (Resend)
+- **Contact Forms** - ✨ Saves to database + Resend email notifications
+- **Schedule Visits** - ✨ Saves to database + Resend email notifications
 - **Responsive Design** - Mobile, tablet, desktop optimized
 - **SEO Optimized** - ✨ **100/100 score!** Structured data, Open Graph, Twitter Cards
 - **Performance Optimized** - ✨ Desktop 94/100! Code splitting, lazy loading, priority images
@@ -164,15 +164,14 @@ Access admin panel at `/admin` (requires admin role)
 
 ## 🔧 Configuration
 
-Create `.env` file:
+### Environment Variables
+
+**Frontend (.env):**
 ```env
 # Supabase (✅ Configured)
 VITE_SUPABASE_PROJECT_ID=your_project_id
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
-
-# Email (❌ Not configured yet - Resend planned)
-VITE_RESEND_API_KEY=your_resend_api_key
 
 # Google Analytics (❌ Not configured yet)
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
@@ -180,6 +179,44 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 # WhatsApp (⚠️ Placeholder)
 VITE_WHATSAPP_NUMBER=5219511234567
 ```
+
+**Edge Functions (Lovable Cloud Dashboard → Settings → Secrets):**
+```env
+# Resend Email (✅ Configured - Nov 20, 2025)
+RESEND_API_KEY=re_xxxxxxxxxxxxx
+```
+
+### Email Setup (Resend)
+
+**Status:** ✅ **Integrated** (Nov 20, 2025)
+
+The platform uses **Resend** for transactional emails with beautiful bilingual templates.
+
+**Setup Steps:**
+1. Sign up at [resend.com](https://resend.com) (free tier: 3,000 emails/month)
+2. Verify your domain: `contacto@yrinmobiliaria.com`
+3. Get your API key from the Resend dashboard
+4. Add to Lovable Cloud:
+   - Go to your project settings
+   - Navigate to "Secrets" or "Environment Variables"
+   - Add: `RESEND_API_KEY=re_xxxxxxxxxxxxx`
+5. Deploy Edge Functions with updated env vars
+
+**Features:**
+- 📧 Contact form submissions → Email notifications
+- 📅 Visit scheduling → Calendar-style email notifications
+- 🎨 Beautiful responsive HTML templates
+- 🌍 Bilingual support (Spanish)
+- 📊 Resend dashboard for analytics
+- ✉️ Reply-to configured for easy responses
+
+**Email Templates:**
+- **Contact Email:** Purple gradient header, structured client info, CTA button
+- **Visit Email:** Green gradient header, calendar card design, property details
+
+**Free Tier Limits:**
+- 3,000 emails/month (100/day)
+- Perfect for small-to-medium real estate agencies
 
 ## 📦 Tech Stack
 
@@ -195,7 +232,7 @@ VITE_WHATSAPP_NUMBER=5219511234567
 
 **Backend:**
 - Supabase (PostgreSQL + Auth + Storage)
-- Resend (email service - planned)
+- Resend (transactional email service)
 - Google Analytics 4
 
 **Key Libraries:**

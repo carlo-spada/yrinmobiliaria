@@ -19,7 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/utils/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { supabase } from '@/integrations/supabase/client';
-import { sendScheduleEmail } from '@/utils/emailService';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
@@ -106,19 +105,8 @@ export default function ScheduleVisit() {
         throw new Error(result?.error || 'Failed to schedule visit');
       }
 
-      // Send email notification (non-critical, don't block on failure)
-      const property = properties.find(p => p.id === data.propertyId);
-      sendScheduleEmail({
-        propertyId: data.propertyId,
-        propertyName: property?.title[language] || '',
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        date: format(data.date, 'PPP', { locale: language === 'es' ? es : undefined }),
-        timeSlot: data.timeSlot,
-        notes: data.notes,
-      }).catch((err) => logger.error('Email notification failed', err));
-      
+      // Email notification is now sent by the Edge Function
+
       setConfirmedData(data);
       setIsConfirmed(true);
       

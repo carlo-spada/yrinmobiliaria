@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/utils/LanguageContext';
-import { sendContactEmail } from '@/utils/emailService';
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
@@ -82,15 +81,8 @@ export default function Contact() {
         throw new Error(result?.error || 'Failed to submit inquiry');
       }
 
-      // Send email notification (non-critical, don't block on failure)
-      sendContactEmail({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        subject: data.subject,
-        message: data.message,
-      }).catch((err) => logger.error('Email notification failed', err));
-      
+      // Email notification is now sent by the Edge Function
+
       toast({
         title: t.contact?.successTitle || '¡Mensaje enviado!',
         description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
