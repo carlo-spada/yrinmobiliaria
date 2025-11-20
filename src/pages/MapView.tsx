@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Icon } from "leaflet";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
+import { Icon, LatLngBounds } from "leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
 import "./MapView.css";
 import { useLanguage } from "@/utils/LanguageContext";
@@ -23,8 +25,8 @@ import {
   ChevronRight,
   Loader2,
   AlertCircle,
+  Navigation,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 // Property type colors
 const propertyColors = {
@@ -35,30 +37,22 @@ const propertyColors = {
 };
 
 // Create custom icons for each property type
-const createCustomIcon = (type: PropertyType) => {
+const createCustomIcon = (type: PropertyType, selected: boolean = false) => {
   const color = propertyColors[type];
+  const scale = selected ? 1.3 : 1;
   return new Icon({
     iconUrl: `data:image/svg+xml;base64,${btoa(`
-      <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+      <svg width="${32 * scale}" height="${40 * scale}" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
         <path d="M16 0C7.163 0 0 7.163 0 16c0 11 16 24 16 24s16-13 16-24c0-8.837-7.163-16-16-16z" 
-              fill="${color}" stroke="#fff" stroke-width="2"/>
+              fill="${color}" stroke="${selected ? '#FFD700' : '#fff'}" stroke-width="${selected ? 3 : 2}"/>
         <circle cx="16" cy="16" r="6" fill="#fff"/>
       </svg>
     `)}`,
-    iconSize: [32, 40],
-    iconAnchor: [16, 40],
-    popupAnchor: [0, -40],
+    iconSize: [32 * scale, 40 * scale],
+    iconAnchor: [16 * scale, 40 * scale],
+    popupAnchor: [0, -40 * scale],
   });
 };
-
-// Component to fly to specific coordinates
-function FlyToLocation({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.flyTo(center, 15, { duration: 1 });
-  }, [center, map]);
-  return null;
-}
 
 // Helper to check if coordinates are valid
 const isValidCoordinate = (lat: any, lng: any): boolean => {
@@ -74,63 +68,75 @@ const isValidCoordinate = (lat: any, lng: any): boolean => {
   );
 };
 
+// Component to handle map bounds changes
+function MapBoundsTracker({ 
+  onBoundsChange 
+}: { 
+  onBoundsChange: (bounds: LatLngBounds) => void 
+}) {
+  const map = useMapEvents({
+    moveend: () => {
+      onBoundsChange(map.getBounds());
+    },
+    zoomend: () => {
+      onBoundsChange(map.getBounds());
+    },
+  });
+
+  useEffect(() => {
+    // Initial bounds
+    onBoundsChange(map.getBounds());
+  }, [map, onBoundsChange]);
+
+  return null;
+}
+
+// Component to fly to specific coordinates
+function FlyToLocation({ 
+  center, 
+  zoom = 15 
+}: { 
+  center: [number, number] | null;
+  zoom?: number;
+}) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, zoom, { duration: 1 });
+    }
+  }, [center, zoom, map]);
+  
+  return null;
+}
+
 export default function MapView() {
-  const { language, t } = useLanguage();
-  const { data: properties = [], isLoading, error } = useProperties({ featured: false });
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const { language } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get filters from URL
+  const urlType = searchParams.get("type") || "all";
+  const urlZone = searchParams.get("zone") || "all";
+  const urlMinPrice = searchParams.get("minPrice") || "0";
+  const urlMaxPrice = searchParams.get("maxPrice") || "10000000";
+  const urlPropertyId = searchParams.get("propertyId");
+
+  const { data: allProperties = [], isLoading, error } = useProperties({ featured: false });
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(urlPropertyId);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
+  const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   // Filters
   const [filters, setFilters] = useState({
-    type: "all" as PropertyType | "all",
-    zone: "all",
-    priceRange: [0, 10000000],
+    type: urlType as PropertyType | "all",
+    zone: urlZone,
+    priceRange: [parseInt(urlMinPrice), parseInt(urlMaxPrice)],
   });
 
-  const mapRef = useRef(null);
-
-  // Filter properties with valid coordinates first
-  const validProperties = properties.filter(
-    (p) =>
-      p.location?.coordinates &&
-      isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
-  );
-
-  const [filteredProperties, setFilteredProperties] = useState(validProperties);
-
-  const mapRef = useRef(null);
-
-  // Apply filters (only to valid properties)
-  useEffect(() => {
-    let filtered = validProperties;
-
-    if (filters.type !== "all") {
-      filtered = filtered.filter((p) => p.type === filters.type);
-    }
-
-    if (filters.zone !== "all") {
-      filtered = filtered.filter((p) => p.location.zone === filters.zone);
-    }
-
-    filtered = filtered.filter(
-      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
-    );
-
-    setFilteredProperties(filtered);
-  }, [filters, validProperties]);
-
-  const handlePropertyClick = (property: Property) => {
-    setSelectedProperty(property);
-    if (
-      property.location?.coordinates &&
-      isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)
-    ) {
-      setFlyToCenter([property.location.coordinates.lat, property.location.coordinates.lng]);
-    }
-  };
-
-  const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
+  const listRef = useRef<HTMLDivElement>(null);
 
   const propertyTypeIcons = {
     casa: Home,
@@ -139,43 +145,84 @@ export default function MapView() {
     oficina: Briefcase,
   };
 
+  // Filter properties with valid coordinates
+  const validProperties = allProperties.filter(
+    (p) =>
+      p.location?.coordinates &&
+      isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
+  );
+
+  // Apply filters
+  const filteredProperties = validProperties.filter((p) => {
+    if (filters.type !== "all" && p.type !== filters.type) return false;
+    if (filters.zone !== "all" && p.location.zone !== filters.zone) return false;
+    if (p.price < filters.priceRange[0] || p.price > filters.priceRange[1]) return false;
+    return true;
+  });
+
   const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
 
-  // Apply filters (only to valid properties)
+  // Update URL when filters change
   useEffect(() => {
-    let filtered = validProperties;
+    const params = new URLSearchParams();
+    if (filters.type !== "all") params.set("type", filters.type);
+    if (filters.zone !== "all") params.set("zone", filters.zone);
+    if (filters.priceRange[0] !== 0) params.set("minPrice", filters.priceRange[0].toString());
+    if (filters.priceRange[1] !== 10000000) params.set("maxPrice", filters.priceRange[1].toString());
+    if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
+    
+    setSearchParams(params, { replace: true });
+  }, [filters, selectedPropertyId, setSearchParams]);
 
-    if (filters.type !== "all") {
-      filtered = filtered.filter((p) => p.type === filters.type);
-    }
-
-    if (filters.zone !== "all") {
-      filtered = filtered.filter((p) => p.location.zone === filters.zone);
-    }
-
-    filtered = filtered.filter(
-      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
-    );
-
-    setFilteredProperties(filtered);
-  }, [filters, validProperties]);
-
-  const handlePropertyClick = (property: Property) => {
-    setSelectedProperty(property);
+  // Handle property selection
+  const handlePropertyClick = useCallback((property: Property) => {
+    setSelectedPropertyId(property.id);
+    
     if (
       property.location?.coordinates &&
       isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)
     ) {
       setFlyToCenter([property.location.coordinates.lat, property.location.coordinates.lng]);
     }
+
+    // Scroll card into view
+    setTimeout(() => {
+      const cardElement = document.getElementById(`property-card-${property.id}`);
+      if (cardElement && listRef.current) {
+        cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 100);
+  }, []);
+
+  // Center on selected property from URL on mount
+  useEffect(() => {
+    if (urlPropertyId && filteredProperties.length > 0) {
+      const property = filteredProperties.find((p) => p.id === urlPropertyId);
+      if (property) {
+        handlePropertyClick(property);
+      }
+    }
+  }, [urlPropertyId, filteredProperties, handlePropertyClick]);
+
+  // Get user location
+  const handleUseMyLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(coords);
+          setFlyToCenter(coords);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    }
   };
 
-  // Filter properties with valid coordinates
-  const validProperties = properties.filter(
-    (p) =>
-      p.location?.coordinates &&
-      isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
-  );
+  const handleBoundsChange = useCallback((bounds: LatLngBounds) => {
+    setMapBounds(bounds);
+  }, []);
 
   // Loading state
   if (isLoading) {
@@ -244,14 +291,26 @@ export default function MapView() {
         <h1 className="text-xl font-bold">
           {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
         </h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="lg:hidden"
-        >
-          {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleUseMyLocation}
+            className="hidden md:flex"
+            title={language === "es" ? "Usar mi ubicación" : "Use my location"}
+          >
+            <Navigation className="h-4 w-4 mr-2" />
+            {language === "es" ? "Mi ubicación" : "My location"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="lg:hidden"
+          >
+            {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden relative">
@@ -311,7 +370,6 @@ export default function MapView() {
               </div>
             </div>
 
-            {/* Reset Filters */}
             <Button
               variant="outline"
               size="sm"
@@ -345,20 +403,12 @@ export default function MapView() {
                     <Icon className="h-4 w-4" />
                     <span className="capitalize">
                       {type === "casa"
-                        ? language === "es"
-                          ? "Casa"
-                          : "House"
+                        ? language === "es" ? "Casa" : "House"
                         : type === "departamento"
-                        ? language === "es"
-                          ? "Departamento"
-                          : "Apartment"
+                        ? language === "es" ? "Departamento" : "Apartment"
                         : type === "local"
-                        ? language === "es"
-                          ? "Local"
-                          : "Commercial"
-                        : language === "es"
-                        ? "Oficina"
-                        : "Office"}
+                        ? language === "es" ? "Local" : "Commercial"
+                        : language === "es" ? "Oficina" : "Office"}
                     </span>
                   </div>
                 );
@@ -367,7 +417,7 @@ export default function MapView() {
           </div>
 
           {/* Properties List */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4" ref={listRef}>
             <h3 className="font-semibold text-sm mb-3">
               {filteredProperties.length}{" "}
               {language === "es" ? "propiedades" : "properties"}
@@ -375,13 +425,14 @@ export default function MapView() {
             <div className="space-y-3">
               {filteredProperties.map((property) => {
                 const Icon = propertyTypeIcons[property.type];
+                const isSelected = selectedPropertyId === property.id;
+                
                 return (
                   <Card
                     key={property.id}
+                    id={`property-card-${property.id}`}
                     className={`cursor-pointer transition-all hover:shadow-md ${
-                      selectedProperty?.id === property.id
-                        ? "ring-2 ring-primary"
-                        : ""
+                      isSelected ? "ring-2 ring-primary" : ""
                     }`}
                     onClick={() => handlePropertyClick(property)}
                   >
@@ -427,15 +478,23 @@ export default function MapView() {
             center={[17.0732, -96.7266]}
             zoom={12}
             className="h-full w-full"
-            ref={mapRef}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <>
+            
+            <MapBoundsTracker onBoundsChange={handleBoundsChange} />
+            <FlyToLocation center={flyToCenter} />
+
+            <MarkerClusterGroup
+              chunkedLoading
+              maxClusterRadius={50}
+              spiderfyOnMaxZoom={true}
+              showCoverageOnHover={false}
+              zoomToBoundsOnClick={true}
+            >
               {filteredProperties.map((property) => {
-                // Double-check coordinates are valid before rendering marker
                 if (
                   !isValidCoordinate(
                     property.location.coordinates.lat,
@@ -444,6 +503,8 @@ export default function MapView() {
                 ) {
                   return null;
                 }
+
+                const isSelected = selectedPropertyId === property.id;
                 
                 return (
                   <Marker
@@ -452,7 +513,7 @@ export default function MapView() {
                       property.location.coordinates.lat,
                       property.location.coordinates.lng,
                     ]}
-                    icon={createCustomIcon(property.type)}
+                    icon={createCustomIcon(property.type, isSelected)}
                     eventHandlers={{
                       click: () => handlePropertyClick(property),
                     }}
@@ -466,44 +527,55 @@ export default function MapView() {
                           }
                           className="w-full h-32 object-cover rounded mb-2"
                         />
-                      <h3 className="font-semibold text-sm mb-1">
-                        {property.title[language]}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {property.location.neighborhood}, {property.location.zone}
-                      </p>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-bold text-primary">
-                          ${property.price.toLocaleString()}
-                        </span>
-                        <Badge
-                          variant={
-                            property.operation === "venta" ? "default" : "secondary"
-                          }
-                        >
-                          {property.operation === "venta"
-                            ? language === "es"
-                              ? "Venta"
-                              : "Sale"
-                            : language === "es"
-                            ? "Renta"
-                            : "Rent"}
-                        </Badge>
-                      </div>
-                      <Link to={`/propiedad/${property.id}`}>
-                        <Button variant="primary" size="sm" className="w-full">
-                          {language === "es" ? "Ver detalles" : "View details"}
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </Link>
+                        <h3 className="font-semibold text-sm mb-1">
+                          {property.title[language]}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {property.location.neighborhood}, {property.location.zone}
+                        </p>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-lg font-bold text-primary">
+                            ${property.price.toLocaleString()}
+                          </span>
+                          <Badge
+                            variant={
+                              property.operation === "venta" ? "default" : "secondary"
+                            }
+                          >
+                            {property.operation === "venta"
+                              ? language === "es" ? "Venta" : "Sale"
+                              : language === "es" ? "Renta" : "Rent"}
+                          </Badge>
+                        </div>
+                        <Link to={`/propiedad/${property.id}`}>
+                          <Button variant="primary" size="sm" className="w-full">
+                            {language === "es" ? "Ver detalles" : "View details"}
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </Link>
                       </div>
                     </Popup>
                   </Marker>
                 );
               })}
-              {flyToCenter && <FlyToLocation center={flyToCenter} />}
-            </>
+            </MarkerClusterGroup>
+
+            {/* User location marker */}
+            {userLocation && (
+              <Marker
+                position={userLocation}
+                icon={new Icon({
+                  iconUrl: `data:image/svg+xml;base64,${btoa(`
+                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="8" fill="#4285F4" stroke="#fff" stroke-width="3"/>
+                    </svg>
+                  `)}`,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12],
+                })}
+              />
+            )}
           </MapContainer>
 
           {/* Mobile overlay when sidebar is open */}
