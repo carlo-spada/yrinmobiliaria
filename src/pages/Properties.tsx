@@ -82,6 +82,9 @@ export default function Properties() {
       // Status filter - only show available
       if (property.status !== 'disponible') return false;
 
+      // Guard missing location/zone
+      if (!property.location || !property.location.zone) return false;
+
       // Type filter
       if (filters.type && property.type !== filters.type) return false;
 
