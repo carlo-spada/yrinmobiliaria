@@ -77,7 +77,14 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     resolver: zodResolver(propertyFormSchema),
   });
 
-  const [images, setImages] = useState<Array<{ url: string; path?: string }>>([]);
+  const [images, setImages] = useState<Array<{ 
+    url: string; 
+    path?: string;
+    variants?: {
+      avif: Record<number, string>;
+      webp: Record<number, string>;
+    };
+  }>>([]);
 
   const propertyType = watch('type');
   const operation = watch('operation');
@@ -186,6 +193,13 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           constructionArea: parseFloat(formData.constructionArea),
           landArea: formData.landArea ? parseFloat(formData.landArea) : null,
         },
+        image_variants: images.map((img, index) => ({
+          id: img.path || `image-${index}`,
+          variants: img.variants || { avif: {}, webp: {} },
+          alt_es: `${formData.title_es} - Imagen ${index + 1}`,
+          alt_en: `${formData.title_en} - Image ${index + 1}`,
+          order: index,
+        })),
       };
 
       let propertyId = property?.id;

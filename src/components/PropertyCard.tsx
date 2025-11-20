@@ -22,6 +22,10 @@ interface PropertyCardProps {
   className?: string;
   onClick?: () => void;
   priority?: boolean; // For LCP optimization - eager load above-fold images
+  variants?: { // Image variants for optimization
+    avif: Record<number, string>;
+    webp: Record<number, string>;
+  };
 }
 
 export function PropertyCard({
@@ -39,6 +43,7 @@ export function PropertyCard({
   className,
   onClick,
   priority = false,
+  variants,
 }: PropertyCardProps) {
   const statusLabels = {
     sale: { es: 'En Venta', en: 'For Sale' },
@@ -66,6 +71,7 @@ export function PropertyCard({
           >
             <ResponsiveImage
               src={image}
+              variants={variants}
               alt={alt || `${title} - ${location}`}
               priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
