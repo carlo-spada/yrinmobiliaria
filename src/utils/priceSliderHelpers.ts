@@ -1,12 +1,11 @@
 /**
  * Non-linear price slider helpers for wide MXN ranges.
  * UI range: slider 0–100 maps to prices 0–100,000,000 MXN.
- * Exponent pushes sensitivity to the low end (midpoint ~50k).
+ * Uses a small linear segment (0–5%) then a log curve to concentrate sensitivity at the low end.
  */
 
 const MIN_PRICE = 0; // 0 MXN when slider is at 0
 const MAX_PRICE = 100000000; // 100M MXN
-const PRICE_EXPONENT = 11; // Higher exponent -> stronger low-end sensitivity
 
 /**
  * Convert linear slider value (0-100) to price.
@@ -14,8 +13,17 @@ const PRICE_EXPONENT = 11; // Higher exponent -> stronger low-end sensitivity
 export const toLogPrice = (sliderValue: number): number => {
   const pos = Math.max(0, Math.min(100, sliderValue));
   if (pos === 0) return 0;
-  const ratio = pos / 100;
-  const price = MAX_PRICE * Math.pow(ratio, PRICE_EXPONENT);
+
+  // First 5% of the slider: small linear ramp up to ~100 MXN
+  if (pos <= 5) {
+    const price = (pos / 5) * 100; // 0 → 100 MXN
+    return Math.round(price);
+  }
+
+  // Remaining 95%: log scale from 100 MXN to 100M
+  const ratio = (pos - 5) / 95; // 0..1
+  const price = Math.pow(10, 2 + 6 * ratio); // 10^2=100 to 10^8=100,000,000
+
   // Round to nearest 1k for cleaner values
   return Math.round(price / 1000) * 1000;
 };
@@ -26,8 +34,15 @@ export const toLogPrice = (sliderValue: number): number => {
 export const fromLogPrice = (price: number): number => {
   if (!price || price <= 0) return 0;
   const clamped = Math.max(0, Math.min(MAX_PRICE, price));
-  const ratio = clamped / MAX_PRICE;
-  const pos = Math.pow(ratio, 1 / PRICE_EXPONENT) * 100;
+
+  // If within the small linear ramp (0-100 MXN)
+  if (clamped <= 100) {
+    return Math.max(0, Math.min(5, (clamped / 100) * 5));
+  }
+
+  // In the log portion
+  const ratio = (Math.log10(clamped) - 2) / 6; // 0..1
+  const pos = 5 + ratio * 95;
   return Math.max(0, Math.min(100, Math.round(pos)));
 };
 
@@ -43,4 +58,4 @@ export const formatMXN = (value: number): string => {
   }).format(value);
 };
 
-export { MIN_PRICE, MAX_PRICE, PRICE_EXPONENT };
+export { MIN_PRICE, MAX_PRICE };
