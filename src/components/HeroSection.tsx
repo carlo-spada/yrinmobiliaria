@@ -58,30 +58,59 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay - Optimized for LCP */}
+      {/* Background Image with Overlay - Optimized for LCP with AVIF */}
       <div className="absolute inset-0 z-0">
         <picture>
+          {/* Mobile: AVIF first (best compression), WebP fallback */}
           <source 
             media="(max-width: 640px)" 
-            srcSet="/hero-mobile.webp"
-            width="640"
-            height="853"
+            type="image/avif"
+            srcSet="/hero-mobile-480.avif 480w, /hero-mobile-640.avif 640w"
+            sizes="100vw"
+          />
+          <source 
+            media="(max-width: 640px)" 
+            type="image/webp"
+            srcSet="/hero-mobile-480.webp 480w, /hero-mobile-640.webp 640w"
+            sizes="100vw"
+          />
+          
+          {/* Tablet: AVIF first, WebP fallback */}
+          <source 
+            media="(max-width: 1024px)" 
+            type="image/avif"
+            srcSet="/hero-tablet-768.avif 768w, /hero-tablet-1024.avif 1024w"
+            sizes="100vw"
           />
           <source 
             media="(max-width: 1024px)" 
-            srcSet="/hero-tablet.webp"
-            width="1024"
-            height="768"
+            type="image/webp"
+            srcSet="/hero-tablet-768.webp 768w, /hero-tablet-1024.webp 1024w"
+            sizes="100vw"
           />
+          
+          {/* Desktop: AVIF first, WebP fallback */}
+          <source 
+            type="image/avif"
+            srcSet="/hero-desktop-1280.avif 1280w, /hero-desktop-1920.avif 1920w"
+            sizes="100vw"
+          />
+          <source 
+            type="image/webp"
+            srcSet="/hero-desktop-1280.webp 1280w, /hero-desktop-1920.webp 1920w"
+            sizes="100vw"
+          />
+          
+          {/* Fallback for browsers without AVIF/WebP support */}
           <img
-            src="/hero-desktop.webp"
+            src="/hero-desktop-1280.webp"
             alt="Oaxaca Real Estate - Beautiful colonial architecture and modern properties"
             className="w-full h-full object-cover"
             loading="eager"
             fetchPriority="high"
             decoding="async"
-            width="1920"
-            height="1080"
+            width="1280"
+            height="720"
           />
         </picture>
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/60" />
