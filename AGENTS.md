@@ -37,4 +37,4 @@
 
 ## Security & Configuration
 - Do not commit secrets. Environment/config is managed in Lovable Cloud.
-- If adding new assets or dependencies, validate build (`npm run build`) to avoid regressions.***
+- If adding new assets or dependencies, validate build (`npm run build`) to avoid regressions.
