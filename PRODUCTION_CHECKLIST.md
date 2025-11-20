@@ -1,37 +1,49 @@
 # ✅ Production Readiness Checklist - YR Inmobiliaria
 
-**Last Updated:** November 16, 2025 (late night)
-**Current Status:** 95% Complete - Production Ready! 🚀
+**Last Updated:** November 20, 2025
+**Current Status:** 98% Complete - Production Ready with Known Issues 🚀
 
 Use this checklist before going live with your website.
 
+**IMPORTANT:** See [TESTING_MANUAL.md](TESTING_MANUAL.md) for comprehensive manual testing guide and [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) for feature planning.
+
 ## 📈 Quick Status Overview
 
-**Phase 1 Completed (Nov 16 Evening):**
+**Phase 1-3 Completed (Nov 16-17):**
 - ✅ Image upload system implemented
 - ✅ Admin panel UI complete (9 pages including Health Check)
 - ✅ Supabase Storage configured
 - ✅ Database schema enhanced (5 new tables)
 - ✅ Admin authentication fixed
 - ✅ Admin roles automated
+- ✅ Contact/Schedule forms save to database
+- ✅ Privacy Policy & Terms pages created
+- ✅ SEO Perfect 100/100!
+- ✅ Desktop Performance 97/100!
 
-**Phase 2 Completed (Nov 16 Late Night):**
-- ✅ Contact form saves to database
-- ✅ Schedule form saves to database
-- ✅ Admin seed route protected
-- ✅ Privacy Policy page created
-- ✅ Terms of Service page created
-- ✅ Boot-time environment validation
-- ✅ Favorites sync to Supabase
-- ✅ Health check page implemented
-- ✅ Testing checklist created (400+ tests)
+**Phase 4 Completed (Nov 19-20):**
+- ✅ Bundle optimization (removed unused deps)
+- ✅ Global filter improvements
+- ✅ i18n translations added
+- ✅ Security fixes and data guards
+- ✅ Testing manual created
+- ✅ Strategic roadmap documented
+
+**Known Issues (Must Fix Before Launch):**
+1. ❌ **Zone filter language bug** - Breaks in English (CRITICAL)
+2. ❌ **Missing property types** - "terrenos" (land) not in enum
+3. ❌ **Missing property status** - "pendiente" (pending) not in enum
+4. ⚠️ **Hero price slider** - Single-handle (inconsistent with other pages)
+5. ⚠️ **Homepage operation filter** - Missing buy/rent toggle
+6. ⚠️ **A11y gaps** - Icon buttons missing aria-labels (Score 83, target 95+)
 
 **Next Steps:**
-1. Yas & Carlo: Sign up at `/auth`
-2. Yas: Add properties via `/admin/properties`
-3. Configure EmailJS (optional - forms already save to DB)
-4. Run testing checklist (see TESTING_CHECKLIST.md)
-5. Launch! 🚀
+1. Submit critical bug fix prompt to Lovable (zone filter + enums + sliders)
+2. Yas & Carlo: Sign up at `/auth`
+3. Yas: Add properties via `/admin/properties`
+4. Configure Resend for email (optional - forms already save to DB)
+5. Run testing checklist (see TESTING_MANUAL.md)
+6. Launch! 🚀
 
 ---
 
@@ -224,14 +236,14 @@ Use this checklist before going live with your website.
 
 ## 📧 Integrations
 
-### Email (EmailJS)
-- [ ] EmailJS account created
-- [ ] Service connected (Gmail, Outlook, etc.)
-- [ ] Contact form template created
-- [ ] Schedule visit template created
-- [ ] Templates tested and working
-- [ ] Email delivery confirmed
-- [ ] Auto-reply set up (optional)
+### Email (Resend - Planned)
+- [ ] Resend account created
+- [ ] Domain verified (DNS records added)
+- [ ] API key obtained and secured
+- [ ] Contact form email integration (Lovable prompt)
+- [ ] Schedule visit email integration (Lovable prompt)
+- [ ] Email delivery tested
+- [ ] Auto-reply configured (optional)
 
 ### Analytics
 - [ ] Google Analytics 4 property created
@@ -353,8 +365,15 @@ Use this checklist before going live with your website.
 - [ ] Monitor for first 24 hours
 - [ ] Address any immediate issues
 - [ ] Collect initial feedback
+- [ ] Plan next sprint (email integration, A11y improvements)
 - [ ] Thank stakeholders
 - [ ] Celebrate! 🎊
+
+### Post-Launch Feature Roadmap
+- [ ] Email integration (Resend)
+- [ ] Accessibility improvements (target 95+)
+- [ ] Mobile LCP optimization (<2.5s)
+- [ ] Multi-agent platform (see STRATEGIC_ROADMAP.md)
 
 ---
 

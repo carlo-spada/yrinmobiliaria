@@ -1,10 +1,10 @@
 # 🔍 YR Inmobiliaria - Comprehensive Project Audit
 **Initial Audit Date:** November 16, 2025
-**Last Updated:** November 17, 2025 (SEO + Performance Sprint Complete)
+**Last Updated:** November 20, 2025 (Bundle Optimization + Strategic Planning)
 **Project Type:** Dynamic Real Estate Platform
-**Status:** ✅🚀 **PRODUCTION READY** - All Critical Systems Operational!
+**Status:** ✅🚀 **98% PRODUCTION READY** - Known Issues Documented
 
-## 🎯 Current Lighthouse Scores (Nov 17, 2025 - Updated)
+## 🎯 Current Lighthouse Scores (Nov 17, 2025)
 
 **Desktop Performance:** 🌟
 - Performance: **97/100** ⭐ (Excellent!)
@@ -20,12 +20,15 @@
 - SEO: **100/100** ✅ (Perfect!)
 - LCP: 5.0s ❌ (Critical issue) | FCP: 1.5s ✅ | TBT: 60ms ✅ | CLS: 0 ✅ | SI: 3.4s ⚠️
 
+**Bundle Size:** 811 KB (optimized from 814 KB on Nov 19-20)
+
 **Key Insights:**
 - ✅ SEO Perfect: 100/100 achieved on both platforms!
-- ✅ Desktop excellent: 97 performance score (up from 94!)
-- ✅ Mobile improved: 80 performance (up from 73!)
+- ✅ Desktop excellent: 97 performance score
+- ✅ Mobile improved: 80 performance (up from 73)
 - ❌ Mobile LCP still critical: 5.0s (target: <2.5s)
 - ⚠️ Accessibility at 83 on both platforms (target: 95+)
+- ✅ Bundle optimized: Removed unused dependencies
 
 **Performance Opportunities Identified:**
 - Cache headers: 803 KiB (mobile) / 1,025 KiB (desktop) - Requires hosting config
@@ -43,6 +46,77 @@
 **Best Practices Notes:**
 - Security headers need hosting configuration: CSP, HSTS, COOP, XFO
 - Source maps missing for production debugging (optional)
+
+---
+
+## 🚨 Known Issues (Nov 20, 2025 - Documented via Testing)
+
+### Critical Issues (Must Fix Before Production)
+1. ❌ **Zone filter language bug** - Uses Spanish zone names as filter values, breaks when switching to English (0 results)
+   - **Impact:** Core filtering broken in English mode
+   - **Fix:** Use stable slugs/IDs as values, localized labels for display
+   - **Applies to:** Homepage, /propiedades, /mapa
+   - **Lovable Prompt Required:** Yes
+
+2. ❌ **Missing property types** - "terrenos" (land) not in property type enum
+   - **Impact:** Cannot add land properties
+   - **Fix:** Add "terrenos" to property_type enum
+   - **Lovable Prompt Required:** Yes
+
+3. ❌ **Missing property status** - "pendiente" (pending) not in status enum
+   - **Impact:** Cannot mark properties as pending
+   - **Fix:** Add "pendiente" to property_status enum
+   - **Lovable Prompt Required:** Yes
+
+### High Priority Issues
+4. ⚠️ **Hero price slider inconsistency** - Homepage uses single-handle slider, /propiedades uses dual-handle
+   - **Impact:** UX inconsistency, homepage can't filter by price range
+   - **Fix:** Upgrade homepage hero to dual-handle slider
+   - **Lovable Prompt Required:** Yes
+
+5. ⚠️ **Homepage operation filter missing** - No buy/rent toggle on homepage hero
+   - **Impact:** Cannot filter by operation type on homepage
+   - **Fix:** Add operation filter to hero section
+   - **Lovable Prompt Required:** Yes
+
+6. ⚠️ **Accessibility gaps** - Icon buttons missing aria-labels, contrast issues
+   - **Impact:** A11y score 83/100 (target: 95+)
+   - **Fix:** Add aria-labels to icon-only buttons, fix text contrast
+   - **Lovable Prompt Required:** Yes
+
+### Medium Priority Issues
+7. ⚠️ **Price sliders should be logarithmic** - Current linear sliders poor for wide MXN ranges (500K-10M)
+   - **Impact:** Difficult to select properties in lower price ranges
+   - **Fix:** Implement logarithmic scale for all price sliders
+   - **Lovable Prompt Required:** Yes
+
+8. ⚠️ **Map clustering always enabled** - Shows clusters even for small datasets (<20 properties)
+   - **Impact:** Visual clutter, unnecessary animation jank
+   - **Fix:** Disable clustering when property count < threshold
+   - **Lovable Prompt Required:** Yes
+
+9. ⚠️ **Hardcoded strings** - PropertyFilter types, AdminSidebar menu not translated
+   - **Impact:** Admin sidebar stays in Spanish when switching to English
+   - **Fix:** Add i18n keys for all admin menu items and filter labels
+   - **Lovable Prompt Required:** Yes
+
+10. ⚠️ **Data guards needed** - Missing null checks for images[0], location.zone, coordinates
+    - **Impact:** Potential console errors if data incomplete
+    - **Fix:** Add defensive null checks in components
+    - **Lovable Prompt Required:** Yes
+
+11. ⚠️ **About Us placeholder content** - Uses generic text and placeholder images
+    - **Impact:** Unprofessional appearance
+    - **Fix:** Write real company story, add real team photos
+    - **Lovable Prompt Required:** No (content update only)
+
+12. ⚠️ **Email not configured** - contacto@yrinmobiliaria.com cannot send/receive
+    - **Impact:** Contact forms save to DB but no email notifications
+    - **Fix:** Configure Resend API for email sending
+    - **Lovable Prompt Required:** Yes (for integration)
+
+**Comprehensive testing guide:** See [TESTING_MANUAL.md](TESTING_MANUAL.md)
+**Feature roadmap:** See [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)
 
 ---
 
@@ -213,9 +287,75 @@
     - **Commits:** `74f6351 Improve LCP and code-splitting`, `f56de95 Fix select lazy loading`
     - **Files:** App.tsx, PropertyCard.tsx, Properties.tsx, FeaturedProperties.tsx, index.html
 
+**Phase 5: Bundle Optimization & Strategic Planning (Completed Nov 19-20)**
+18. **✅ Bundle Optimization** - Reduced from 814 KB to 811 KB
+    - Removed unused dependencies:
+      * i18next (redundant with LanguageContext)
+      * embla-carousel (not used)
+      * cmdk (command menu not implemented)
+      * recharts (charts not used)
+      * carousel components (unused)
+    - Cleaner dependency tree
+    - **Result:** 3 KB savings (small but removes maintenance burden)
+
+19. **✅ Global Filter Improvements** - Consistent filter behavior
+    - Fixed filter state synchronization
+    - Improved URL param handling
+    - Better filter reset behavior
+    - **Files:** PropertyFilters.tsx, usePropertyFilters.ts
+
+20. **✅ i18n Translations Enhanced** - Added missing keys
+    - Property type translations complete
+    - Status badge translations
+    - Filter label translations
+    - Admin panel partially translated
+    - **Remaining:** AdminSidebar menu items still hardcoded
+
+21. **✅ Security Fixes** - Enhanced data validation
+    - Input sanitization improved
+    - Form validation strengthened
+    - RLS policies verified
+    - **Status:** Production-ready security posture
+
+22. **✅ Data Integrity Improvements** - Null/undefined handling
+    - Added guards for images[0]
+    - Location.zone fallbacks
+    - Coordinates validation
+    - **Remaining:** Some guards still needed (see Known Issues)
+
+23. **✅ Testing Manual Created** - TESTING_MANUAL.md
+    - 400+ line comprehensive testing guide
+    - Known issues documented with severity
+    - Manual testing checklist by page
+    - Browser/device testing matrix
+    - Accessibility testing guide
+    - Performance verification steps
+    - **File:** TESTING_MANUAL.md
+
+24. **✅ Strategic Roadmap Created** - STRATEGIC_ROADMAP.md
+    - Multi-agent platform architecture (3,000 MXN/month subscription)
+    - Database schema for agents/subscriptions
+    - Email setup guide (Resend)
+    - Cost analysis and revenue projections
+    - Implementation timeline (4-prompt series)
+    - Decision points documented
+    - **File:** STRATEGIC_ROADMAP.md
+
 ### ⚠️ In Progress / Next Priority
 
-18. **⚠️ Mobile Performance Optimization** - CRITICAL PRIORITY
+25. **⚠️ Critical Bug Fixes** - NEXT LOVABLE PROMPT
+    - **Issues to address:**
+      * Zone filter language bug (critical)
+      * Missing property types: "terrenos"
+      * Missing property status: "pendiente"
+      * Hero price slider (single → dual-handle)
+      * Homepage operation filter (add buy/rent)
+      * Logarithmic price sliders (all pages)
+    - **Priority:** CRITICAL - Blocks production launch
+    - **Target:** Submit prompt this week
+    - **Estimated Effort:** 1 comprehensive prompt
+
+26. **⚠️ Mobile Performance Optimization** - HIGH PRIORITY
     - **Issue:** Mobile LCP at 5.0s (target: <2.5s), Performance score 80/100
     - **Progress:** Improved from 73 → 80, but LCP still critical
     - **Root causes identified:**
@@ -226,7 +366,7 @@
     - **Priority:** CRITICAL - Mobile is 50%+ of traffic
     - **Target:** Mobile Performance 90+, LCP <2.5s
 
-19. **⚠️ Accessibility Improvements** - HIGH PRIORITY
+27. **⚠️ Accessibility Improvements** - HIGH PRIORITY
     - **Issue:** Score 83/100 on both mobile and desktop (target: 95+)
     - **Failing audits:**
       * Buttons without accessible names (icon-only buttons need aria-label)
@@ -238,18 +378,18 @@
 
 ### ❌ Still Pending (Non-Blocking)
 
-20. **⚠️ Empty Database** - No properties yet
+28. **⚠️ Empty Database** - No properties yet
     - Decision: Yas will add properties manually (not using seed data)
     - ✅ UNBLOCKED - Admin panel fully operational!
     - **Next Step:** Yas signs up at `/auth`, adds properties at `/admin/properties`
 
-21. **❌ Email Configuration** - Not configured yet
+29. **❌ Email Configuration** - Not configured yet
     - EmailJS account not created
     - Forms save to database ✅ but don't send email
     - **Priority:** MEDIUM (optional - forms work without it)
     - **Estimate:** 2 hours to configure
 
-20. **⚠️ Additional Performance Opportunities**
+30. **⚠️ Additional Performance Opportunities**
     - Unused JavaScript reduction (193 KiB remaining)
     - Unused CSS cleanup (10 KiB)
     - Long main-thread tasks optimization
@@ -258,25 +398,26 @@
 
 ### 📊 Updated Status
 
-**Overall Project Status:** 97% Complete! 🎉 (was 95%, 80%, 72%, originally 65%)
+**Overall Project Status:** 98% Complete! 🎉 (was 97%, 95%, 80%, 72%, originally 65%)
 
-| Aspect | Original | Nov 16 | Current (Nov 17) | Status |
-|--------|----------|--------|------------------|---------|
-| **Frontend UI/UX** | 95% | 95% | 95% | ✅ Excellent |
-| **Database Schema** | 90% | 100% | 100% | ✅ Complete with all tables! |
-| **Backend Integration** | 70% | 95% | 95% | ✅ All critical systems working |
-| **SEO Optimization** | 40% | 60% | **100%** | ✅ Perfect 100/100 score! |
-| **Performance (Desktop)** | 60% | 80% | **97%** | ✅ Excellent 97/100! |
-| **Performance (Mobile)** | 60% | 75% | **80%** | ⚠️ LCP 5.0s needs work |
-| **Accessibility** | 70% | 85% | **83%** | ⚠️ Needs improvement |
-| **Content Management** | 20% | 95% | 95% | ✅ Admin panel fully functional! |
-| **Security & Compliance** | 40% | 60% | 95% | ✅ Privacy/Terms + Route protection |
-| **Operational Readiness** | 35% | 80% | 95% | ✅ Production ready! |
+| Aspect | Original | Nov 16 | Nov 17 | Current (Nov 20) | Status |
+|--------|----------|--------|--------|------------------|---------|
+| **Frontend UI/UX** | 95% | 95% | 95% | 95% | ✅ Excellent |
+| **Database Schema** | 90% | 100% | 100% | 100% | ✅ Complete with all tables! |
+| **Backend Integration** | 70% | 95% | 95% | 95% | ✅ All critical systems working |
+| **SEO Optimization** | 40% | 60% | **100%** | **100%** | ✅ Perfect 100/100 score! |
+| **Performance (Desktop)** | 60% | 80% | **97%** | **97%** | ✅ Excellent 97/100! |
+| **Performance (Mobile)** | 60% | 75% | 80% | 80% | ⚠️ LCP 5.0s needs work |
+| **Accessibility** | 70% | 85% | 83% | 83% | ⚠️ Needs improvement |
+| **Content Management** | 20% | 95% | 95% | 95% | ✅ Admin panel fully functional! |
+| **Security & Compliance** | 40% | 60% | 95% | 95% | ✅ Privacy/Terms + Route protection |
+| **Operational Readiness** | 35% | 80% | 95% | **98%** | ✅ Production ready with known issues! |
+| **Documentation** | 60% | 80% | 85% | **98%** | ✅ Testing manual + strategic roadmap! |
 
 **Can users browse properties?** ⚠️ Yes (using mock fallback until Yas adds real data)
 **Can admins add properties?** ✅ **YES!** Admin panel fully working with image upload
-**Can leads be captured?** ✅ **YES!** Forms save to database (email pending EmailJS config)
-**Can it launch this week?** ✅ **YES!** Just needs properties + EmailJS (optional for MVP)
+**Can leads be captured?** ✅ **YES!** Forms save to database (email pending Resend config)
+**Can it launch this week?** ⚠️ **ALMOST!** Needs critical bug fixes (zone filter) + properties
 
 **Updated Timeline:**
 - ~~**Auth Fix:**~~ ✅ **DONE** (Nov 16 evening)
@@ -286,9 +427,14 @@
 - ~~**Security Hardening:**~~ ✅ **DONE** (Nov 16 late night)
 - ~~**Favorites Sync:**~~ ✅ **DONE** (Nov 16 late night)
 - ~~**Health Monitoring:**~~ ✅ **DONE** (Nov 16 late night)
+- ~~**SEO & Performance:**~~ ✅ **DONE** (Nov 17)
+- ~~**Bundle Optimization:**~~ ✅ **DONE** (Nov 19-20)
+- ~~**Testing Manual:**~~ ✅ **DONE** (Nov 20)
+- ~~**Strategic Roadmap:**~~ ✅ **DONE** (Nov 20)
+- **Critical Bug Fixes (Lovable Prompt):** This week
 - **Yas Signs Up & Adds Properties:** 1-2 days
-- **EmailJS Configuration (Optional for MVP):** 2 hours
-- **🚀 READY TO LAUNCH:** NOW! (with mock data) or 1-2 days (with real properties)
+- **Email Configuration (Resend - Optional):** 2-3 hours
+- **🚀 READY TO LAUNCH:** 3-5 days (after bug fixes + properties)
 
 ---
 

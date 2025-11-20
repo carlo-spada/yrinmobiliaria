@@ -1,13 +1,15 @@
 # 🌟 Features Overview - YR Inmobiliaria
 
-**Last Updated:** November 16, 2025 (late night)
-**Project Status:** 95% Complete - Production Ready! 🚀
+**Last Updated:** November 20, 2025
+**Project Status:** 98% Complete - Production Ready with Known Issues 🚀
 
 Complete feature list and capabilities of the YR Inmobiliaria website.
 
-## 🆕 Recently Added Features (Nov 16, 2025)
+**Note:** This document covers implemented features. For planned features and roadmap, see [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md).
 
-### Phase 1: Admin Panel & Management (Evening)
+## 🆕 Recently Added Features
+
+### Phase 1-2: Admin Panel & Business Flows (Nov 16, 2025)
 - ✅ **Admin Dashboard** - Stats overview with property/inquiry/visit counts
 - ✅ **Property Management** - Full CRUD with image upload system
 - ✅ **Image Upload System** - Drag-and-drop with WebP optimization
@@ -18,18 +20,30 @@ Complete feature list and capabilities of the YR Inmobiliaria website.
 - ✅ **Audit Logs** - Activity tracking for admin actions
 - ✅ **Settings Page** - Platform configuration options
 - ✅ **Admin Authentication** - Fixed race condition, auto-grant for specific emails
-
-### Phase 2: Business Flows & Security (Late Night)
-- ✅ **Contact Form → Database** - Now saves to `contact_inquiries` before email
-- ✅ **Schedule Form → Database** - Now saves to `scheduled_visits` before email
+- ✅ **Contact Form → Database** - Saves to `contact_inquiries` before email
+- ✅ **Schedule Form → Database** - Saves to `scheduled_visits` before email
 - ✅ **Admin Route Protection** - /admin/seed secured with AdminLayout
 - ✅ **Privacy Policy Page** - Bilingual legal page at /privacidad
 - ✅ **Terms of Service Page** - Bilingual legal page at /terminos
 - ✅ **Boot-Time Validation** - Validates Supabase env vars on startup
 - ✅ **Favorites Sync** - Authenticated users sync to `user_favorites` table
 - ✅ **Health Check Page** - Monitors 5 critical services at /admin/health
-- ✅ **i18next Cleanup** - Unified LanguageContext approach
-- ✅ **Testing Checklist** - 400+ test cases documented
+
+### Phase 3: SEO & Performance (Nov 17, 2025)
+- ✅ **SEO Perfect 100/100** - Structured data, Open Graph, Twitter Cards, sitemap
+- ✅ **Desktop Performance 97/100** - Code splitting, lazy loading, priority images
+- ✅ **Best Practices 100/100** - Security, HTTPS, no vulnerabilities
+- ✅ **Smart Code Splitting** - Map & admin pages load on-demand (~150 KB savings)
+- ✅ **Font Optimization** - Preconnect & preload hints for Google Fonts
+
+### Phase 4: Optimization & Planning (Nov 19-20, 2025)
+- ✅ **Bundle Optimization** - Removed unused dependencies (811 KB from 814 KB)
+- ✅ **Global Filter Improvements** - Consistent filter behavior across pages
+- ✅ **i18n Translations** - Added missing translation keys
+- ✅ **Security Fixes** - Enhanced data validation and guards
+- ✅ **Data Integrity** - Improved null/undefined handling
+- ✅ **Testing Manual** - Comprehensive manual testing checklist (TESTING_MANUAL.md)
+- ✅ **Strategic Roadmap** - Multi-agent platform architecture (STRATEGIC_ROADMAP.md)
 
 ### Backend Enhancements
 - ✅ **Supabase Storage** - Property image storage bucket
@@ -442,30 +456,64 @@ The codebase is ready to be converted to a PWA with minimal changes:
 - **CDN** - Global content delivery
 - **Rollback** - Easy version control
 
-## 🔄 Future Enhancements
+## ⚠️ Known Issues (Must Fix Before Production)
 
-### Planned Features
-- [x] ~~User authentication and accounts~~ ✅ **DONE** (Auth + Roles)
-- [x] ~~Admin dashboard for property management~~ ✅ **DONE** (8 admin pages)
-- [x] ~~Image upload system~~ ✅ **DONE** (Supabase Storage + WebP)
-- [ ] CMS integration
-- [ ] Property comparison tool
-- [ ] Mortgage calculator
-- [ ] 360° virtual tours
-- [ ] Video walkthroughs
-- [ ] Live chat support
-- [ ] Email newsletter
-- [ ] Property alerts
-- [ ] Advanced search (radius, amenities)
-- [ ] Agent profiles
-- [ ] Property reviews
-- [ ] Neighborhood guides
+### Critical Issues
+1. ❌ **Zone filter language bug** - Uses Spanish names as values, breaks in English
+2. ❌ **Missing property types** - "terrenos" (land) not in property type enum
+3. ❌ **Missing property status** - "pendiente" (pending) not in status enum
+
+### High Priority Issues
+4. ⚠️ **Hero price slider** - Single-handle (inconsistent with /propiedades dual-handle)
+5. ⚠️ **Homepage operation filter** - Missing buy/rent toggle
+6. ⚠️ **A11y gaps** - Icon buttons missing aria-labels (Score 83, target 95+)
+
+### Medium Priority Issues
+7. ⚠️ **Map clustering** - Always enabled, adds visual clutter for small datasets
+8. ⚠️ **Hardcoded strings** - PropertyFilter types, AdminSidebar menu need i18n
+9. ⚠️ **Data guards** - Need null checks for images[0], location.zone
+10. ⚠️ **About Us content** - Placeholder text and images
+11. ⚠️ **Email setup** - contacto@yrinmobiliaria.com send/receive not configured
+
+**See [TESTING_MANUAL.md](TESTING_MANUAL.md) for detailed issue tracking.**
+
+---
+
+## 🔄 Planned Features & Roadmap
+
+### Short-Term (Next 2-4 Weeks)
+- [ ] **Email Integration** - Resend API for contact/schedule forms
+- [ ] **Accessibility Improvements** - ARIA labels, contrast fixes (83 → 95+)
+- [ ] **Mobile Performance** - LCP optimization (5.0s → <2.5s)
+- [ ] **Critical Bug Fixes** - Zone filter, enums, sliders
+
+### Medium-Term (1-3 Months)
+- [ ] **Multi-Agent Platform** - Subscription system (3,000 MXN/month)
+  - Agent profile pages (customizable)
+  - Agent property management
+  - Agent subscription management
+  - Payment integration (Stripe or manual)
+- [ ] **Advanced Search** - Radius search, saved searches, email alerts
+- [ ] **Property Comparison** - Side-by-side comparison tool
+
+### Long-Term (3-6 Months)
+- [ ] **Virtual Tours** - 360° property photos
+- [ ] **Video Walkthroughs** - Property video integration
+- [ ] **Mortgage Calculator** - Mexican market rates
+- [ ] **CRM Integration** - Lead management and tracking
+- [ ] **Agent Profiles** - Individual agent pages with bios
+- [ ] **Property Reviews** - User testimonials and ratings
+- [ ] **Neighborhood Guides** - Area information and highlights
+- [ ] **Property Alerts** - Email notifications for new listings
+
+**See [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) for detailed feature planning and architecture.**
 
 ### API Integration Ready
 - MLS (Multiple Listing Service)
 - Real estate platforms
-- CRM systems
-- Payment gateways
+- CRM systems (HubSpot, Salesforce)
+- Payment gateways (Stripe)
+- Email services (Resend)
 - Virtual tour providers
 - Document signing services
 
