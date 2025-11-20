@@ -93,15 +93,19 @@ export interface Translation {
       departamento: string;
       local: string;
       oficina: string;
+      terrenos: string;
     };
     operations: {
       venta: string;
       renta: string;
     };
+    operationLabel: string;
+    operationPlaceholder: string;
     status: {
       sale: string;
       rent: string;
       sold: string;
+      pending: string;
     };
     sort: {
       relevance: string;

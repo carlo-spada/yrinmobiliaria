@@ -94,15 +94,19 @@ export const translations: Translations = {
         departamento: 'Departamento',
         local: 'Local Comercial',
         oficina: 'Oficina',
+        terrenos: 'Terrenos',
       },
       operations: {
         venta: 'Venta',
         renta: 'Renta',
       },
+      operationLabel: 'Operación',
+      operationPlaceholder: 'Todas las operaciones',
       status: {
         sale: 'En Venta',
         rent: 'En Renta',
         sold: 'Vendido',
+        pending: 'Pendiente',
       },
       sort: {
         relevance: 'Relevancia',
@@ -298,15 +302,19 @@ export const translations: Translations = {
         departamento: 'Apartment',
         local: 'Commercial',
         oficina: 'Office',
+        terrenos: 'Land',
       },
       operations: {
         venta: 'Sale',
         renta: 'Rent',
       },
+      operationLabel: 'Operation',
+      operationPlaceholder: 'All operations',
       status: {
         sale: 'For Sale',
         rent: 'For Rent',
         sold: 'Sold',
+        pending: 'Pending',
       },
       sort: {
         relevance: 'Relevance',

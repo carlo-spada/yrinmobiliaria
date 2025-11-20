@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/utils/LanguageContext';
 import { PropertyFilters as PropertyFiltersType, PropertyType, PropertyOperation } from '@/types/property';
 import { useServiceZones } from '@/hooks/useServiceZones';
+import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 
 interface PropertyFiltersProps {
   filters: PropertyFiltersType;
@@ -16,7 +17,7 @@ interface PropertyFiltersProps {
   isMobile?: boolean;
 }
 
-const propertyTypes: PropertyType[] = ['casa', 'departamento', 'local', 'oficina'];
+const propertyTypes: PropertyType[] = ['casa', 'departamento', 'local', 'oficina', 'terrenos'];
 const operations: PropertyOperation[] = ['venta', 'renta'];
 
 export function PropertyFilters({ filters, onFiltersChange, isMobile }: PropertyFiltersProps) {
@@ -24,10 +25,17 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
   const { zones } = useServiceZones();
   const [localFilters, setLocalFilters] = useState(filters);
 
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    filters.minPrice || 0,
-    filters.maxPrice || 100000000,
+  // Convert price filters to logarithmic slider values
+  const [sliderValues, setSliderValues] = useState<[number, number]>([
+    fromLogPrice(filters.minPrice || MIN_PRICE),
+    fromLogPrice(filters.maxPrice || MAX_PRICE),
   ]);
+  
+  // Convert slider values to actual prices
+  const priceRange: [number, number] = [
+    toLogPrice(sliderValues[0]),
+    toLogPrice(sliderValues[1])
+  ];
 
   const handleTypeToggle = (type: PropertyType) => {
     const newFilters = { ...localFilters };
@@ -63,10 +71,11 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
   };
 
   const handlePriceChange = (value: number[]) => {
-    setPriceRange([value[0], value[1]]);
+    setSliderValues(value as [number, number]);
+    const prices = [toLogPrice(value[0]), toLogPrice(value[1])];
     const newFilters = { ...localFilters };
-    newFilters.minPrice = value[0];
-    newFilters.maxPrice = value[1];
+    newFilters.minPrice = prices[0] > MIN_PRICE ? prices[0] : undefined;
+    newFilters.maxPrice = prices[1] < MAX_PRICE ? prices[1] : undefined;
     setLocalFilters(newFilters);
     if (!isMobile) onFiltersChange(newFilters);
   };
@@ -95,20 +104,12 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
 
   const handleClearFilters = () => {
     setLocalFilters({});
-    setPriceRange([0, 100000000]);
+    setSliderValues([0, 100]);
     onFiltersChange({});
   };
 
   const handleApplyFilters = () => {
     onFiltersChange(localFilters);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 0,
-    }).format(price);
   };
 
   return (
@@ -222,10 +223,10 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
         <div className="space-y-4">
           <Slider
             id="price-slider"
-              min={0}
-              max={100000000}
-              step={100000}
-            value={priceRange}
+            min={0}
+            max={100}
+            step={1}
+            value={sliderValues}
             onValueChange={handlePriceChange}
             className="w-full"
             aria-label="Price range filter"
@@ -236,7 +237,12 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
               type="number"
               label={t.properties?.minPrice || 'Minimum'}
               value={priceRange[0]}
-              onChange={(e) => handlePriceChange([Number(e.target.value), priceRange[1]])}
+              onChange={(e) => {
+                const price = Number(e.target.value);
+                const sliderVal = fromLogPrice(price);
+                setSliderValues([sliderVal, sliderValues[1]]);
+                handlePriceChange([sliderVal, sliderValues[1]]);
+              }}
               aria-label="Minimum price"
             />
             <Input
@@ -244,12 +250,17 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
               type="number"
               label={t.properties?.maxPrice || 'Maximum'}
               value={priceRange[1]}
-              onChange={(e) => handlePriceChange([priceRange[0], Number(e.target.value)])}
+              onChange={(e) => {
+                const price = Number(e.target.value);
+                const sliderVal = fromLogPrice(price);
+                setSliderValues([sliderValues[0], sliderVal]);
+                handlePriceChange([sliderValues[0], sliderVal]);
+              }}
               aria-label="Maximum price"
             />
           </div>
           <p className="text-xs text-muted-foreground" aria-live="polite">
-            {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+            {formatMXN(priceRange[0])} - {formatMXN(priceRange[1])}
           </p>
         </div>
       </div>

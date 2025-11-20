@@ -6,13 +6,24 @@ import { Slider } from '@/components/ui/slider';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServiceZones } from '@/hooks/useServiceZones';
+import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 
 export function HeroSection() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { zones: dbZones } = useServiceZones();
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
+  
+  // Logarithmic slider values (0-100 range)
+  const [sliderValues, setSliderValues] = useState<[number, number]>([0, 100]);
+  
+  // Convert to actual prices
+  const priceRange: [number, number] = [
+    toLogPrice(sliderValues[0]),
+    toLogPrice(sliderValues[1])
+  ];
+  
   const [selectedType, setSelectedType] = useState('all');
+  const [selectedOperation, setSelectedOperation] = useState('all');
   const [selectedZone, setSelectedZone] = useState('all');
 
   const propertyTypes = [
@@ -21,6 +32,13 @@ export function HeroSection() {
     { value: 'departamento', label: t.properties.types.departamento },
     { value: 'local', label: t.properties.types.local },
     { value: 'oficina', label: t.properties.types.oficina },
+    { value: 'terrenos', label: t.properties.types.terrenos },
+  ];
+
+  const operations = [
+    { value: 'all', label: t.properties.operationPlaceholder },
+    { value: 'venta', label: t.properties.operations.venta },
+    { value: 'renta', label: t.properties.operations.renta },
   ];
 
   const zones = [
@@ -35,28 +53,23 @@ export function HeroSection() {
       params.set('type', selectedType);
     }
     
+    if (selectedOperation !== 'all') {
+      params.set('operation', selectedOperation);
+    }
+    
     if (selectedZone !== 'all') {
       params.set('zone', selectedZone);
     }
     
-    // Only set price params if not default range
-    if (priceRange[0] > 0) {
+    // Only set price params if not at extremes
+    if (priceRange[0] > MIN_PRICE) {
       params.set('minPrice', priceRange[0].toString());
     }
-    if (priceRange[1] < 100000000) {
+    if (priceRange[1] < MAX_PRICE) {
       params.set('maxPrice', priceRange[1].toString());
     }
     
     navigate(`/propiedades?${params.toString()}`);
-  };
-
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
   };
 
   return (
@@ -137,7 +150,7 @@ export function HeroSection() {
 
           {/* Search Bar */}
           <div className="bg-background/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Select
                 options={propertyTypes}
                 value={selectedType}
@@ -145,6 +158,14 @@ export function HeroSection() {
                 className="bg-background"
                 label={t.hero.propertyType}
                 aria-label={t.hero.propertyType}
+              />
+              <Select
+                options={operations}
+                value={selectedOperation}
+                onChange={(e) => setSelectedOperation(e.target.value)}
+                className="bg-background"
+                label={t.properties.operationLabel}
+                aria-label={t.properties.operationLabel}
               />
               <Select
                 options={zones}
@@ -165,16 +186,16 @@ export function HeroSection() {
                   {t.hero.priceRange}
                 </label>
                 <span className="text-sm font-semibold text-primary">
-                  {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                  {formatMXN(priceRange[0])} - {formatMXN(priceRange[1])}
                 </span>
               </div>
               <Slider
                 id="hero-price-slider"
-                value={priceRange}
-                onValueChange={(value) => setPriceRange(value as [number, number])}
+                value={sliderValues}
+                onValueChange={(value) => setSliderValues(value as [number, number])}
                 min={0}
-                max={100000000}
-                step={500000}
+                max={100}
+                step={1}
                 className="w-full"
                 aria-label={t.hero.priceRange}
               />
