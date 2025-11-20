@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
+import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -32,16 +33,18 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AdminSidebar />
-        <div className="flex-1 flex flex-col">
-          <AdminHeader />
-          <main className="flex-1 p-6 bg-background">
-            {children}
-          </main>
+    <ProfileCompletionGuard>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AdminSidebar />
+          <div className="flex-1 flex flex-col">
+            <AdminHeader />
+            <main className="flex-1 p-6 bg-background">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProfileCompletionGuard>
   );
 };

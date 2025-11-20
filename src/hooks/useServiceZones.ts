@@ -35,6 +35,8 @@ export function useServiceZones() {
       value: zone.name_es, // Use actual Spanish name (matches what's stored in properties)
       label: language === 'es' ? zone.name_es : zone.name_en,
       id: zone.id,
+      name_es: zone.name_es, // Keep original for backward compatibility
+      name_en: zone.name_en,
     };
   });
 

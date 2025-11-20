@@ -5,6 +5,7 @@ import {
   MessageSquare, 
   Calendar, 
   Users, 
+  UserPlus,
   FileText,
   Settings,
   Activity
@@ -33,6 +34,7 @@ export function AdminSidebar() {
   const menuItems = [
     { title: t.admin.dashboard, url: '/admin', icon: LayoutDashboard, exactMatch: true },
     { title: t.admin.properties, url: '/admin/properties', icon: Home },
+    { title: "Agentes", url: '/admin/agents', icon: UserPlus },
     { title: t.admin.zones, url: '/admin/zones', icon: MapPin },
     { title: t.admin.inquiries, url: '/admin/inquiries', icon: MessageSquare },
     { title: t.admin.visits, url: '/admin/visits', icon: Calendar },
