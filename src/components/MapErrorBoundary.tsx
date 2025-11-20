@@ -45,11 +45,11 @@ export class MapErrorBoundary extends Component<Props, State> {
               <Button onClick={() => window.location.reload()}>
                 {language === "es" ? "Reintentar" : "Retry"}
               </Button>
-              <Button variant="outline" asChild>
-                <Link to="/propiedades">
-                  {language === "es" ? "Ver lista" : "View list"}
-                </Link>
-              </Button>
+            <Button variant="outline" asChild>
+              <Link to="/propiedades" replace>
+                {language === "es" ? "Ver lista" : "View list"}
+              </Link>
+            </Button>
             </div>
           </div>
         </div>

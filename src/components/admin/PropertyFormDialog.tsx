@@ -42,12 +42,18 @@ const propertyFormSchema = z.object({
   zone: z.string().min(1, 'Zona es requerida').max(100),
   neighborhood: z.string().min(1, 'Colonia es requerida').max(100),
   address: z.string().min(1, 'Dirección es requerida').max(200),
-  lat: z.string().refine((val) => !isNaN(parseFloat(val)) && Math.abs(parseFloat(val)) <= 90, {
-    message: 'Latitud inválida',
-  }),
-  lng: z.string().refine((val) => !isNaN(parseFloat(val)) && Math.abs(parseFloat(val)) <= 180, {
-    message: 'Longitud inválida',
-  }),
+  lat: z.string().refine(
+    (val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 15.6 && parseFloat(val) <= 18.7,
+    {
+      message: 'Las coordenadas deben estar dentro del estado de Oaxaca (lat: 15.6-18.7)',
+    }
+  ),
+  lng: z.string().refine(
+    (val) => !isNaN(parseFloat(val)) && parseFloat(val) >= -98.6 && parseFloat(val) <= -93.8,
+    {
+      message: 'Las coordenadas deben estar dentro del estado de Oaxaca (lng: -98.6--93.8)',
+    }
+  ),
   bedrooms: z.string().refine((val) => val === '' || (!isNaN(parseInt(val)) && parseInt(val) >= 0 && parseInt(val) <= 50), {
     message: 'Recámaras debe estar entre 0 y 50',
   }).optional(),

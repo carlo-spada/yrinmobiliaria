@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
@@ -17,6 +17,7 @@ import { Select } from "@/components/ui/select-enhanced";
 import { Slider } from "@/components/ui/slider";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { MapErrorBoundary } from "@/components/MapErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton-loader";
 import {
   X,
   Menu,
@@ -137,7 +138,7 @@ export default function MapView() {
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   
   // Fetch all properties (bounds filtering done client-side)
-  const { data: allProperties = [], isLoading, error } = useProperties({ 
+  const { data: allProperties = [], isLoading } = useProperties({ 
     featured: false,
   });
   
@@ -163,27 +164,41 @@ export default function MapView() {
   };
 
   // Filter properties with valid coordinates
-  const validProperties = allProperties.filter(
-    (p) =>
-      p.location?.coordinates &&
-      isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
-  );
+  const validProperties = useMemo(() => {
+    return allProperties.filter(
+      (p) =>
+        p.location?.coordinates &&
+        isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
+    );
+  }, [allProperties]);
 
   // Diagnostics: Log property counts
   useEffect(() => {
-    console.warn(`[Map Diagnostics] Total properties: ${allProperties.length}, Valid coords: ${validProperties.length}, Filtered: ${filteredProperties.length}`);
+    console.warn(`[Map Diagnostics] Total properties: ${allProperties.length}, Valid coords: ${validProperties.length}`);
     if (allProperties.length > validProperties.length) {
       console.warn(`[Map Diagnostics] ${allProperties.length - validProperties.length} properties have invalid/missing coordinates`);
     }
   }, [allProperties.length, validProperties.length]);
 
-  // Apply filters
-  const filteredProperties = validProperties.filter((p) => {
-    if (filters.type !== "all" && p.type !== filters.type) return false;
-    if (filters.zone !== "all" && p.location.zone !== filters.zone) return false;
-    if (p.price < filters.priceRange[0] || p.price > filters.priceRange[1]) return false;
-    return true;
-  });
+  // Apply filters (including bounds filtering client-side)
+  const filteredProperties = useMemo(() => {
+    return validProperties.filter((p) => {
+      if (filters.type !== "all" && p.type !== filters.type) return false;
+      if (filters.zone !== "all" && p.location.zone !== filters.zone) return false;
+      if (p.price < filters.priceRange[0] || p.price > filters.priceRange[1]) return false;
+      
+      // Client-side bounds filtering
+      if (mapBounds) {
+        const lat = normalizeCoord(p.location.coordinates.lat);
+        const lng = normalizeCoord(p.location.coordinates.lng);
+        if (lat === null || lng === null) return false;
+        if (lat < mapBounds.getSouth() || lat > mapBounds.getNorth()) return false;
+        if (lng < mapBounds.getWest() || lng > mapBounds.getEast()) return false;
+      }
+      
+      return true;
+    });
+  }, [validProperties, filters, mapBounds]);
 
   const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
 
@@ -251,12 +266,77 @@ export default function MapView() {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    // Debounce to avoid excessive fetches during pan/zoom
+    // Debounce to avoid excessive re-renders during pan/zoom
     debounceRef.current = window.setTimeout(() => {
       setMapBounds(bounds);
-      console.warn(`[Map Diagnostics] Bounds changed - fetching properties in viewport`);
     }, 400);
   }, []);
+
+  // Memoized markers for performance
+  const markers = useMemo(() => {
+    return filteredProperties.map((property) => {
+      // Normalize and validate coordinates
+      const lat = normalizeCoord(property.location.coordinates.lat);
+      const lng = normalizeCoord(property.location.coordinates.lng);
+      
+      if (!lat || !lng || !isValidCoordinate(lat, lng)) {
+        return null;
+      }
+
+      const isSelected = selectedPropertyId === property.id;
+      
+      return (
+        <Marker
+          key={property.id}
+          position={[lat, lng]}
+          icon={createCustomIcon(property.type, isSelected)}
+          eventHandlers={{
+            click: () => handlePropertyClick(property),
+          }}
+        >
+          <Popup>
+            <div className="w-64">
+              <ResponsiveImage
+                src={property.images[0]}
+                variants={property.imageVariants?.[0]?.variants}
+                alt={
+                  property.imagesAlt?.[0]?.[language] || property.title[language]
+                }
+                className="w-full h-32 object-cover rounded mb-2"
+              />
+              <h3 className="font-semibold text-sm mb-1">
+                {property.title[language]}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {property.location.neighborhood}, {property.location.zone}
+              </p>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-bold text-primary">
+                  ${property.price.toLocaleString()}
+                </span>
+                <Badge
+                  variant={
+                    property.operation === "venta" ? "default" : "secondary"
+                  }
+                >
+                  {property.operation === "venta"
+                    ? language === "es" ? "Venta" : "Sale"
+                    : language === "es" ? "Renta" : "Rent"}
+                </Badge>
+              </div>
+              <Link to={`/propiedad/${property.id}`}>
+                <Button variant="primary" size="sm" className="w-full">
+                  {language === "es" ? "Ver detalles" : "View details"}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </Popup>
+        </Marker>
+      );
+    }).filter(Boolean);
+  }, [filteredProperties, selectedPropertyId, language, handlePropertyClick]);
 
   // Loading state
   if (isLoading) {
@@ -272,27 +352,6 @@ export default function MapView() {
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
-          <h2 className="text-xl font-semibold mb-2">
-            {language === "es" ? "Error al cargar propiedades" : "Error loading properties"}
-          </h2>
-          <p className="text-muted-foreground mb-4">
-            {language === "es"
-              ? "No pudimos cargar las propiedades. Por favor, intenta de nuevo más tarde."
-              : "We couldn't load the properties. Please try again later."}
-          </p>
-          <Button onClick={() => window.location.reload()}>
-            {language === "es" ? "Reintentar" : "Retry"}
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   // Empty state for no valid properties
   if (validProperties.length === 0) {
@@ -454,10 +513,23 @@ export default function MapView() {
           {/* Properties List */}
           <div className="flex-1 overflow-y-auto p-4" ref={listRef}>
             <h3 className="font-semibold text-sm mb-3">
-              {filteredProperties.length}{" "}
-              {language === "es" ? "propiedades" : "properties"}
+              {isLoading
+                ? (language === "es" ? "Cargando..." : "Loading...")
+                : `${filteredProperties.length} ${
+                    language === "es" ? "propiedades" : "properties"
+                  }`}
             </h3>
-            {filteredProperties.length === 0 ? (
+            {isLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="bg-card rounded-lg border border-border p-3">
+                    <Skeleton className="h-24 w-full mb-2 rounded" />
+                    <Skeleton className="h-5 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProperties.length === 0 ? (
               <div className="text-center py-8">
                 <MapPin className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground mb-4">
@@ -547,77 +619,20 @@ export default function MapView() {
             <MapBoundsTracker onBoundsChange={handleBoundsChange} />
             <FlyToLocation center={flyToCenter} />
 
-            {/* Marker Cluster Group with proper wrapping */}
-            <MarkerClusterGroup
-              chunkedLoading
-              maxClusterRadius={50}
-              spiderfyOnMaxZoom={true}
-              showCoverageOnHover={false}
-              zoomToBoundsOnClick={true}
-            >
-              {filteredProperties.map((property) => {
-              // Normalize and validate coordinates
-              const lat = normalizeCoord(property.location.coordinates.lat);
-              const lng = normalizeCoord(property.location.coordinates.lng);
-              
-              if (!lat || !lng || !isValidCoordinate(lat, lng)) {
-                return null;
-              }
-
-              const isSelected = selectedPropertyId === property.id;
-              
-              return (
-                <Marker
-                  key={property.id}
-                  position={[lat, lng]}
-                  icon={createCustomIcon(property.type, isSelected)}
-                  eventHandlers={{
-                    click: () => handlePropertyClick(property),
-                  }}
-                >
-                  <Popup>
-                    <div className="w-64">
-                      <ResponsiveImage
-                        src={property.images[0]}
-                        variants={property.imageVariants?.[0]?.variants}
-                        alt={
-                          property.imagesAlt?.[0]?.[language] || property.title[language]
-                        }
-                        className="w-full h-32 object-cover rounded mb-2"
-                      />
-                      <h3 className="font-semibold text-sm mb-1">
-                        {property.title[language]}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {property.location.neighborhood}, {property.location.zone}
-                      </p>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-bold text-primary">
-                          ${property.price.toLocaleString()}
-                        </span>
-                        <Badge
-                          variant={
-                            property.operation === "venta" ? "default" : "secondary"
-                          }
-                        >
-                          {property.operation === "venta"
-                            ? language === "es" ? "Venta" : "Sale"
-                            : language === "es" ? "Renta" : "Rent"}
-                        </Badge>
-                      </div>
-                      <Link to={`/propiedad/${property.id}`}>
-                        <Button variant="primary" size="sm" className="w-full">
-                          {language === "es" ? "Ver detalles" : "View details"}
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            })}
-            </MarkerClusterGroup>
+            {/* Conditional clustering: only use clustering if >20 properties */}
+            {filteredProperties.length > 20 ? (
+              <MarkerClusterGroup
+                chunkedLoading={false}
+                maxClusterRadius={50}
+                spiderfyOnMaxZoom={true}
+                showCoverageOnHover={false}
+                zoomToBoundsOnClick={true}
+              >
+                {markers}
+              </MarkerClusterGroup>
+            ) : (
+              markers
+            )}
 
             {/* User location marker */}
             {userLocation && (
