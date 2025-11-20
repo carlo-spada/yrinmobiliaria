@@ -68,16 +68,14 @@ serve(async (req) => {
   }
 
   try {
-    // Get client IP for rate limiting
+    // Get client IP for rate limiting (not logged for privacy)
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
                      req.headers.get('x-real-ip') || 
                      'unknown';
     
-    console.log(`Schedule visit submission from IP: ${clientIp}`);
-    
     // Check rate limit
     if (!checkRateLimit(clientIp)) {
-      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      console.warn('Rate limit exceeded for request');
       return new Response(
         JSON.stringify({ 
           error: 'Too many submissions. Please try again later.',

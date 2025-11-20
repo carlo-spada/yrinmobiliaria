@@ -45,6 +45,10 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // NOTE: This client-side admin check is for UX purposes only (showing/hiding UI elements).
+  // All actual data access and mutations are protected by server-side RLS policies.
+  // The isAdmin state can be manipulated via browser dev tools, but this does NOT
+  // grant actual admin privileges as all operations are validated server-side.
   const checkAdminRole = async (userId: string) => {
     try {
       const { data, error } = await supabase

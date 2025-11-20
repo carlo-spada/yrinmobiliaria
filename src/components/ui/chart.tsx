@@ -65,26 +65,43 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+  // Generate CSS safely using React.useEffect to avoid dangerouslySetInnerHTML
+  React.useEffect(() => {
+    const styleId = `chart-style-${id}`;
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+
+    const cssText = Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const rules = colorConfig
+          .map(([key, itemConfig]) => {
+            const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+            // Validate that color is a safe string (hex, hsl, rgb)
+            if (color && /^(#[0-9A-Fa-f]{3,8}|hsl\(|rgb\(|var\()/.test(color)) {
+              return `  --color-${key}: ${color};`;
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .join('\n');
+        
+        return `${prefix} [data-chart=${id}] {\n${rules}\n}`;
+      })
+      .join('\n');
+
+    styleElement.textContent = cssText;
+
+    return () => {
+      styleElement?.remove();
+    };
+  }, [id, colorConfig]);
+
+  return null;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
