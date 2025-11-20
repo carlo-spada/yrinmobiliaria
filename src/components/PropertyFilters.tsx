@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/utils/LanguageContext';
 import { PropertyFilters as PropertyFiltersType, PropertyType, PropertyOperation } from '@/types/property';
+import { useServiceZones } from '@/hooks/useServiceZones';
 
 interface PropertyFiltersProps {
   filters: PropertyFiltersType;
@@ -17,15 +18,15 @@ interface PropertyFiltersProps {
 
 const propertyTypes: PropertyType[] = ['casa', 'departamento', 'local', 'oficina'];
 const operations: PropertyOperation[] = ['venta', 'renta'];
-const zones = ['Centro Histórico', 'Reforma San Felipe', 'Zona Norte', 'Valles Centrales'];
 
 export function PropertyFilters({ filters, onFiltersChange, isMobile }: PropertyFiltersProps) {
   const { t } = useLanguage();
+  const { zones } = useServiceZones();
   const [localFilters, setLocalFilters] = useState(filters);
 
   const [priceRange, setPriceRange] = useState<[number, number]>([
     filters.minPrice || 0,
-    filters.maxPrice || 10000000,
+    filters.maxPrice || 100000000,
   ]);
 
   const handleTypeToggle = (type: PropertyType) => {
@@ -94,7 +95,7 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
 
   const handleClearFilters = () => {
     setLocalFilters({});
-    setPriceRange([0, 10000000]);
+    setPriceRange([0, 100000000]);
     onFiltersChange({});
   };
 
@@ -194,17 +195,17 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
         </Label>
         <div className="space-y-2">
           {zones.map((zone) => (
-            <div key={zone} className="flex items-center space-x-2">
+            <div key={zone.value} className="flex items-center space-x-2">
               <Checkbox
-                id={`zone-${zone}`}
-                checked={localFilters.zone === zone}
-                onCheckedChange={() => handleZoneChange(zone)}
+                id={`zone-${zone.value}`}
+                checked={localFilters.zone === zone.value}
+                onCheckedChange={() => handleZoneChange(zone.value)}
               />
               <label
-                htmlFor={`zone-${zone}`}
+                htmlFor={`zone-${zone.value}`}
                 className="text-sm text-foreground cursor-pointer"
               >
-                {zone}
+                {zone.label}
               </label>
             </div>
           ))}
@@ -221,9 +222,9 @@ export function PropertyFilters({ filters, onFiltersChange, isMobile }: Property
         <div className="space-y-4">
           <Slider
             id="price-slider"
-            min={0}
-            max={10000000}
-            step={100000}
+              min={0}
+              max={100000000}
+              step={100000}
             value={priceRange}
             onValueChange={handlePriceChange}
             className="w-full"

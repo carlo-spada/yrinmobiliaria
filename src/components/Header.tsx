@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useLanguage } from '@/utils/LanguageContext';
+import { useServiceZones } from '@/hooks/useServiceZones';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -26,6 +27,7 @@ export function Header() {
   const location = useLocation();
   const { count: favoritesCount } = useFavorites();
   const { getSetting } = useSiteSettings();
+  const { zones: dbZones } = useServiceZones();
   
   const companyName = getSetting('company_name', 'YR Inmobiliaria');
 
@@ -44,12 +46,7 @@ export function Header() {
     { label: t.propertyTypes.commercial, value: 'local', icon: '🏪' },
   ];
 
-  const zones = [
-    { label: 'Centro Histórico', value: 'Centro Histórico' },
-    { label: 'Reforma San Felipe', value: 'Reforma San Felipe' },
-    { label: 'Zona Norte', value: 'Zona Norte' },
-    { label: 'Valles Centrales', value: 'Valles Centrales' },
-  ];
+  const zones = dbZones;
 
   const isActive = (path: string) => location.pathname === path;
 

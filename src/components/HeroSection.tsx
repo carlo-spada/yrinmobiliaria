@@ -5,10 +5,12 @@ import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useServiceZones } from '@/hooks/useServiceZones';
 
 export function HeroSection() {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { zones: dbZones } = useServiceZones();
   const [priceRange, setPriceRange] = useState([0]);
   const [selectedType, setSelectedType] = useState('all');
   const [selectedZone, setSelectedZone] = useState('all');
@@ -23,10 +25,7 @@ export function HeroSection() {
 
   const zones = [
     { value: 'all', label: t.hero.allZones },
-    { value: 'Centro Histórico', label: 'Centro Histórico' },
-    { value: 'Reforma San Felipe', label: 'Reforma San Felipe' },
-    { value: 'Zona Norte', label: 'Zona Norte' },
-    { value: 'Valles Centrales', label: 'Valles Centrales' },
+    ...dbZones,
   ];
 
   const handleSearch = () => {
