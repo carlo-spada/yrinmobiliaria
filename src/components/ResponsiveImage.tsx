@@ -1,8 +1,14 @@
 import { ImgHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
+type ImageVariants = {
+  avif: Record<number, string>;
+  webp: Record<number, string>;
+};
+
 interface ResponsiveImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'loading'> {
-  src: string;
+  src?: string; // legacy single source
+  variants?: ImageVariants; // preferred: generated variants
   alt: string;
   priority?: boolean;
   sizes?: string;
@@ -18,17 +24,56 @@ interface ResponsiveImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>,
  */
 export function ResponsiveImage({
   src,
+  variants,
   alt,
   priority = false,
   sizes,
   className,
   ...props
 }: ResponsiveImageProps) {
+  // If variants are provided, prefer them (AVIF first, then WebP)
+  if (variants) {
+    const buildSrcSet = (record?: Record<number, string>) =>
+      record
+        ? Object.entries(record)
+            .map(([w, url]) => `${url} ${w}w`)
+            .join(', ')
+        : undefined;
+
+    const avifSrcSet = buildSrcSet(variants.avif);
+    const webpSrcSet = buildSrcSet(variants.webp);
+
+    // Fallback src: pick the largest WebP if available, otherwise AVIF
+    const fallbackSrc =
+      variants.webp?.[Math.max(...Object.keys(variants.webp).map(Number))] ||
+      variants.avif?.[Math.max(...Object.keys(variants.avif).map(Number))] ||
+      '';
+
+    const defaultSizes =
+      sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
+
+    return (
+      <picture>
+        {avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={defaultSizes} />}
+        {webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={defaultSizes} />}
+        <img
+          src={fallbackSrc}
+          alt={alt}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
+          className={cn('transition-opacity duration-300', className)}
+          sizes={defaultSizes}
+          {...props}
+        />
+      </picture>
+    );
+  }
+
   // Default sizes for property images
   const defaultSizes = sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
   
   // Check if image is from Supabase Storage
-  const isSupabase = src.includes('supabase.co/storage');
+  const isSupabase = src ? src.includes('supabase.co/storage') : false;
   
   /**
    * Generate Supabase image transformation srcSet
@@ -63,6 +108,11 @@ export function ResponsiveImage({
   };
   
   const srcset = isSupabase ? generateSupabaseSrcset(src) : undefined;
+
+  // If no src provided, render nothing (caller error guard)
+  if (!src) {
+    return null;
+  }
 
   return (
     <img
