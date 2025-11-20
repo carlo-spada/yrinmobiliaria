@@ -72,6 +72,16 @@ export const useProperties = (filters?: PropertyFilters) => {
           query = query.lte('price', filters.maxPrice);
         }
 
+        // Apply bounds filter if provided (with buffer for edge cases)
+        if (filters?.bounds) {
+          const buffer = 0.1; // Add 0.1 degree buffer to catch properties near edges
+          query = query
+            .gte('location->>coordinates->>lat', (filters.bounds.minLat - buffer).toString())
+            .lte('location->>coordinates->>lat', (filters.bounds.maxLat + buffer).toString())
+            .gte('location->>coordinates->>lng', (filters.bounds.minLng - buffer).toString())
+            .lte('location->>coordinates->>lng', (filters.bounds.maxLng + buffer).toString());
+        }
+
         // Execute query
         const { data, error } = await query;
 
