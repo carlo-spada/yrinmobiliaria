@@ -18,6 +18,8 @@ import { Slider } from "@/components/ui/slider";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { MapErrorBoundary } from "@/components/MapErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton-loader";
+import { useServiceZones } from "@/hooks/useServiceZones";
+import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from "@/utils/priceSliderHelpers";
 import {
   X,
   Menu,
@@ -31,6 +33,7 @@ import {
   AlertCircle,
   Navigation,
   Maximize2,
+  LandPlot,
 } from "lucide-react";
 
 // Property type colors
@@ -39,6 +42,7 @@ const propertyColors = {
   departamento: "#2D5E4F",
   local: "#D4A574",
   oficina: "#B8956A",
+  terrenos: "#8B7355",
 };
 
 // Create custom icons for each property type
@@ -131,33 +135,35 @@ function FlyToLocation({
 }
 
 export default function MapView() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  // Get filters from URL
-  const urlType = searchParams.get("type") || "all";
-  const urlZone = searchParams.get("zone") || "all";
-  const urlMinPrice = searchParams.get("minPrice") || "0";
-  const urlMaxPrice = searchParams.get("maxPrice") || "100000000";
-  const urlPropertyId = searchParams.get("propertyId");
-
+  const { data: allProperties = [], isLoading } = useProperties({ featured: false });
+  const { zones: dbZones } = useServiceZones();
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   
-  // Fetch all properties (bounds filtering done client-side)
-  const { data: allProperties = [], isLoading } = useProperties({ 
-    featured: false,
-  });
+  // URL params
+  const urlType = searchParams.get("type") || "all";
+  const urlZone = searchParams.get("zone") || "all";
+  const urlMinPrice = searchParams.get("minPrice") || MIN_PRICE.toString();
+  const urlMaxPrice = searchParams.get("maxPrice") || MAX_PRICE.toString();
+  const urlPropertyId = searchParams.get("propertyId") || null;
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(urlPropertyId);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
+  // Logarithmic slider values
+  const [sliderValues, setSliderValues] = useState<[number, number]>([
+    fromLogPrice(parseInt(urlMinPrice)),
+    fromLogPrice(parseInt(urlMaxPrice)),
+  ]);
+
   // Filters
   const [filters, setFilters] = useState({
     type: urlType as PropertyType | "all",
     zone: urlZone,
-    priceRange: [parseInt(urlMinPrice), parseInt(urlMaxPrice)],
+    priceRange: [toLogPrice(sliderValues[0]), toLogPrice(sliderValues[1])] as [number, number],
   });
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -167,6 +173,7 @@ export default function MapView() {
     departamento: Building2,
     local: Store,
     oficina: Briefcase,
+    terrenos: LandPlot,
   };
 
   // Filter properties with valid coordinates
@@ -213,8 +220,8 @@ export default function MapView() {
     const params = new URLSearchParams();
     if (filters.type !== "all") params.set("type", filters.type);
     if (filters.zone !== "all") params.set("zone", filters.zone);
-    if (filters.priceRange[0] !== 0) params.set("minPrice", filters.priceRange[0].toString());
-    if (filters.priceRange[1] !== 100000000) params.set("maxPrice", filters.priceRange[1].toString());
+    if (filters.priceRange[0] !== MIN_PRICE) params.set("minPrice", filters.priceRange[0].toString());
+    if (filters.priceRange[1] !== MAX_PRICE) params.set("maxPrice", filters.priceRange[1].toString());
     if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
     
     setSearchParams(params, { replace: true });
@@ -515,23 +522,24 @@ export default function MapView() {
             </h3>
 
             <Select
-              label={language === "es" ? "Tipo de propiedad" : "Property type"}
+              label={t.properties.propertyType}
               options={[
-                { value: "all", label: language === "es" ? "Todos" : "All" },
-                { value: "casa", label: language === "es" ? "Casa" : "House" },
-                { value: "departamento", label: language === "es" ? "Departamento" : "Apartment" },
-                { value: "local", label: language === "es" ? "Local" : "Commercial" },
-                { value: "oficina", label: language === "es" ? "Oficina" : "Office" },
+                { value: "all", label: t.hero.allTypes },
+                { value: "casa", label: t.properties.types.casa },
+                { value: "departamento", label: t.properties.types.departamento },
+                { value: "local", label: t.properties.types.local },
+                { value: "oficina", label: t.properties.types.oficina },
+                { value: "terrenos", label: t.properties.types.terrenos },
               ]}
               value={filters.type}
               onChange={(e) => setFilters({ ...filters, type: e.target.value as any })}
             />
 
             <Select
-              label={language === "es" ? "Zona" : "Zone"}
+              label={t.properties.zone}
               options={[
-                { value: "all", label: language === "es" ? "Todas" : "All" },
-                ...zones.map((zone) => ({ value: zone as string, label: zone as string })),
+                { value: "all", label: t.hero.allZones },
+                ...dbZones,
               ]}
               value={filters.zone}
               onChange={(e) => setFilters({ ...filters, zone: e.target.value })}
@@ -539,19 +547,25 @@ export default function MapView() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">
-                {language === "es" ? "Rango de precio" : "Price range"}
+                {t.properties.priceRange}
               </label>
               <Slider
                 min={0}
-                max={100000000}
-                step={100000}
-                value={filters.priceRange}
-                onValueChange={(value) => setFilters({ ...filters, priceRange: value as [number, number] })}
+                max={100}
+                step={1}
+                value={sliderValues}
+                onValueChange={(value) => {
+                  setSliderValues(value as [number, number]);
+                  setFilters({ 
+                    ...filters, 
+                    priceRange: [toLogPrice(value[0]), toLogPrice(value[1])] 
+                  });
+                }}
                 className="mb-2"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>${(filters.priceRange[0] / 1000000).toFixed(1)}M</span>
-                <span>${(filters.priceRange[1] / 1000000).toFixed(1)}M</span>
+                <span>{formatMXN(filters.priceRange[0])}</span>
+                <span>{formatMXN(filters.priceRange[1])}</span>
               </div>
             </div>
 
@@ -559,19 +573,19 @@ export default function MapView() {
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={() =>
+              onClick={() => {
+                setSliderValues([0, 100]);
                 setFilters({
                   type: "all",
                   zone: "all",
-                  priceRange: [0, 100000000],
-                })
-              }
+                  priceRange: [MIN_PRICE, MAX_PRICE],
+                });
+              }}
             >
-              {language === "es" ? "Limpiar filtros" : "Clear filters"}
+              {t.properties.clearFilters}
             </Button>
           </div>
 
-          {/* Legend */}
           <div className="p-4 border-b">
             <h3 className="font-semibold text-sm mb-3">
               {language === "es" ? "Leyenda" : "Legend"}
@@ -587,13 +601,7 @@ export default function MapView() {
                     />
                     <Icon className="h-4 w-4" />
                     <span className="capitalize">
-                      {type === "casa"
-                        ? language === "es" ? "Casa" : "House"
-                        : type === "departamento"
-                        ? language === "es" ? "Departamento" : "Apartment"
-                        : type === "local"
-                        ? language === "es" ? "Local" : "Commercial"
-                        : language === "es" ? "Oficina" : "Office"}
+                      {t.properties.types[type as keyof typeof t.properties.types]}
                     </span>
                   </div>
                 );

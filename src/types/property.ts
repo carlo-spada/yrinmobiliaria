@@ -1,6 +1,6 @@
-export type PropertyType = "casa" | "departamento" | "local" | "oficina";
+export type PropertyType = "casa" | "departamento" | "local" | "oficina" | "terrenos";
 export type PropertyOperation = "venta" | "renta";
-export type PropertyStatus = "disponible" | "vendida" | "rentada";
+export type PropertyStatus = "disponible" | "vendida" | "rentada" | "pendiente";
 
 export interface PropertyLocation {
   zone: string;

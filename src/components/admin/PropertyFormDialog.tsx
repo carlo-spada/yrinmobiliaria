@@ -32,12 +32,12 @@ const propertyFormSchema = z.object({
   title_en: z.string().min(1, 'Título en inglés es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
   description_es: z.string().max(2000, 'Descripción debe tener máximo 2000 caracteres').optional(),
   description_en: z.string().max(2000, 'Descripción debe tener máximo 2000 caracteres').optional(),
-  type: z.enum(['casa', 'departamento', 'local', 'oficina']),
+  type: z.enum(['casa', 'departamento', 'local', 'oficina', 'terrenos']),
   operation: z.enum(['venta', 'renta']),
   price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
     message: 'Precio debe ser mayor a 0',
   }),
-  status: z.enum(['disponible', 'vendida', 'rentada']),
+  status: z.enum(['disponible', 'vendida', 'rentada', 'pendiente']),
   featured: z.boolean(),
   zone: z.string().min(1, 'Zona es requerida').max(100),
   neighborhood: z.string().min(1, 'Colonia es requerida').max(100),
@@ -334,6 +334,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
                   <SelectItem value="departamento">Departamento</SelectItem>
                   <SelectItem value="local">Local</SelectItem>
                   <SelectItem value="oficina">Oficina</SelectItem>
+                  <SelectItem value="terrenos">Terrenos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,6 +360,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
                   <SelectItem value="disponible">Disponible</SelectItem>
                   <SelectItem value="vendida">Vendida</SelectItem>
                   <SelectItem value="rentada">Rentada</SelectItem>
+                  <SelectItem value="pendiente">Pendiente</SelectItem>
                 </SelectContent>
               </Select>
             </div>

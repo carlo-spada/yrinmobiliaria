@@ -377,8 +377,8 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       property_operation: "venta" | "renta"
-      property_status: "disponible" | "vendida" | "rentada"
-      property_type: "casa" | "departamento" | "local" | "oficina"
+      property_status: "disponible" | "vendida" | "rentada" | "pendiente"
+      property_type: "casa" | "departamento" | "local" | "oficina" | "terrenos"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -508,8 +508,8 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       property_operation: ["venta", "renta"],
-      property_status: ["disponible", "vendida", "rentada"],
-      property_type: ["casa", "departamento", "local", "oficina"],
+      property_status: ["disponible", "vendida", "rentada", "pendiente"],
+      property_type: ["casa", "departamento", "local", "oficina", "terrenos"],
     },
   },
 } as const
