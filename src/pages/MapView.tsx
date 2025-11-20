@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, Fragment } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select-enhanced";
 import { Slider } from "@/components/ui/slider";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { MapErrorBoundary } from "@/components/MapErrorBoundary";
 import {
   X,
   Menu,
@@ -326,35 +327,36 @@ export default function MapView() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="bg-background border-b z-10 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold">
-          {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
-        </h1>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUseMyLocation}
-            className="hidden md:flex"
-            title={language === "es" ? "Usar mi ubicación" : "Use my location"}
-          >
-            <Navigation className="h-4 w-4 mr-2" />
-            {language === "es" ? "Mi ubicación" : "My location"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="lg:hidden"
-          >
-            {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </Button>
+    <MapErrorBoundary language={language}>
+      <div className="h-screen flex flex-col">
+        {/* Header */}
+        <div className="bg-background border-b z-10 px-4 py-3 flex items-center justify-between">
+          <h1 className="text-xl font-bold">
+            {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
+          </h1>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUseMyLocation}
+              className="hidden md:flex"
+              title={language === "es" ? "Usar mi ubicación" : "Use my location"}
+            >
+              <Navigation className="h-4 w-4 mr-2" />
+              {language === "es" ? "Mi ubicación" : "My location"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden"
+            >
+              {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 flex overflow-hidden relative">
         {/* Sidebar */}
         <div
           className={`
@@ -529,8 +531,14 @@ export default function MapView() {
             <MapBoundsTracker onBoundsChange={handleBoundsChange} />
             <FlyToLocation center={flyToCenter} />
 
-            {/* Render markers directly without clustering for stability */}
-            <Fragment>
+            {/* Marker Cluster Group with proper wrapping */}
+            <MarkerClusterGroup
+              chunkedLoading
+              maxClusterRadius={50}
+              spiderfyOnMaxZoom={true}
+              showCoverageOnHover={false}
+              zoomToBoundsOnClick={true}
+            >
               {filteredProperties.map((property) => {
               // Normalize and validate coordinates
               const lat = normalizeCoord(property.location.coordinates.lat);
@@ -593,7 +601,7 @@ export default function MapView() {
                 </Marker>
               );
             })}
-            </Fragment>
+            </MarkerClusterGroup>
 
             {/* User location marker */}
             {userLocation && (
@@ -621,6 +629,7 @@ export default function MapView() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </MapErrorBoundary>
   );
 }

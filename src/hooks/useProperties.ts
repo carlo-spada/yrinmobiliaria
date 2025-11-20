@@ -73,18 +73,8 @@ export const useProperties = (filters?: PropertyFilters) => {
           query = query.lte('price', filters.maxPrice);
         }
 
-        // Apply bounds filter if provided (with buffer for edge cases)
-        if (filters?.bounds) {
-          const buffer = 0.1; // Add 0.1 degree buffer to catch properties near edges
-          
-          // Use proper casting for JSONB numeric extraction
-          // PostgREST syntax: cast(location->'coordinates'->>'lat', numeric)
-          query = query
-            .gte('location->coordinates->>lat', (filters.bounds.minLat - buffer).toString())
-            .lte('location->coordinates->>lat', (filters.bounds.maxLat + buffer).toString())
-            .gte('location->coordinates->>lng', (filters.bounds.minLng - buffer).toString())
-            .lte('location->coordinates->>lng', (filters.bounds.maxLng + buffer).toString());
-        }
+        // Note: Bounds filtering is done client-side in MapView for reliability
+        // Server-side filtering removed due to JSON path syntax issues
 
         // Execute query
         const { data, error } = await query;
