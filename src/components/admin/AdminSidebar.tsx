@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
+import { useLanguage } from '@/utils/LanguageContext';
 import {
   Sidebar,
   SidebarContent,
@@ -23,29 +24,30 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const menuItems = [
-  { title: 'Dashboard', url: '/admin', icon: LayoutDashboard, exactMatch: true },
-  { title: 'Propiedades', url: '/admin/properties', icon: Home },
-  { title: 'Zonas de Servicio', url: '/admin/zones', icon: MapPin },
-  { title: 'Consultas', url: '/admin/inquiries', icon: MessageSquare },
-  { title: 'Visitas Agendadas', url: '/admin/visits', icon: Calendar },
-  { title: 'Usuarios', url: '/admin/users', icon: Users },
-  { title: 'Registro de Actividad', url: '/admin/audit-logs', icon: FileText },
-  { title: 'Estado del Sistema', url: '/admin/health', icon: Activity },
-  { title: 'Configuración', url: '/admin/settings', icon: Settings },
-];
-
 export function AdminSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
+  const { t } = useLanguage();
   const currentPath = location.pathname;
+
+  const menuItems = [
+    { title: t.admin.dashboard, url: '/admin', icon: LayoutDashboard, exactMatch: true },
+    { title: t.admin.properties, url: '/admin/properties', icon: Home },
+    { title: t.admin.zones, url: '/admin/zones', icon: MapPin },
+    { title: t.admin.inquiries, url: '/admin/inquiries', icon: MessageSquare },
+    { title: t.admin.visits, url: '/admin/visits', icon: Calendar },
+    { title: t.admin.users, url: '/admin/users', icon: Users },
+    { title: t.admin.auditLogs, url: '/admin/audit-logs', icon: FileText },
+    { title: t.admin.health, url: '/admin/health', icon: Activity },
+    { title: t.admin.settings, url: '/admin/settings', icon: Settings },
+  ];
 
   return (
     <Sidebar className={open ? 'w-64' : 'w-14'}>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={!open ? 'sr-only' : ''}>
-            Administración
+            {t.admin.dashboard}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

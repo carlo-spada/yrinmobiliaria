@@ -29,11 +29,20 @@ export function useServiceZones() {
     },
   });
 
-  // Map zones to format expected by components with proper i18n
-  const mappedZones = zones.map((zone) => ({
-    value: language === 'es' ? zone.name_es : zone.name_en,
-    label: language === 'es' ? zone.name_es : zone.name_en,
-  }));
+  // Map zones to format expected by components with stable IDs and localized labels
+  const mappedZones = zones.map((zone) => {
+    // Generate slug from Spanish name for stable identifier
+    const slug = zone.name_es.toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/\s+/g, '-'); // Replace spaces with hyphens
+    
+    return {
+      value: slug, // Stable identifier
+      label: language === 'es' ? zone.name_es : zone.name_en,
+      id: zone.id,
+    };
+  });
 
   return { zones: mappedZones, isLoading };
 }

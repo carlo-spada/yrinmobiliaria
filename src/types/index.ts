@@ -87,6 +87,22 @@ export interface Translation {
     bathrooms: string;
     any: string;
     noResults: string;
+    featured: string;
+    types: {
+      casa: string;
+      departamento: string;
+      local: string;
+      oficina: string;
+    };
+    operations: {
+      venta: string;
+      renta: string;
+    };
+    status: {
+      sale: string;
+      rent: string;
+      sold: string;
+    };
     sort: {
       relevance: string;
       priceAsc: string;
@@ -175,6 +191,17 @@ export interface Translation {
     contactLabel: string;
     addToCalendar: string;
     backToProperties: string;
+  };
+  admin: {
+    dashboard: string;
+    properties: string;
+    zones: string;
+    inquiries: string;
+    visits: string;
+    users: string;
+    auditLogs: string;
+    health: string;
+    settings: string;
   };
 }
 
