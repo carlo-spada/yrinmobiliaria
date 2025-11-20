@@ -11,16 +11,16 @@ export function HeroSection() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { zones: dbZones } = useServiceZones();
-  const [priceRange, setPriceRange] = useState([0]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [selectedType, setSelectedType] = useState('all');
   const [selectedZone, setSelectedZone] = useState('all');
 
   const propertyTypes = [
     { value: 'all', label: t.hero.allTypes },
-    { value: 'casa', label: 'Casa' },
-    { value: 'departamento', label: 'Departamento' },
-    { value: 'local', label: 'Local' },
-    { value: 'oficina', label: 'Oficina' },
+    { value: 'casa', label: t.properties.types.casa },
+    { value: 'departamento', label: t.properties.types.departamento },
+    { value: 'local', label: t.properties.types.local },
+    { value: 'oficina', label: t.properties.types.oficina },
   ];
 
   const zones = [
@@ -39,8 +39,12 @@ export function HeroSection() {
       params.set('zone', selectedZone);
     }
     
+    // Only set price params if not default range
     if (priceRange[0] > 0) {
-      params.set('maxPrice', (priceRange[0] * 100000).toString());
+      params.set('minPrice', priceRange[0].toString());
+    }
+    if (priceRange[1] < 100000000) {
+      params.set('maxPrice', priceRange[1].toString());
     }
     
     navigate(`/propiedades?${params.toString()}`);
@@ -52,7 +56,7 @@ export function HeroSection() {
       currency: 'MXN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value * 100000);
+    }).format(value);
   };
 
   return (
@@ -161,15 +165,16 @@ export function HeroSection() {
                   {t.hero.priceRange}
                 </label>
                 <span className="text-sm font-semibold text-primary">
-                  Hasta {formatPrice(priceRange[0])}
+                  {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
                 </span>
               </div>
               <Slider
                 id="hero-price-slider"
                 value={priceRange}
-                onValueChange={setPriceRange}
-                max={100}
-                step={5}
+                onValueChange={(value) => setPriceRange(value as [number, number])}
+                min={0}
+                max={100000000}
+                step={500000}
                 className="w-full"
                 aria-label={t.hero.priceRange}
               />
