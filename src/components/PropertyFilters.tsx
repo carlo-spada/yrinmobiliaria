@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/utils/LanguageContext';
 import { PropertyFilters as PropertyFiltersType, PropertyType, PropertyOperation } from '@/types/property';
+import { useServiceZones } from '@/hooks/useServiceZones';
 
 interface PropertyFiltersProps {
   filters: PropertyFiltersType;
@@ -17,10 +18,10 @@ interface PropertyFiltersProps {
 
 const propertyTypes: PropertyType[] = ['casa', 'departamento', 'local', 'oficina'];
 const operations: PropertyOperation[] = ['venta', 'renta'];
-const zones = ['Centro Histórico', 'Reforma San Felipe', 'Zona Norte', 'Valles Centrales'];
 
 export function PropertyFilters({ filters, onFiltersChange, isMobile }: PropertyFiltersProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { data: zonesData = [] } = useServiceZones();
   const [localFilters, setLocalFilters] = useState(filters);
 
   const [priceRange, setPriceRange] = useState<[number, number]>([
