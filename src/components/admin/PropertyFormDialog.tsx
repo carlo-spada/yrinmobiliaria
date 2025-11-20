@@ -173,6 +173,17 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         throw new Error('Debes subir al menos una imagen');
       }
 
+      // Get YR organization ID
+      const { data: yrOrg } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('slug', 'yr-inmobiliaria')
+        .single();
+      
+      if (!yrOrg) {
+        throw new Error('Organization not found');
+      }
+
       const propertyData = {
         title_es: formData.title_es,
         title_en: formData.title_en,
@@ -183,20 +194,21 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         price: parseFloat(formData.price),
         status: formData.status,
         featured: formData.featured,
+        organization_id: yrOrg.id,
         location: {
           zone: formData.zone,
-          neighborhood: formData.neighborhood,
-          address: formData.address,
+          neighborhood: formData.neighborhood || '',
+          address: formData.address || '',
           coordinates: {
             lat: parseFloat(formData.lat),
             lng: parseFloat(formData.lng),
           },
         },
         features: {
-          bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-          bathrooms: parseInt(formData.bathrooms),
-          parking: formData.parking ? parseInt(formData.parking) : null,
-          constructionArea: parseFloat(formData.constructionArea),
+          bedrooms: parseInt(formData.bedrooms),
+          bathrooms: parseFloat(formData.bathrooms),
+          parking: parseInt(formData.parking),
+          constructionArea: formData.constructionArea ? parseFloat(formData.constructionArea) : null,
           landArea: formData.landArea ? parseFloat(formData.landArea) : null,
         },
         image_variants: images.map((img, index) => ({

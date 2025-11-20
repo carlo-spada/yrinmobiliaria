@@ -35,12 +35,12 @@ export default function AdminUsers() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const { data: userRoles, isLoading } = useQuery({
-    queryKey: ['user-roles'],
+    queryKey: ['role-assignments'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('user_roles')
+        .from('role_assignments')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('granted_at', { ascending: false });
       if (error) throw error;
       
       // Fetch emails for each user
@@ -66,7 +66,7 @@ export default function AdminUsers() {
     },
     onSuccess: () => {
       toast.success('Usuario promovido a administrador exitosamente');
-      queryClient.invalidateQueries({ queryKey: ['user-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['role-assignments'] });
       setIsDialogOpen(false);
       setUserId('');
       setUserEmail(null);
@@ -171,7 +171,7 @@ export default function AdminUsers() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {format(new Date(userRole.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    {format(new Date(userRole.granted_at || userRole.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
                   </TableCell>
                 </TableRow>
               ))}

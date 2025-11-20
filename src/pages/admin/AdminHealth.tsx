@@ -94,9 +94,9 @@ export default function AdminHealth() {
       // 3. RLS Policies Check
       const rlsStart = Date.now();
       try {
-        // Try to query user_roles (requires auth)
+        // Try to query role_assignments (requires auth)
         const { error: rlsError } = await supabase
-          .from('user_roles')
+          .from('role_assignments')
           .select('id')
           .limit(1);
         

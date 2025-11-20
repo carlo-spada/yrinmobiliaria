@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          display_name: string | null
+          email: string
+          expires_at: string
+          id: string
+          invited_at: string | null
+          invited_by: string
+          organization_id: string
+          phone: string | null
+          service_zones: string[] | null
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          display_name?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by: string
+          organization_id: string
+          phone?: string | null
+          service_zones?: string[] | null
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          display_name?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string
+          organization_id?: string
+          phone?: string | null
+          service_zones?: string[] | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -46,39 +99,65 @@ export type Database = {
       }
       contact_inquiries: {
         Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_to_agent: string | null
           created_at: string
           email: string
           id: string
           message: string
           name: string
+          organization_id: string
           phone: string | null
           property_id: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to_agent?: string | null
           created_at?: string
           email: string
           id?: string
           message: string
           name: string
+          organization_id: string
           phone?: string | null
           property_id?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to_agent?: string | null
           created_at?: string
           email?: string
           id?: string
           message?: string
           name?: string
+          organization_id?: string
           phone?: string | null
           property_id?: string | null
           status?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "contact_inquiries_assigned_to_agent_fkey"
+            columns: ["assigned_to_agent"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_inquiries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contact_inquiries_property_id_fkey"
             columns: ["property_id"]
@@ -88,18 +167,187 @@ export type Database = {
           },
         ]
       }
+      organizations: {
+        Row: {
+          billing_status: string | null
+          brand_colors: Json | null
+          commission_rate: number | null
+          contact_email: string
+          created_at: string | null
+          domain: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          phone: string | null
+          settings: Json | null
+          slug: string
+          subscription_plan: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_status?: string | null
+          brand_colors?: Json | null
+          commission_rate?: number | null
+          contact_email: string
+          created_at?: string | null
+          domain?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          settings?: Json | null
+          slug: string
+          subscription_plan?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_status?: string | null
+          brand_colors?: Json | null
+          commission_rate?: number | null
+          contact_email?: string
+          created_at?: string | null
+          domain?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          settings?: Json | null
+          slug?: string
+          subscription_plan?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          agent_level: Database["public"]["Enums"]["agent_level"] | null
+          agent_license_number: string | null
+          agent_specialty: string[] | null
+          agent_years_experience: number | null
+          bio_en: string | null
+          bio_es: string | null
+          completed_at: string | null
+          created_at: string | null
+          display_name: string
+          email: string
+          email_verified: boolean | null
+          email_verified_at: string | null
+          facebook_url: string | null
+          id: string
+          instagram_handle: string | null
+          invited_at: string | null
+          invited_by: string | null
+          is_active: boolean | null
+          is_complete: boolean | null
+          is_featured: boolean | null
+          languages: string[] | null
+          linkedin_url: string | null
+          organization_id: string | null
+          phone: string | null
+          photo_url: string | null
+          service_zones: string[] | null
+          show_in_directory: boolean | null
+          updated_at: string | null
+          user_id: string
+          whatsapp_number: string | null
+        }
+        Insert: {
+          agent_level?: Database["public"]["Enums"]["agent_level"] | null
+          agent_license_number?: string | null
+          agent_specialty?: string[] | null
+          agent_years_experience?: number | null
+          bio_en?: string | null
+          bio_es?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          display_name: string
+          email: string
+          email_verified?: boolean | null
+          email_verified_at?: string | null
+          facebook_url?: string | null
+          id?: string
+          instagram_handle?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          is_complete?: boolean | null
+          is_featured?: boolean | null
+          languages?: string[] | null
+          linkedin_url?: string | null
+          organization_id?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          service_zones?: string[] | null
+          show_in_directory?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          whatsapp_number?: string | null
+        }
+        Update: {
+          agent_level?: Database["public"]["Enums"]["agent_level"] | null
+          agent_license_number?: string | null
+          agent_specialty?: string[] | null
+          agent_years_experience?: number | null
+          bio_en?: string | null
+          bio_es?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          display_name?: string
+          email?: string
+          email_verified?: boolean | null
+          email_verified_at?: string | null
+          facebook_url?: string | null
+          id?: string
+          instagram_handle?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          is_complete?: boolean | null
+          is_featured?: boolean | null
+          languages?: string[] | null
+          linkedin_url?: string | null
+          organization_id?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          service_zones?: string[] | null
+          show_in_directory?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties: {
         Row: {
+          agent_id: string | null
           amenities: string[] | null
           created_at: string
+          created_by: string | null
           description_en: string | null
           description_es: string | null
           featured: boolean | null
           features: Json
           id: string
           image_variants: Json | null
+          is_translation_of: string | null
+          language: string | null
           location: Json
           operation: Database["public"]["Enums"]["property_operation"]
+          organization_id: string
           price: number
           published_date: string | null
           status: Database["public"]["Enums"]["property_status"]
@@ -109,16 +357,21 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agent_id?: string | null
           amenities?: string[] | null
           created_at?: string
+          created_by?: string | null
           description_en?: string | null
           description_es?: string | null
           featured?: boolean | null
           features?: Json
           id?: string
           image_variants?: Json | null
+          is_translation_of?: string | null
+          language?: string | null
           location?: Json
           operation: Database["public"]["Enums"]["property_operation"]
+          organization_id: string
           price: number
           published_date?: string | null
           status?: Database["public"]["Enums"]["property_status"]
@@ -128,16 +381,21 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agent_id?: string | null
           amenities?: string[] | null
           created_at?: string
+          created_by?: string | null
           description_en?: string | null
           description_es?: string | null
           featured?: boolean | null
           features?: Json
           id?: string
           image_variants?: Json | null
+          is_translation_of?: string | null
+          language?: string | null
           location?: Json
           operation?: Database["public"]["Enums"]["property_operation"]
+          organization_id?: string
           price?: number
           published_date?: string | null
           status?: Database["public"]["Enums"]["property_status"]
@@ -146,7 +404,29 @@ export type Database = {
           type?: Database["public"]["Enums"]["property_type"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "properties_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_is_translation_of_fkey"
+            columns: ["is_translation_of"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_images: {
         Row: {
@@ -186,13 +466,58 @@ export type Database = {
           },
         ]
       }
+      role_assignments: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          organization_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_visits: {
         Row: {
+          agent_id: string | null
+          assigned_at: string | null
+          assigned_by: string | null
           created_at: string
           email: string
           id: string
           message: string | null
           name: string
+          organization_id: string
           phone: string
           preferred_date: string
           preferred_time: string
@@ -201,11 +526,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agent_id?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
           created_at?: string
           email: string
           id?: string
           message?: string | null
           name: string
+          organization_id: string
           phone: string
           preferred_date: string
           preferred_time: string
@@ -214,11 +543,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agent_id?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
           created_at?: string
           email?: string
           id?: string
           message?: string | null
           name?: string
+          organization_id?: string
           phone?: string
           preferred_date?: string
           preferred_time?: string
@@ -227,6 +560,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "scheduled_visits_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_visits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "scheduled_visits_property_id_fkey"
             columns: ["property_id"]
@@ -334,27 +681,6 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -362,20 +688,31 @@ export type Database = {
     Functions: {
       cleanup_temp_storage_images: { Args: never; Returns: undefined }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role:
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _org_id?: string
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+      is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       promote_user_to_admin: {
         Args: { target_user_id: string }
         Returns: undefined
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      agent_level: "junior" | "associate" | "senior" | "partner"
+      app_role: "admin" | "user" | "superadmin"
       property_operation: "venta" | "renta"
       property_status: "disponible" | "vendida" | "rentada" | "pendiente"
       property_type: "casa" | "departamento" | "local" | "oficina" | "terrenos"
@@ -506,7 +843,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      agent_level: ["junior", "associate", "senior", "partner"],
+      app_role: ["admin", "user", "superadmin"],
       property_operation: ["venta", "renta"],
       property_status: ["disponible", "vendida", "rentada", "pendiente"],
       property_type: ["casa", "departamento", "local", "oficina", "terrenos"],

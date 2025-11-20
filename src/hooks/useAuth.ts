@@ -52,10 +52,10 @@ export const useAuth = () => {
   const checkAdminRole = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('user_roles')
+        .from('role_assignments')
         .select('role')
         .eq('user_id', userId)
-        .eq('role', 'admin')
+        .in('role', ['admin', 'superadmin'])
         .maybeSingle();
 
       if (error) {

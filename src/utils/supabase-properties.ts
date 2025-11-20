@@ -9,6 +9,17 @@ export const seedProperties = async (properties: Property[]) => {
   try {
     console.log('Starting database seeding...');
 
+    // Get YR organization ID
+    const { data: yrOrg } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('slug', 'yr-inmobiliaria')
+      .single();
+    
+    if (!yrOrg) {
+      throw new Error('YR Inmobiliaria organization not found');
+    }
+
     for (const property of properties) {
       // Insert property
       const { data: propertyData, error: propertyError } = await supabase
@@ -27,6 +38,7 @@ export const seedProperties = async (properties: Property[]) => {
           status: property.status,
           featured: property.featured,
           published_date: property.publishedDate,
+          organization_id: yrOrg.id,
         }])
         .select()
         .single();
