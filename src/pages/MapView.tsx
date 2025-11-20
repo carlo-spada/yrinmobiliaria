@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select-enhanced";
 import { Slider } from "@/components/ui/slider";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 import {
   X,
   Menu,
@@ -20,6 +21,8 @@ import {
   Store,
   Briefcase,
   ChevronRight,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -57,10 +60,23 @@ function FlyToLocation({ center }: { center: [number, number] }) {
   return null;
 }
 
+// Helper to check if coordinates are valid
+const isValidCoordinate = (lat: any, lng: any): boolean => {
+  return (
+    typeof lat === "number" &&
+    typeof lng === "number" &&
+    isFinite(lat) &&
+    isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  );
+};
+
 export default function MapView() {
   const { language, t } = useLanguage();
-  const { data: properties = [] } = useProperties({ featured: false });
-  const [filteredProperties, setFilteredProperties] = useState(properties);
+  const { data: properties = [], isLoading, error } = useProperties({ featured: false });
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
@@ -74,9 +90,20 @@ export default function MapView() {
 
   const mapRef = useRef(null);
 
-  // Apply filters
+  // Filter properties with valid coordinates first
+  const validProperties = properties.filter(
+    (p) =>
+      p.location?.coordinates &&
+      isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
+  );
+
+  const [filteredProperties, setFilteredProperties] = useState(validProperties);
+
+  const mapRef = useRef(null);
+
+  // Apply filters (only to valid properties)
   useEffect(() => {
-    let filtered = properties;
+    let filtered = validProperties;
 
     if (filters.type !== "all") {
       filtered = filtered.filter((p) => p.type === filters.type);
@@ -91,14 +118,19 @@ export default function MapView() {
     );
 
     setFilteredProperties(filtered);
-  }, [filters, properties]);
+  }, [filters, validProperties]);
 
   const handlePropertyClick = (property: Property) => {
     setSelectedProperty(property);
-    setFlyToCenter([property.location.coordinates.lat, property.location.coordinates.lng]);
+    if (
+      property.location?.coordinates &&
+      isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)
+    ) {
+      setFlyToCenter([property.location.coordinates.lat, property.location.coordinates.lng]);
+    }
   };
 
-  const zones = Array.from(new Set(properties.map((p) => p.location.zone)));
+  const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
 
   const propertyTypeIcons = {
     casa: Home,
@@ -106,6 +138,104 @@ export default function MapView() {
     local: Store,
     oficina: Briefcase,
   };
+
+  const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
+
+  // Apply filters (only to valid properties)
+  useEffect(() => {
+    let filtered = validProperties;
+
+    if (filters.type !== "all") {
+      filtered = filtered.filter((p) => p.type === filters.type);
+    }
+
+    if (filters.zone !== "all") {
+      filtered = filtered.filter((p) => p.location.zone === filters.zone);
+    }
+
+    filtered = filtered.filter(
+      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
+    );
+
+    setFilteredProperties(filtered);
+  }, [filters, validProperties]);
+
+  const handlePropertyClick = (property: Property) => {
+    setSelectedProperty(property);
+    if (
+      property.location?.coordinates &&
+      isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)
+    ) {
+      setFlyToCenter([property.location.coordinates.lat, property.location.coordinates.lng]);
+    }
+  };
+
+  // Filter properties with valid coordinates
+  const validProperties = properties.filter(
+    (p) =>
+      p.location?.coordinates &&
+      isValidCoordinate(p.location.coordinates.lat, p.location.coordinates.lng)
+  );
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">
+            {language === "es" ? "Cargando propiedades..." : "Loading properties..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+          <h2 className="text-xl font-semibold mb-2">
+            {language === "es" ? "Error al cargar propiedades" : "Error loading properties"}
+          </h2>
+          <p className="text-muted-foreground mb-4">
+            {language === "es"
+              ? "No pudimos cargar las propiedades. Por favor, intenta de nuevo más tarde."
+              : "We couldn't load the properties. Please try again later."}
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            {language === "es" ? "Reintentar" : "Retry"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state for no valid properties
+  if (validProperties.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mb-2">
+            {language === "es" ? "No hay propiedades disponibles" : "No properties available"}
+          </h2>
+          <p className="text-muted-foreground mb-4">
+            {language === "es"
+              ? "No encontramos propiedades con ubicaciones válidas en este momento."
+              : "We couldn't find properties with valid locations at this time."}
+          </p>
+          <Button asChild>
+            <Link to="/propiedades">
+              {language === "es" ? "Ver todas las propiedades" : "View all properties"}
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col">
@@ -257,9 +387,11 @@ export default function MapView() {
                   >
                     <CardContent className="p-3">
                       <div className="flex gap-3">
-                        <img
+                        <ResponsiveImage
                           src={property.images[0]}
-                          alt={property.title[language]}
+                          alt={
+                            property.imagesAlt?.[0]?.[language] || property.title[language]
+                          }
                           className="w-20 h-20 object-cover rounded"
                         />
                         <div className="flex-1 min-w-0">
@@ -302,25 +434,38 @@ export default function MapView() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <>
-              {filteredProperties.map((property) => (
-                <Marker
-                  key={property.id}
-                  position={[
+              {filteredProperties.map((property) => {
+                // Double-check coordinates are valid before rendering marker
+                if (
+                  !isValidCoordinate(
                     property.location.coordinates.lat,
-                    property.location.coordinates.lng,
-                  ]}
-                  icon={createCustomIcon(property.type)}
-                  eventHandlers={{
-                    click: () => handlePropertyClick(property),
-                  }}
-                >
-                  <Popup>
-                    <div className="w-64">
-                      <img
-                        src={property.images[0]}
-                        alt={property.title[language]}
-                        className="w-full h-32 object-cover rounded mb-2"
-                      />
+                    property.location.coordinates.lng
+                  )
+                ) {
+                  return null;
+                }
+                
+                return (
+                  <Marker
+                    key={property.id}
+                    position={[
+                      property.location.coordinates.lat,
+                      property.location.coordinates.lng,
+                    ]}
+                    icon={createCustomIcon(property.type)}
+                    eventHandlers={{
+                      click: () => handlePropertyClick(property),
+                    }}
+                  >
+                    <Popup>
+                      <div className="w-64">
+                        <ResponsiveImage
+                          src={property.images[0]}
+                          alt={
+                            property.imagesAlt?.[0]?.[language] || property.title[language]
+                          }
+                          className="w-full h-32 object-cover rounded mb-2"
+                        />
                       <h3 className="font-semibold text-sm mb-1">
                         {property.title[language]}
                       </h3>
@@ -352,10 +497,11 @@ export default function MapView() {
                           <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                       </Link>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
               {flyToCenter && <FlyToLocation center={flyToCenter} />}
             </>
           </MapContainer>
