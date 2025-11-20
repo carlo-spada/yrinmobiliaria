@@ -184,6 +184,23 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         throw new Error('Organization not found');
       }
 
+      // Get current user's profile to auto-assign as agent (only for new properties)
+      let agentId = null;
+      
+      if (!property) {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+          
+          agentId = profile?.id || null;
+        }
+      }
+
       const propertyData = {
         title_es: formData.title_es,
         title_en: formData.title_en,
@@ -195,6 +212,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         status: formData.status,
         featured: formData.featured,
         organization_id: yrOrg.id,
+        ...(agentId && { agent_id: agentId }),
         location: {
           zone: formData.zone,
           neighborhood: formData.neighborhood || '',

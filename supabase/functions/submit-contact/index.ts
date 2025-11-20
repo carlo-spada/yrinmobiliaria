@@ -152,6 +152,19 @@ serve(async (req) => {
       const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
       if (resendApiKey) {
+        // Fetch organization email dynamically
+        const { data: orgData } = await supabase
+          .from('organizations')
+          .select('contact_email, name')
+          .eq('slug', 'yr-inmobiliaria')
+          .single();
+
+        const organizationEmail = orgData?.contact_email || 'contacto@yrinmobiliaria.com';
+        const organizationName = orgData?.name || 'YR Inmobiliaria';
+        
+        if (!orgData?.contact_email) {
+          console.warn('Organization email not found, using fallback: contacto@yrinmobiliaria.com');
+        }
         const emailHtml = `
 <!DOCTYPE html>
 <html lang="es">
@@ -240,8 +253,8 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'YR Inmobiliaria <contacto@yrinmobiliaria.com>',
-            to: ['contacto@yrinmobiliaria.com'],
+            from: `${organizationName} <${organizationEmail}>`,
+            to: [organizationEmail],
             subject: `[Contacto Web] ${subject} - ${sanitizedData.name}`,
             html: emailHtml,
             reply_to: sanitizedData.email,
