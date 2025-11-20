@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Table,
   TableBody,
@@ -10,9 +11,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import { PropertyFormDialog } from './PropertyFormDialog';
+import { ReassignPropertyDialog } from './ReassignPropertyDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,20 +30,28 @@ import { logAuditEvent } from '@/utils/auditLog';
 export const PropertiesTable = () => {
   const [editingProperty, setEditingProperty] = useState<any>(null);
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
+  const [reassigningProperty, setReassigningProperty] = useState<any>(null);
   const queryClient = useQueryClient();
+  const auth = useAuth();
 
   const { data: properties, isLoading } = useQuery({
     queryKey: ['admin-properties'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*, property_images(*)')
+        .select(`
+          *,
+          property_images(*),
+          agent:profiles!properties_agent_id_fkey(id, display_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
     },
   });
+
+  const isAdmin = useMemo(() => auth.isAdmin || false, [auth.isAdmin]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -89,6 +99,7 @@ export const PropertiesTable = () => {
               <TableHead>Operación</TableHead>
               <TableHead>Precio</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead>Agente</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -100,6 +111,11 @@ export const PropertiesTable = () => {
                 <TableCell className="capitalize">{property.operation}</TableCell>
                 <TableCell>${property.price.toLocaleString()}</TableCell>
                 <TableCell className="capitalize">{property.status}</TableCell>
+                <TableCell>
+                  {property.agent?.display_name || (
+                    <span className="text-muted-foreground text-sm">Sin asignar</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
@@ -109,6 +125,16 @@ export const PropertiesTable = () => {
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReassigningProperty(property)}
+                        title="Reasignar agente"
+                      >
+                        <UserCog className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"
@@ -122,7 +148,7 @@ export const PropertiesTable = () => {
             ))}
             {!properties?.length && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No hay propiedades. Crea una nueva para comenzar.
                 </TableCell>
               </TableRow>
@@ -136,6 +162,18 @@ export const PropertiesTable = () => {
         onOpenChange={(open) => !open && setEditingProperty(null)}
         property={editingProperty}
       />
+
+      {reassigningProperty && (
+        <ReassignPropertyDialog
+          open={!!reassigningProperty}
+          onOpenChange={(open) => !open && setReassigningProperty(null)}
+          propertyId={reassigningProperty.id}
+          propertyTitle={reassigningProperty.title_es}
+          currentAgentId={reassigningProperty.agent_id}
+          currentAgentName={reassigningProperty.agent?.display_name || null}
+          organizationId={reassigningProperty.organization_id}
+        />
+      )}
 
       <AlertDialog open={!!deletingPropertyId} onOpenChange={() => setDeletingPropertyId(null)}>
         <AlertDialogContent>

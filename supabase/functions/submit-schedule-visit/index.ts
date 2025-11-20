@@ -200,14 +200,48 @@ serve(async (req) => {
       const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
       if (resendApiKey) {
-        // Fetch property details for email
+        // Fetch property details and agent for email routing
         const { data: propertyData } = await supabase
           .from('properties')
-          .select('title, price, location')
+          .select(`
+            title_es,
+            price,
+            location,
+            organization_id,
+            agent_id,
+            profiles!properties_agent_id_fkey(email, display_name)
+          `)
           .eq('id', sanitizedData.propertyId)
           .single();
 
-        const propertyTitle = propertyData?.title?.es || 'Propiedad';
+        // Determine recipient: agent if assigned, otherwise org email
+        let recipientEmail = 'contacto@yrinmobiliaria.com';
+        let recipientName = 'YR Inmobiliaria';
+        
+        const agentData = propertyData?.profiles as any;
+        
+        if (agentData?.email) {
+          recipientEmail = agentData.email;
+          recipientName = agentData.display_name || 'Agente';
+          console.log(`Routing visit email to agent: ${recipientName} (${recipientEmail})`);
+        } else {
+          // Fallback to organization email
+          const { data: orgData } = await supabase
+            .from('organizations')
+            .select('contact_email, name')
+            .eq('id', propertyData?.organization_id)
+            .single();
+          
+          if (orgData?.contact_email) {
+            recipientEmail = orgData.contact_email;
+            recipientName = orgData.name || 'YR Inmobiliaria';
+            console.log(`Routing visit email to organization: ${recipientName} (${recipientEmail})`);
+          } else {
+            console.warn('No agent or organization email found, using fallback: contacto@yrinmobiliaria.com');
+          }
+        }
+
+        const propertyTitle = propertyData?.title_es || 'Propiedad';
         const propertyPrice = propertyData?.price ? `$${propertyData.price.toLocaleString('es-MX')} MXN` : 'N/A';
         const propertyZone = propertyData?.location?.zone || 'Oaxaca';
 
@@ -349,9 +383,9 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'YR Inmobiliaria <contacto@yrinmobiliaria.com>',
-            to: ['contacto@yrinmobiliaria.com'],
-            subject: `[Visita Agendada] ${propertyTitle} - ${formattedDate} ${formattedTime}`,
+            from: `${recipientName} <${recipientEmail}>`,
+            to: [recipientEmail],
+            subject: `[Visita Agendada] ${propertyTitle} - Para ${recipientName}`,
             html: emailHtml,
             reply_to: sanitizedData.email,
           }),
