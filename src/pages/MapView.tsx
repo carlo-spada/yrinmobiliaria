@@ -529,85 +529,77 @@ export default function MapView() {
             <MapBoundsTracker onBoundsChange={handleBoundsChange} />
             <FlyToLocation center={flyToCenter} />
 
-            {/* Cluster with defensive error handling */}
-            {(() => {
-              try {
-                return (
-                  <MarkerClusterGroup
-                    chunkedLoading
-                    maxClusterRadius={50}
-                    spiderfyOnMaxZoom={true}
-                    showCoverageOnHover={false}
-                    zoomToBoundsOnClick={true}
-                  >
-                    {filteredProperties.map((property) => {
-                      // Normalize and validate coordinates
-                      const lat = normalizeCoord(property.location.coordinates.lat);
-                      const lng = normalizeCoord(property.location.coordinates.lng);
-                      
-                      if (!lat || !lng || !isValidCoordinate(lat, lng)) {
-                        return null;
-                      }
+            {/* Marker Cluster Group */}
+            <MarkerClusterGroup
+              chunkedLoading
+              maxClusterRadius={50}
+              spiderfyOnMaxZoom={true}
+              showCoverageOnHover={false}
+              zoomToBoundsOnClick={true}
+            >
+              {filteredProperties.map((property) => {
+                // Normalize and validate coordinates
+                const lat = normalizeCoord(property.location.coordinates.lat);
+                const lng = normalizeCoord(property.location.coordinates.lng);
+                
+                if (!lat || !lng || !isValidCoordinate(lat, lng)) {
+                  return null;
+                }
 
-                      const isSelected = selectedPropertyId === property.id;
-                      
-                      return (
-                        <Marker
-                          key={property.id}
-                          position={[lat, lng]}
-                          icon={createCustomIcon(property.type, isSelected)}
-                          eventHandlers={{
-                            click: () => handlePropertyClick(property),
-                          }}
-                        >
-                          <Popup>
-                            <div className="w-64">
-                              <ResponsiveImage
-                                src={property.images[0]}
-                                alt={
-                                  property.imagesAlt?.[0]?.[language] || property.title[language]
-                                }
-                                className="w-full h-32 object-cover rounded mb-2"
-                              />
-                              <h3 className="font-semibold text-sm mb-1">
-                                {property.title[language]}
-                              </h3>
-                              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {property.location.neighborhood}, {property.location.zone}
-                              </p>
-                              <div className="flex items-center justify-between mb-3">
-                                <span className="text-lg font-bold text-primary">
-                                  ${property.price.toLocaleString()}
-                                </span>
-                                <Badge
-                                  variant={
-                                    property.operation === "venta" ? "default" : "secondary"
-                                  }
-                                >
-                                  {property.operation === "venta"
-                                    ? language === "es" ? "Venta" : "Sale"
-                                    : language === "es" ? "Renta" : "Rent"}
-                                </Badge>
-                              </div>
-                              <Link to={`/propiedad/${property.id}`}>
-                                <Button variant="primary" size="sm" className="w-full">
-                                  {language === "es" ? "Ver detalles" : "View details"}
-                                  <ChevronRight className="h-4 w-4 ml-1" />
-                                </Button>
-                              </Link>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      );
-                    })}
-                  </MarkerClusterGroup>
+                const isSelected = selectedPropertyId === property.id;
+                
+                return (
+                  <Marker
+                    key={property.id}
+                    position={[lat, lng]}
+                    icon={createCustomIcon(property.type, isSelected)}
+                    eventHandlers={{
+                      click: () => handlePropertyClick(property),
+                    }}
+                  >
+                    <Popup>
+                      <div className="w-64">
+                        <ResponsiveImage
+                          src={property.images[0]}
+                          variants={property.imageVariants?.[0]?.variants}
+                          alt={
+                            property.imagesAlt?.[0]?.[language] || property.title[language]
+                          }
+                          className="w-full h-32 object-cover rounded mb-2"
+                        />
+                        <h3 className="font-semibold text-sm mb-1">
+                          {property.title[language]}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {property.location.neighborhood}, {property.location.zone}
+                        </p>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-lg font-bold text-primary">
+                            ${property.price.toLocaleString()}
+                          </span>
+                          <Badge
+                            variant={
+                              property.operation === "venta" ? "default" : "secondary"
+                            }
+                          >
+                            {property.operation === "venta"
+                              ? language === "es" ? "Venta" : "Sale"
+                              : language === "es" ? "Renta" : "Rent"}
+                          </Badge>
+                        </div>
+                        <Link to={`/propiedad/${property.id}`}>
+                          <Button variant="primary" size="sm" className="w-full">
+                            {language === "es" ? "Ver detalles" : "View details"}
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </Popup>
+                  </Marker>
                 );
-              } catch (error) {
-                console.error("[Map Error] Cluster rendering failed:", error);
-                return null;
-              }
-            })()}
+              })}
+            </MarkerClusterGroup>
 
             {/* User location marker */}
             {userLocation && (
