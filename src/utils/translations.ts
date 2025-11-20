@@ -8,6 +8,20 @@ export const translations: Translations = {
       map: 'Mapa',
       about: 'Nosotros',
       contact: 'Contacto',
+      openMenu: 'Abrir menú',
+      closeMenu: 'Cerrar menú',
+    },
+    header: {
+      scheduleVisit: 'Agendar Visita',
+      changeLanguage: 'Cambiar idioma',
+      viewFavorites: 'Ver favoritos',
+    },
+    propertyTypes: {
+      title: 'Tipos de Propiedad',
+      houses: 'Casas',
+      apartments: 'Departamentos',
+      commercial: 'Locales Comerciales',
+      viewAll: 'Ver todas las propiedades',
     },
     hero: {
       title: 'Encuentra tu hogar ideal en Oaxaca',
@@ -171,6 +185,20 @@ export const translations: Translations = {
       map: 'Map',
       about: 'About',
       contact: 'Contact',
+      openMenu: 'Open menu',
+      closeMenu: 'Close menu',
+    },
+    header: {
+      scheduleVisit: 'Schedule Visit',
+      changeLanguage: 'Change language',
+      viewFavorites: 'View favorites',
+    },
+    propertyTypes: {
+      title: 'Property Types',
+      houses: 'Houses',
+      apartments: 'Apartments',
+      commercial: 'Commercial Spaces',
+      viewAll: 'View all properties',
     },
     hero: {
       title: 'Find your ideal home in Oaxaca',

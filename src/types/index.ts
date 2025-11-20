@@ -7,6 +7,20 @@ export interface Translation {
     map: string;
     about: string;
     contact: string;
+    openMenu: string;
+    closeMenu: string;
+  };
+  header: {
+    scheduleVisit: string;
+    changeLanguage: string;
+    viewFavorites: string;
+  };
+  propertyTypes: {
+    title: string;
+    houses: string;
+    apartments: string;
+    commercial: string;
+    viewAll: string;
   };
   hero: {
     title: string;
