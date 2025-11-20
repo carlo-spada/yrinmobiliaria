@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
+import { useLanguage } from '@/utils/LanguageContext';
 
 interface PropertyCardProps {
   id: string;
@@ -45,11 +46,7 @@ export function PropertyCard({
   priority = false,
   variants,
 }: PropertyCardProps) {
-  const statusLabels = {
-    sale: { es: 'En Venta', en: 'For Sale' },
-    rent: { es: 'En Renta', en: 'For Rent' },
-    sold: { es: 'Vendido', en: 'Sold' },
-  };
+  const { t } = useLanguage();
 
   return (
     <Link to={`/propiedad/${id}`} onClick={onClick} aria-label={`View details for ${title}`}>
@@ -86,11 +83,11 @@ export function PropertyCard({
         <div className="absolute top-4 left-4 flex gap-2">
           {featured && (
             <Badge variant="accent" className="shadow-lg">
-              ⭐ Destacado
+              ⭐ {t.properties.featured}
             </Badge>
           )}
           <Badge variant={status} className="shadow-lg">
-            {statusLabels[status].es}
+            {t.properties.status[status]}
           </Badge>
         </div>
 

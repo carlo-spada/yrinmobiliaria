@@ -88,6 +88,22 @@ export const translations: Translations = {
       bathrooms: 'Baños',
       any: 'Cualquiera',
       noResults: 'No se encontraron propiedades',
+      featured: 'Destacado',
+      types: {
+        casa: 'Casa',
+        departamento: 'Departamento',
+        local: 'Local Comercial',
+        oficina: 'Oficina',
+      },
+      operations: {
+        venta: 'Venta',
+        renta: 'Renta',
+      },
+      status: {
+        sale: 'En Venta',
+        rent: 'En Renta',
+        sold: 'Vendido',
+      },
       sort: {
         relevance: 'Relevancia',
         priceAsc: 'Precio (menor a mayor)',
@@ -177,6 +193,17 @@ export const translations: Translations = {
       addToCalendar: 'Agregar a Google Calendar',
       backToProperties: 'Ver más propiedades',
     },
+    admin: {
+      dashboard: 'Dashboard',
+      properties: 'Propiedades',
+      zones: 'Zonas de Servicio',
+      inquiries: 'Consultas',
+      visits: 'Visitas Agendadas',
+      users: 'Usuarios',
+      auditLogs: 'Registro de Actividad',
+      health: 'Estado del Sistema',
+      settings: 'Configuración',
+    },
   },
   en: {
     nav: {
@@ -265,6 +292,22 @@ export const translations: Translations = {
       bathrooms: 'Bathrooms',
       any: 'Any',
       noResults: 'No properties found',
+      featured: 'Featured',
+      types: {
+        casa: 'House',
+        departamento: 'Apartment',
+        local: 'Commercial',
+        oficina: 'Office',
+      },
+      operations: {
+        venta: 'Sale',
+        renta: 'Rent',
+      },
+      status: {
+        sale: 'For Sale',
+        rent: 'For Rent',
+        sold: 'Sold',
+      },
       sort: {
         relevance: 'Relevance',
         priceAsc: 'Price (low to high)',
@@ -353,6 +396,17 @@ export const translations: Translations = {
       contactLabel: 'Contact',
       addToCalendar: 'Add to Google Calendar',
       backToProperties: 'View more properties',
+    },
+    admin: {
+      dashboard: 'Dashboard',
+      properties: 'Properties',
+      zones: 'Service Zones',
+      inquiries: 'Inquiries',
+      visits: 'Scheduled Visits',
+      users: 'Users',
+      auditLogs: 'Activity Log',
+      health: 'System Health',
+      settings: 'Settings',
     },
   },
 };

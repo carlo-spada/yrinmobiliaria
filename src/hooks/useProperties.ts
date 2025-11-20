@@ -3,13 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Property, PropertyFilters } from '@/types/property';
 import { logger } from '@/utils/logger';
 
-// Transform database row to Property type
+// Transform database row to Property type with proper coordinate handling
 const transformProperty = (row: any): Property => {
+  // Ensure coordinates are numbers with fallbacks
+  const lat = row.location?.coordinates?.lat;
+  const lng = row.location?.coordinates?.lng;
+  
   return {
     id: row.id,
     title: {
-      es: row.title_es,
-      en: row.title_en,
+      es: row.title_es || '',
+      en: row.title_en || '',
     },
     description: {
       es: row.description_es || '',
@@ -17,8 +21,17 @@ const transformProperty = (row: any): Property => {
     },
     type: row.type,
     operation: row.operation,
-    price: Number(row.price),
-    location: row.location || {},
+    price: Number(row.price) || 0,
+    location: {
+      ...row.location,
+      zone: row.location?.zone || '',
+      neighborhood: row.location?.neighborhood || '',
+      address: row.location?.address || '',
+      coordinates: {
+        lat: Number(lat) || 0,
+        lng: Number(lng) || 0,
+      },
+    },
     features: row.features || {},
     amenities: row.amenities || [],
     images: row.property_images?.map((img: any) => img.image_url) || [],
