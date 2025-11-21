@@ -425,7 +425,7 @@ export default function MapView() {
   // Loading state
   if (isLoading) {
     return (
-      <PageLayout includeFooter={false} fullHeight fixedHeader={false}>
+      <PageLayout includeFooter={false} fullHeight>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
@@ -442,7 +442,7 @@ export default function MapView() {
   // Empty state for no valid properties
   if (validProperties.length === 0) {
     return (
-      <PageLayout includeFooter={false} fullHeight fixedHeader={false}>
+      <PageLayout includeFooter={false} fullHeight>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md px-4">
             <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -467,7 +467,7 @@ export default function MapView() {
 
   return (
     <MapErrorBoundary language={language}>
-      <PageLayout includeFooter={false} fullHeight fixedHeader={false}>
+      <PageLayout includeFooter={false} fullHeight>
         <div className="flex-1 flex flex-col">
           {/* Map-specific controls bar */}
           <div className="bg-background border-b px-4 py-3 flex items-center justify-between relative">

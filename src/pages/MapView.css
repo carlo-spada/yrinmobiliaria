@@ -3,6 +3,9 @@
 .leaflet-container {
   font-family: inherit;
   background-color: hsl(var(--muted));
+  /* Ensure map stays within its container */
+  position: relative !important;
+  overflow: hidden;
 }
 
 .leaflet-popup-content-wrapper {
