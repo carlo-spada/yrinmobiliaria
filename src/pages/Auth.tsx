@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 import { z } from 'zod';
 import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 import { mapAuthError } from '@/utils/authErrors';
+import { supabase } from '@/integrations/supabase/client';
 
 const passwordSchema = z.string()
   .min(12, "La contraseña debe tener al menos 12 caracteres")
@@ -29,9 +29,41 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate('/admin');
-    }
+    const checkUserRole = async () => {
+      if (user) {
+        // Check user's role from role_assignments table
+        const { data: roleData } = await supabase
+          .from('role_assignments')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+
+        if (roleData) {
+          // Redirect based on role
+          if (roleData.role === 'admin' || roleData.role === 'superadmin') {
+            navigate('/admin');
+          } else {
+            // Check if user has agent profile
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('agent_level')
+              .eq('user_id', user.id)
+              .single();
+
+            if (profileData?.agent_level) {
+              navigate('/agent/dashboard');
+            } else {
+              navigate('/cuenta');
+            }
+          }
+        } else {
+          // No role assigned, treat as regular user
+          navigate('/cuenta');
+        }
+      }
+    };
+
+    checkUserRole();
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,14 +94,15 @@ const Auth = () => {
           toast.error(mapAuthError(error));
         } else {
           toast.success('¡Sesión iniciada correctamente!');
-          navigate('/admin');
+          // Redirect will be handled by useEffect after user state updates
         }
       } else {
         const { error } = await signUp(email, password);
         if (error) {
           toast.error(mapAuthError(error));
         } else {
-          toast.success('¡Cuenta creada! Revisa tu email para confirmar.');
+          toast.success('¡Cuenta creada! Revisa tu email para confirmar tu cuenta.');
+          // Redirect will be handled by useEffect after user state updates
         }
       }
     } catch (error: any) {
@@ -86,8 +119,8 @@ const Auth = () => {
           <CardTitle>{isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}</CardTitle>
           <CardDescription>
             {isLogin
-              ? 'Ingresa tus credenciales para acceder al panel de administración'
-              : 'Crea una cuenta para comenzar'}
+              ? 'Ingresa para ver tus favoritos y propiedades guardadas'
+              : 'Crea una cuenta para guardar tus propiedades favoritas'}
           </CardDescription>
         </CardHeader>
         <CardContent>
