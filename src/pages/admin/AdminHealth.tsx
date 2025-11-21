@@ -24,7 +24,7 @@ interface HealthCheck {
   status: 'healthy' | 'degraded' | 'unhealthy';
   message: string;
   responseTime?: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 export default function AdminHealth() {
@@ -60,11 +60,12 @@ export default function AdminHealth() {
             details: { propertyCount: count },
           });
         }
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         checks.push({
           name: 'Database Connection',
           status: 'unhealthy',
-          message: `Connection failed: ${error.message}`,
+          message: `Connection failed: ${errorMessage}`,
           responseTime: Date.now() - dbStart,
         });
       }
@@ -82,11 +83,12 @@ export default function AdminHealth() {
           responseTime: authTime,
           details: { authenticated: !!session.session },
         });
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         checks.push({
           name: 'Authentication Service',
           status: 'unhealthy',
-          message: `Auth check failed: ${error.message}`,
+          message: `Auth check failed: ${errorMessage}`,
           responseTime: Date.now() - authStart,
         });
       }
@@ -110,11 +112,12 @@ export default function AdminHealth() {
             : 'RLS policies functioning correctly',
           responseTime: rlsTime,
         });
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         checks.push({
           name: 'Row Level Security',
           status: 'unhealthy',
-          message: `RLS check failed: ${error.message}`,
+          message: `RLS check failed: ${errorMessage}`,
           responseTime: Date.now() - rlsStart,
         });
       }
@@ -144,11 +147,12 @@ export default function AdminHealth() {
             details: { bucketCount: buckets?.length },
           });
         }
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         checks.push({
           name: 'Storage Service',
           status: 'unhealthy',
-          message: `Storage check failed: ${error.message}`,
+          message: `Storage check failed: ${errorMessage}`,
           responseTime: Date.now() - storageStart,
         });
       }
@@ -168,11 +172,12 @@ export default function AdminHealth() {
         
         // Clean up channel
         await supabase.removeChannel(channel);
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         checks.push({
           name: 'Realtime Service',
           status: 'degraded',
-          message: `Realtime check inconclusive: ${error.message}`,
+          message: `Realtime check inconclusive: ${errorMessage}`,
           responseTime: Date.now() - realtimeStart,
         });
       }

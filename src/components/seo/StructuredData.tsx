@@ -4,7 +4,7 @@ export type SchemaType = 'Organization' | 'Product' | 'BreadcrumbList' | 'LocalB
 
 interface StructuredDataProps {
   type: SchemaType;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export function StructuredData({ type, data }: StructuredDataProps) {
@@ -82,7 +82,7 @@ export const getLocalBusinessSchema = (language: 'es' | 'en') => ({
 });
 
 // Helper function to generate Product schema for property
-export const getProductSchema = (property: any, language: 'es' | 'en') => ({
+export const getProductSchema = (property: { title: { es: string; en: string }; description: { es?: string; en?: string }; images: string[]; price: number; status: string; location: { address: string; neighborhood: string; zone: string; coordinates?: { lat: number; lng: number } } }, language: 'es' | 'en') => ({
   name: property.title[language],
   description: property.description[language]?.substring(0, 200) || '',
   image: property.images[0] || '',

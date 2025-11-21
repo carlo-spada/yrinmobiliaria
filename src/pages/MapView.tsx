@@ -64,7 +64,7 @@ const createCustomIcon = (type: PropertyType, selected: boolean = false) => {
 };
 
 // Helper to check if coordinates are valid (with string coercion)
-const isValidCoordinate = (lat: any, lng: any): boolean => {
+const isValidCoordinate = (lat: unknown, lng: unknown): boolean => {
   // Coerce strings to numbers
   const numLat = typeof lat === "string" ? parseFloat(lat) : lat;
   const numLng = typeof lng === "string" ? parseFloat(lng) : lng;
@@ -82,7 +82,7 @@ const isValidCoordinate = (lat: any, lng: any): boolean => {
 };
 
 // Normalize coordinates to numbers
-const normalizeCoord = (value: any): number | null => {
+const normalizeCoord = (value: unknown): number | null => {
   const num = typeof value === "string" ? parseFloat(value) : value;
   return typeof num === "number" && isFinite(num) ? num : null;
 };

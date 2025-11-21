@@ -218,7 +218,7 @@ serve(async (req) => {
         let recipientEmail = 'contacto@yrinmobiliaria.com';
         let recipientName = 'YR Inmobiliaria';
         
-        const agentData = propertyData?.profiles as any;
+        const agentData = propertyData?.profiles as { email?: string; display_name?: string } | null;
         
         if (agentData?.email) {
           recipientEmail = agentData.email;

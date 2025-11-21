@@ -26,11 +26,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { logAuditEvent } from '@/utils/auditLog';
+import { Database } from '@/integrations/supabase/types';
+
+type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
+  property_images?: Array<{ image_url: string; display_order: number }>;
+  agent?: { id: string; display_name: string } | null;
+};
 
 export const PropertiesTable = () => {
-  const [editingProperty, setEditingProperty] = useState<any>(null);
+  const [editingProperty, setEditingProperty] = useState<PropertyWithRelations | null>(null);
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
-  const [reassigningProperty, setReassigningProperty] = useState<any>(null);
+  const [reassigningProperty, setReassigningProperty] = useState<PropertyWithRelations | null>(null);
   const queryClient = useQueryClient();
   const auth = useAuth();
 
@@ -79,8 +85,9 @@ export const PropertiesTable = () => {
       toast.success('Propiedad eliminada correctamente');
       setDeletingPropertyId(null);
     },
-    onError: (error: any) => {
-      toast.error('Error al eliminar: ' + error.message);
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error('Error al eliminar: ' + errorMessage);
     },
   });
 

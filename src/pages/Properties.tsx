@@ -15,7 +15,7 @@ import { useLanguage } from '@/utils/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { EmptyPropertyList } from '@/components/EmptyPropertyList';
-import { Property, PropertyFilters as PropertyFiltersType } from '@/types/property';
+import { Property, PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';
 type ViewMode = 'grid' | 'list';
@@ -40,10 +40,10 @@ export default function Properties() {
     const filters: PropertyFiltersType = {};
     
     const type = searchParams.get('type');
-    if (type) filters.type = type as any;
+    if (type) filters.type = type as PropertyType;
     
     const operation = searchParams.get('operation');
-    if (operation) filters.operation = operation as any;
+    if (operation) filters.operation = operation as 'venta' | 'renta';
     
     const zone = searchParams.get('zone');
     if (zone) filters.zone = zone;

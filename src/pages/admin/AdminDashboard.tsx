@@ -111,7 +111,7 @@ export default function AdminDashboard() {
             <CardContent>
               {recentInquiries && recentInquiries.length > 0 ? (
                 <div className="space-y-3">
-                  {recentInquiries.map((inquiry: any) => (
+                  {recentInquiries.map((inquiry) => (
                     <div key={inquiry.id} className="flex flex-col space-y-1 border-b pb-3 last:border-0">
                       <div className="flex items-center justify-between">
                         <p className="font-medium">{inquiry.name}</p>
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
             <CardContent>
               {upcomingVisits && upcomingVisits.length > 0 ? (
                 <div className="space-y-3">
-                  {upcomingVisits.map((visit: any) => (
+                  {upcomingVisits.map((visit) => (
                     <div key={visit.id} className="flex flex-col space-y-1 border-b pb-3 last:border-0">
                       <div className="flex items-center justify-between">
                         <p className="font-medium">{visit.name}</p>
