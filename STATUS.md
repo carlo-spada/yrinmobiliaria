@@ -220,13 +220,21 @@ git push
 **Success Criteria:** Zero npm audit vulnerabilities
 
 **Day 2-3: ESLint Cleanup (HIGH PRIORITY - 2-3 Lovable prompts)**
-- [ ] Analyze all 91 errors systematically
-- [ ] **Prompt 1:** Fix all `any` types (75 errors) - Replace with proper TypeScript interfaces/types
-- [ ] **Prompt 2:** Fix React hooks issues (exhaustive-deps, rules-of-hooks)
-- [ ] **Prompt 3:** Fix remaining warnings (react-refresh, prefer-const, etc.)
 
-**Why:** Type safety is foundational to maintainability
-**Success Criteria:** Zero ESLint errors, build passes
+**Error Breakdown (91 total: 75 errors, 16 warnings):**
+1. **`any` types (75 errors)** - Admin pages (38), hooks (8), components (16), pages (12), edge functions (1)
+2. **React hooks violations (5 errors)** - PropertyDetail.tsx has conditional hook calls
+3. **React hooks exhaustive-deps (2 warnings)** - useFavorites.ts, Properties.tsx missing dependencies
+4. **react-refresh warnings (11 warnings)** - Component files exporting non-components
+5. **Misc errors (6)** - Unnecessary escape chars in regex, prefer-const, empty interface, require() import
+
+**Lovable Prompts:**
+- [ ] **Prompt 1:** Fix all 75 `any` types - Replace with proper TypeScript interfaces from Supabase schema
+- [ ] **Prompt 2:** Fix 5 React hooks violations in PropertyDetail.tsx - Move hooks before conditionals, fix exhaustive-deps
+- [ ] **Prompt 3:** Fix 11 react-refresh warnings + 6 misc errors - Move utils to separate files, fix regex, cleanup
+
+**Why:** Type safety is foundational to maintainability, React hooks violations cause runtime bugs
+**Success Criteria:** Zero ESLint errors/warnings, build passes
 
 **Day 4-5: Testing Framework (HIGH PRIORITY - 2-3 Lovable prompts)**
 - [ ] **Prompt 1:** Add Vitest + React Testing Library + test scripts
