@@ -1,7 +1,7 @@
 # ✅ Production Readiness Checklist - YR Inmobiliaria
 
 **Last Updated:** November 21, 2025
-**Current Status:** ~80% Complete — lint failing, bundle heavy ⚠️
+**Current Status:** ~80% Complete — lint clean; bundle slightly above 600 KB ⚠️
 
 **Decision:** Quality first: clear lint, control bundle, add tests before launch.
 
@@ -43,12 +43,12 @@ Use this checklist before going live with your website. Keep docs lean (max 5 fi
 - **Next:** Keep lint at zero while refactoring and code-splitting.
 
 ### ❌ Testing (CRITICAL)
-- **Automated coverage minimal** (routing smoke tests via Vitest + RTL).
+- **Automated coverage minimal** (routing smokes + utilities for map coords and favorites).
 - **Fix:** Add deeper tests for auth flows, favorites logic, map interactions, and admin routing.
 
 ### ⚠️ Performance (HIGH)
-- Vite build passes; main chunk ~631 KB (warning threshold 600 KB). `MapView` chunk ~216 KB.
-- **Fix:** Further code-splitting and asset trimming to get main chunk under 600 KB if possible.
+- Vite build passes; main chunk ~631 KB (warning threshold 600 KB). Map-vendor chunk ~199 KB.
+- **Fix:** Further trimming optional; aim for <600 KB main if feasible.
 
 ### ⚠️ Security (MEDIUM)
 - `npm audit --audit-level=high` reports 0 vulnerabilities.

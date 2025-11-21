@@ -73,7 +73,7 @@
 - Assets: use pre-optimized AVIF/WebP in `/public`; do not reintroduce large unoptimized files.
 
 ## Testing Guidelines
-- No dedicated test suite is present; at minimum, run `npm run build` before committing.
+- Tests: `npm test` (Vitest + RTL). Current coverage: routing smokes + utilities (map coords, favorites storage/hook).
 - If adding tests, colocate under the feature path and name them `*.test.ts(x)`.
 
 ## Commit & PR Guidelines
@@ -95,5 +95,5 @@
 
 ## Security & Configuration
 - Do not commit secrets. Environment/config is managed in Lovable Cloud.
-- `git status -sb` currently shows untracked `supabase/migrations/*` — leave untouched unless Carlo asks.
-- Build is currently passing with a ~631 KB main chunk warning; lint is now clean. Reduce bundle further and expand tests before shipping.
+- Leave any Lovable-generated `supabase/migrations/*` untouched unless directed.
+- Build is currently passing with a ~631 KB main chunk warning; map-vendor chunk is split (~199 KB). Reduce bundle further and expand tests before shipping.

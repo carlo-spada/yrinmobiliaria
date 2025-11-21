@@ -17,15 +17,15 @@
 - Secrets/config live in Lovable Cloud; never commit credentials.
 
 ## Current Audit — November 21, 2025
-- `npm run lint` **clean** after typing admin sidebar/map markers and fixing `useMemo` deps.
-- `npm run build` **passes** (Vite 7.2.4, React 19). Main chunk ~631 KB (warning threshold 600); `MapView` chunk ~216 KB. Continue code-splitting.
+- `npm run lint` **clean**.
+- `npm run build` **passes** (Vite 7.2.4, React 19). Main chunk ~631 KB (warning threshold 600); map-vendor chunk ~199 KB; form-vendor ~76 KB.
 - `npm audit --audit-level=high` returns **0 vulnerabilities**.
-- Tests: Vitest + RTL added with routing smoke tests (auth/favorites/map/admin). Coverage remains minimal.
-- Repo status: git reports two untracked migration files under `supabase/migrations/`—do not delete without direction.
+- Tests: Vitest + RTL routing smokes plus utility coverage (map coords, favorites storage, favorites hook). Coverage remains minimal.
+- Repo status: no untracked migrations; keep Lovable-owned migrations untouched if they appear.
 
 ## Immediate Priorities
-1. Trim bundle hotspots further (main chunk ~631 KB; target <600 KB if possible).
-2. Expand tests beyond routing smokes to cover auth flows, favorites, and map interactions.
+1. Expand tests to cover auth flows, favorites end-to-end, and map interactions.
+2. Trim main bundle below 600 KB if feasible; map chunk already isolated.
 3. Keep docs synchronized: touch only necessary files, stay under size limits.
 
 ## Workflow
