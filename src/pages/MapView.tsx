@@ -153,6 +153,7 @@ export default function MapView() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(urlPropertyId);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const openPopupRef = useRef<any>(null);
 
   // Logarithmic slider values
   const [sliderValues, setSliderValues] = useState<[number, number]>([
@@ -233,7 +234,12 @@ export default function MapView() {
   }, [filters, selectedPropertyId, setSearchParams]);
 
   // Handle property selection
-  const handlePropertyClick = useCallback((property: Property) => {
+  const handlePropertyClick = useCallback((property: Property, markerRef?: any) => {
+    // Close previous popup if exists
+    if (openPopupRef.current && openPopupRef.current !== markerRef) {
+      openPopupRef.current.closePopup();
+    }
+    
     setSelectedPropertyId(property.id);
     
     if (
@@ -241,6 +247,15 @@ export default function MapView() {
       isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)
     ) {
       setFlyToCenter([property.location.coordinates.lat, property.location.coordinates.lng]);
+    }
+
+    // Store the marker ref to open its popup
+    if (markerRef) {
+      openPopupRef.current = markerRef;
+      // Open popup after a short delay to ensure flyTo completes
+      setTimeout(() => {
+        markerRef.openPopup();
+      }, 100);
     }
 
     // Scroll card into view
@@ -290,9 +305,13 @@ export default function MapView() {
     }, 400);
   }, []);
 
-  // Handle map click to deselect
+  // Handle map click to deselect and close popup
   const handleMapClick = useCallback(() => {
     setSelectedPropertyId(null);
+    if (openPopupRef.current) {
+      openPopupRef.current.closePopup();
+      openPopupRef.current = null;
+    }
   }, []);
 
   // Handle reset view to show all properties
@@ -366,18 +385,30 @@ export default function MapView() {
           icon={createCustomIcon(property.type, isSelected)}
           eventHandlers={{
             click: (e) => {
-              handlePropertyClick(property);
-              // Ensure the popup opens
-              e.target.openPopup();
+              // Close previous popup before opening new one
+              if (openPopupRef.current && openPopupRef.current !== e.target) {
+                openPopupRef.current.closePopup();
+              }
+              openPopupRef.current = e.target;
+              handlePropertyClick(property, e.target);
             },
+          }}
+          ref={(ref) => {
+            // Auto-open popup for selected property from URL
+            if (isSelected && ref && urlPropertyId === property.id) {
+              setTimeout(() => {
+                ref.openPopup();
+                openPopupRef.current = ref;
+              }, 500);
+            }
           }}
         >
           <Popup
             autoPan={true}
             keepInView={true}
             closeButton={true}
-            autoClose={false}
-            closeOnClick={false}
+            autoClose={true}
+            closeOnClick={true}
           >
             <div className="w-64 p-2">
               <ResponsiveImage
@@ -468,8 +499,8 @@ export default function MapView() {
   return (
     <MapErrorBoundary language={language}>
       <PageLayout includeFooter={false} fullHeight={false}>
-        {/* Main container - proper height calculation excluding header */}
-        <div className="flex flex-col h-[calc(100vh-5rem)]">
+        {/* Main container - proper height calculation excluding header, prevent page scroll */}
+        <div className="flex flex-col h-[calc(100vh-5rem)] overflow-hidden">
           {/* Map controls bar - auto-hide on hover */}
           <div 
             className="bg-background border-b px-4 py-3 flex items-center justify-between relative flex-shrink-0
@@ -694,7 +725,11 @@ export default function MapView() {
                           className={`cursor-pointer transition-all hover:shadow-md ${
                             isSelected ? "ring-2 ring-primary" : ""
                           }`}
-                          onClick={() => handlePropertyClick(property)}
+                          onClick={() => {
+                            // Find the marker ref for this property
+                            const markerElement = document.querySelector(`[data-property-id="${property.id}"]`);
+                            handlePropertyClick(property);
+                          }}
                         >
                           <CardContent className="p-3">
                             <div className="flex gap-3">
