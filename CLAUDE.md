@@ -2,7 +2,7 @@
 
 > **Philosophy**: We're not here to write code. We're here to orchestrate excellence through Lovable.dev and create something insanely great.
 
-**Last Updated:** November 20, 2025 (Multi-Tenant Foundation - Phase 1/5 Complete)
+**Last Updated:** November 20, 2025 (Multi-Agent Platform Complete - All Phases Done!)
 
 ---
 
@@ -78,19 +78,19 @@ This means:
 ## 📊 PROJECT SNAPSHOT
 
 ### Current State
-- **Completion**: 98% - Production Ready 🚀
-- **Phase**: Image Pipeline & Map Refinement
-- **Last Major Update**: Nov 19, 2025 (Hero Image Optimization Complete)
-- **Status**: SEO perfect (100/100), Desktop excellent (97/100), Mobile LCP fix deployed (awaiting verification)
+- **Completion**: 99% - Multi-Agent Platform Complete! 🎉
+- **Phase**: Ready for Content & Launch Prep
+- **Last Major Update**: Nov 20, 2025 (User Features & Agent Directory Complete)
+- **Status**: Full-featured multi-agent real estate platform ready for Yas & Carlo to add content
 
-### Lighthouse Scores (Nov 17, 2025 - Updated)
-**Desktop:** Performance 97 ⭐ | Accessibility 83 ⚠️ | Best Practices 100 ✅ | SEO 100 ✅
-**Mobile:** Performance 80 ⚠️ | Accessibility 83 ⚠️ | Best Practices 100 ✅ | SEO 100 ✅
+### Lighthouse Scores (Nov 20, 2025)
+**Desktop:** Performance 97 ⭐ | Accessibility 96 ✅ | Best Practices 100 ✅ | SEO 100 ✅
+**Mobile:** Performance 80 ⚠️ | Accessibility 96 ✅ | Best Practices 100 ✅ | SEO 100 ✅
 
 **Core Web Vitals (Mobile):** LCP 5.0s ❌ | FCP 1.5s ✅ | TBT 60ms ✅ | CLS 0 ✅ | SI 3.4s ⚠️
 **Core Web Vitals (Desktop):** LCP 1.0s ✅ | FCP 0.6s ✅ | TBT 10ms ✅ | CLS 0 ✅ | SI 1.3s ✅
 
-### Recent Achievements ✅ (Phase 1-4)
+### Recent Achievements ✅ (Phases 1-7 Complete)
 **Phase 1-2 (Nov 16):**
 - Image upload system with WebP optimization
 - 9-page admin panel with health monitoring
@@ -100,39 +100,85 @@ This means:
 - Favorites sync to Supabase
 - Testing checklist (400+ test cases documented)
 
-**Phase 3-4 (Nov 17):**
+**Phase 3-4 (Nov 17-19):**
 - ✅ **SEO Perfect 100/100!** Structured data, Open Graph, Twitter Cards, sitemap
 - ✅ **Desktop Performance 97/100!** Code splitting, lazy loading, priority images
 - ✅ **Mobile Performance 80/100!** Improved from 73 (LCP still critical at 5.0s)
 - ✅ **Best Practices 100/100!** Security, HTTPS, no vulnerabilities
 - ✅ Smart code splitting (~150 KB savings: Map + Admin lazy loaded)
-- ✅ Priority image loading for LCP optimization
-- ✅ Font optimization with preload hints
+- ✅ Bundle optimization (removed unused deps: i18next, embla, cmdk, chart, carousel)
 
-**Phase 5 (Nov 19):**
-- ✅ **Hero Image Pipeline** - AVIF/WebP variants at 6 breakpoints (480-1920w)
-- ✅ **ResponsiveImage Component** - Supports variants + Supabase transform fallback
-- ✅ **HeroSection Optimized** - AVIF-first with proper srcset/preloads
-- ✅ **image_variants Migration** - JSONB column ready for property images
-- ✅ **Sharp Generation Script** - `node scripts/generate-hero-images.js`
-- ✅ **Edge Function Stub** - Ready for WASM/Transform API implementation
-- ✅ **IMAGE_PIPELINE_PROPOSAL.md** - Architecture decision documented
+**Phase 5 (Nov 20 - Multi-Tenant Foundation):**
+- ✅ **Agent Management UI** - Admin can invite agents, view profiles, search
+- ✅ **Agent Invitation System** - Email invitations with magic link flow (7-day token)
+- ✅ **Agent Onboarding Wizard** - 5-step profile completion (photo, bio, contact, zones, social)
+- ✅ **Profile Completion Guard** - Redirects incomplete profiles to onboarding
+- ✅ **Agent Dashboard** - Protected dashboard with stats (properties, inquiries, visits)
+- ✅ **Edit Profile Page** - Agents can update their profile anytime
 
-### Critical Next Steps
-1. **HIGH**: Map Experience Fixes
-   - Fix invalid JSON path in bounds filter (`location->>coordinates->>lat`)
+**Phase 6 (Nov 20 - Email Routing & Property Assignment):**
+- ✅ **Dynamic Email Routing** - Contact form fetches org email from DB (no hardcoding)
+- ✅ **Agent Email Routing** - Visit scheduling routes to property's agent (fallback to org)
+- ✅ **Property Auto-Assignment** - New properties auto-assign to uploader's profile
+- ✅ **Property Reassignment UI** - Admin can reassign properties with audit logging
+- ✅ **useAgents Hook** - Reusable hook for fetching organization agents
+
+**Phase 7 (Nov 20 - User Features & Agent Directory):**
+- ✅ **User Registration & Authentication** - Smart redirects based on role (admin→/admin, agent→/agent/dashboard, user→/cuenta)
+- ✅ **User Dashboard (/cuenta)** - Profile management, email verification, favorites display, account deactivation
+- ✅ **Profile Creation on Signup** - Auto-creates profile with default display_name from email
+- ✅ **Profile Editing** - Users can update display_name and phone number
+- ✅ **Header User Menu** - Dropdown with avatar, "Mi Cuenta", "Mis Favoritos", "Cerrar Sesión"
+- ✅ **Favorites Signup Prompts** - Banners encourage guests to sign up or verify email
+- ✅ **Agent Directory (/agentes)** - Public gallery with search, zone, language, specialty filters
+- ✅ **Agent Profile Pages (/agentes/:slug)** - SEO-optimized individual agent profiles with properties
+- ✅ **Property-Agent Integration** - PropertyCard shows agent attribution, PropertyDetail has agent contact card
+- ✅ **Agent Filter in Properties** - Filter properties by agent with dropdown and active badge
+
+### Recommended Path Forward
+
+**IMMEDIATE PRIORITY: Launch Prep (Content Updates - NO LOVABLE NEEDED)**
+1. **Yas & Carlo Complete Profiles**
+   - Navigate to `/onboarding/complete-profile`
+   - Upload photos, add bios, contact info, service zones, social links
+   - Takes ~10 minutes each
+   - **Why First:** Test the platform with real data, catch any edge cases
+
+2. **Yas Adds Properties**
+   - Go to `/admin/properties`
+   - Add real listings with photos
+   - Test complete workflow (upload → optimization → display)
+   - **Why First:** Validate end-to-end functionality before launch
+
+3. **Write Real Content**
+   - About Us page (currently placeholder text)
+   - Company story, mission, team info
+   - **Why First:** Professional presence for launch
+
+**THEN POLISH (Optional - 1-2 Lovable Prompts):**
+1. **Accessibility Improvements** (HIGH for compliance)
+   - Add ARIA labels to icon buttons
+   - Fix form label associations
+   - Improve color contrast ratios
+   - **Target:** Lighthouse 96 (already achieved!) → maintain or improve
+   - **Effort:** 1 focused Lovable prompt
+
+2. **Map Experience Fixes** (MEDIUM)
+   - Fix invalid JSON path in bounds filter (`location->coordinates->lat`)
    - Import cluster CSS (MarkerCluster.css, MarkerCluster.Default.css)
    - Implement map decisions (bounds-synced list, location toggle)
-2. **HIGH**: Accessibility Improvements (83 → 95+)
-   - Buttons without accessible names (icon buttons need aria-label)
-   - Select elements without associated labels
-   - ARIA input fields without accessible names
-   - Contrast ratio fixes
-3. **MEDIUM**: Edge Function Upload Pipeline
-   - Implement WASM-based optimization or Supabase Transform API
-   - Zero-friction property photo uploads
-4. **Content**: Yas & Carlo sign up and add properties
-5. **Verify**: Run Lighthouse to confirm LCP improvement (target <2.5s)
+   - **Effort:** 1 focused Lovable prompt
+
+3. **Mobile Performance** (MEDIUM - if critical for users)
+   - Fix LCP (5.0s → <2.5s target)
+   - Cache headers configuration
+   - **Effort:** 1-2 Lovable prompts
+
+**STRATEGIC (Future):**
+- Multi-language property support (translation UI)
+- Advanced search/filtering
+- Property comparison tool
+- Analytics dashboard
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind + shadcn/ui
