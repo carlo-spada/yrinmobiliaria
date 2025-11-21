@@ -18,16 +18,15 @@
 
 ## Current Audit — November 21, 2025
 - `npm run lint` **clean** after typing admin sidebar/map markers and fixing `useMemo` deps.
-- `npm run build` **passes** (Vite 7.2.4, React 19). Warning: main chunk ~980 KB; `MapView` chunk ~216 KB. More code-splitting/lazy loading needed to stay under 700 KB.
+- `npm run build` **passes** (Vite 7.2.4, React 19). Main chunk ~631 KB (warning threshold 600); `MapView` chunk ~216 KB. Continue code-splitting.
 - `npm audit --audit-level=high` returns **0 vulnerabilities**.
-- Tests: none configured; build is the only automated gate today.
+- Tests: Vitest + RTL added with routing smoke tests (auth/favorites/map/admin). Coverage remains minimal.
 - Repo status: git reports two untracked migration files under `supabase/migrations/`—do not delete without direction.
 
 ## Immediate Priorities
-1. Trim bundle hotspots (start with map/admin splits) to reduce the 980 KB main chunk.
-2. Add a light test harness (Vitest + RTL) so regressions are catchable.
-3. Run `npm audit` and patch if needed, then re-run build.
-4. Keep docs synchronized: touch only necessary files, stay under size limits.
+1. Trim bundle hotspots further (main chunk ~631 KB; target <600 KB if possible).
+2. Expand tests beyond routing smokes to cover auth flows, favorites, and map interactions.
+3. Keep docs synchronized: touch only necessary files, stay under size limits.
 
 ## Workflow
 1. **Sync:** `git fetch --all && git status -sb` to see Lovable/other changes (do not revert user work).

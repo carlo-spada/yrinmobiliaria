@@ -43,12 +43,12 @@ Use this checklist before going live with your website. Keep docs lean (max 5 fi
 - **Next:** Keep lint at zero while refactoring and code-splitting.
 
 ### ❌ Testing (CRITICAL)
-- **0% automated coverage.**
-- **Fix:** Add Vitest + React Testing Library and seed smoke tests (auth, favorites, map, admin).
+- **Automated coverage minimal** (routing smoke tests via Vitest + RTL).
+- **Fix:** Add deeper tests for auth flows, favorites logic, map interactions, and admin routing.
 
 ### ⚠️ Performance (HIGH)
-- Vite build passes but main chunk ~980 KB (warning threshold 600 KB). `MapView` chunk ~216 KB.
-- **Fix:** Code-split heavy routes/assets; lazy-load map/admin modules.
+- Vite build passes; main chunk ~631 KB (warning threshold 600 KB). `MapView` chunk ~216 KB.
+- **Fix:** Further code-splitting and asset trimming to get main chunk under 600 KB if possible.
 
 ### ⚠️ Security (MEDIUM)
 - `npm audit --audit-level=high` reports 0 vulnerabilities.

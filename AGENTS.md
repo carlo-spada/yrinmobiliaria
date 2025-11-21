@@ -62,7 +62,7 @@
 - Dev server: `npm run dev` (Vite).
 - Build: `npm run build`.
 - Lint: `npm run lint`.
-- Tests: not yet configured—add Vitest + RTL before shipping changes that risk regressions.
+- Tests: `npm test` (Vitest + RTL). Current coverage is minimal routing smokes.
 
 ## Coding Style & Naming
 - TypeScript strict; avoid `any`.
@@ -96,4 +96,4 @@
 ## Security & Configuration
 - Do not commit secrets. Environment/config is managed in Lovable Cloud.
 - `git status -sb` currently shows untracked `supabase/migrations/*` — leave untouched unless Carlo asks.
-- Build is currently passing with a 980 KB main chunk warning; lint is now clean. Reduce bundle and add tests before shipping.
+- Build is currently passing with a ~631 KB main chunk warning; lint is now clean. Reduce bundle further and expand tests before shipping.

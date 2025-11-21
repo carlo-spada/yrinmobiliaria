@@ -8,7 +8,7 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 
 ## 📊 Project Status
 
-**Overall Completion:** ~80% ⚠️ (Features 99%, Code Quality ~75%, Tests 0%)
+**Overall Completion:** ~80% ⚠️ (Features 99%, Code Quality ~80%, Tests early)
 **Current Phase:** Technical Debt Cleanup (Quality First)
 **Last Updated:** November 21, 2025
 
@@ -16,10 +16,10 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 After the current audit:
 - ✅ **Features**: Multi-agent platform 99% functionally complete
 - ⚠️ **Code Quality**: `npm run lint` now clean after typing admin sidebar & map popup refs
-- ❌ **Test Coverage**: 0% - No automated tests yet
+- ⚠️ **Test Coverage**: Vitest + RTL smoke tests for routing (auth/favorites/map/admin) added; coverage still minimal
 - ✅ **Security**: `npm audit --audit-level=high` reports 0 vulnerabilities
 - ⚠️ **Dependencies**: React 19 / Vite 7 / Tailwind 4; keep them patched
-- ⚠️ **Bundle Size**: 980 KB main chunk (Vite build warning) — needs more code-splitting
+- ⚠️ **Bundle Size**: Main chunk ~631 KB (warning threshold 600); MapView chunk ~216 KB — continue code-splitting
 
 **Lighthouse Scores (last measured Nov 20, 2025):**
 - Desktop: Performance **97/100** ⭐ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
@@ -95,8 +95,8 @@ After the current audit:
 
 ### 🎯 Current Priorities (Quality First)
 
-- [ ] Add Vitest + React Testing Library and seed smoke tests (auth/favorites/map)
-- [ ] Reduce bundle (code-split heavy routes; watch 980 KB main chunk)
+- [ ] Add more automated coverage beyond routing smoke tests (auth flows, favorites logic, map interactions)
+- [ ] Further reduce bundle (main chunk ~631 KB; target <600 KB if feasible; MapView ~216 KB)
 - [ ] Keep bilingual strings through `LanguageContext`; avoid new `any` types
 
 ### 📋 Core Docs (keep under 5 total)
