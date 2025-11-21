@@ -30,7 +30,7 @@ const scheduleSchema = z.object({
   email: z.string().trim().email('Email inválido').max(255),
   phone: z.string().trim().min(10, 'Teléfono inválido').max(15),
   date: z.date({
-    required_error: 'Selecciona una fecha',
+    message: 'Selecciona una fecha',
   }),
   timeSlot: z.string().min(1, 'Selecciona un horario'),
   notes: z.string().max(500, 'Las notas son muy largas').optional(),

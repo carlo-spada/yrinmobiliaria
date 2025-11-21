@@ -94,7 +94,7 @@ const Auth = () => {
     // Validate email
     const emailValidation = emailSchema.safeParse(email);
     if (!emailValidation.success) {
-      toast.error(emailValidation.error.errors[0].message);
+      toast.error(emailValidation.error.issues[0].message);
       return;
     }
 
@@ -102,7 +102,7 @@ const Auth = () => {
     if (!isLogin) {
       const passwordValidation = passwordSchema.safeParse(password);
       if (!passwordValidation.success) {
-        toast.error(passwordValidation.error.errors[0].message);
+        toast.error(passwordValidation.error.issues[0].message);
         return;
       }
     }
