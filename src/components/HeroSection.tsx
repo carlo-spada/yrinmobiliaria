@@ -3,7 +3,7 @@ import { useLanguage } from '@/utils/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServiceZones } from '@/hooks/useServiceZones';
 import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
@@ -12,6 +12,37 @@ export function HeroSection() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { zones: dbZones } = useServiceZones();
+
+  // Dynamically preload hero images for LCP optimization (only on home page)
+  useEffect(() => {
+    const heroImages = [
+      { href: '/hero-mobile-480.avif', media: '(max-width: 640px)' },
+      { href: '/hero-tablet-768.avif', media: '(min-width: 641px) and (max-width: 1024px)' },
+      { href: '/hero-desktop-1280.avif', media: '(min-width: 1025px)' },
+    ];
+
+    const links: HTMLLinkElement[] = [];
+
+    heroImages.forEach(({ href, media }) => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = href;
+      link.media = media;
+      link.type = 'image/avif';
+      document.head.appendChild(link);
+      links.push(link);
+    });
+
+    // Cleanup: remove preload links when component unmounts
+    return () => {
+      links.forEach(link => {
+        if (link.parentNode) {
+          link.parentNode.removeChild(link);
+        }
+      });
+    };
+  }, []);
   
   // Logarithmic slider values (0-100 range)
   const [sliderValues, setSliderValues] = useState<[number, number]>([0, 100]);

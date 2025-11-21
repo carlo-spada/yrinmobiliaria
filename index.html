@@ -11,12 +11,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://ewsltpqbhbohuaonwflp.supabase.co">
-    
-    <!-- Preload critical hero images for LCP optimization -->
-    <link rel="preload" as="image" href="/hero-mobile-480.avif" media="(max-width: 640px)" type="image/avif" />
-    <link rel="preload" as="image" href="/hero-tablet-768.avif" media="(min-width: 641px) and (max-width: 1024px)" type="image/avif" />
-    <link rel="preload" as="image" href="/hero-desktop-1280.avif" media="(min-width: 1025px)" type="image/avif" />
-    
+
+    <!-- Hero images now preloaded dynamically by HeroSection component (home page only) -->
+
     <!-- Load fonts asynchronously to prevent render blocking -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"></noscript>
