@@ -1,8 +1,8 @@
 # 🎯 YR Inmobiliaria - Project Intelligence Brief
 
-> **Philosophy**: We're not here to write code. We're here to orchestrate excellence through Lovable.dev and create something insanely great.
+> **Philosophy**: We're here to craft insanely great code directly in this repo. Use Lovable strategically for UI design and backend changes we can't handle directly.
 
-**Last Updated:** November 20, 2025 (Multi-Agent Platform Complete - All Phases Done!)
+**Last Updated:** November 20, 2025 (Development Model Updated - Direct Coding First!)
 
 ---
 
@@ -28,24 +28,38 @@
 
 ## ⚡ CRITICAL CONSTRAINTS
 
-### 1. Development Model: Lovable-First
-**ALL code implementation happens through lovable.dev - NEVER edit code directly in this repo.**
+### 1. Development Model: Direct Coding First
+**Code changes that CAN be made directly in this repo SHOULD be made here. Use Lovable ONLY for what we can't handle ourselves.**
 
-This repo is for:
-- ✅ Planning and strategy
-- ✅ Documentation and tracking
-- ✅ Review and verification
-- ✅ Prompt engineering for Lovable
-- ❌ NOT for code changes
+**Handle DIRECTLY in this repo (via Claude Code):**
+- ✅ Bug fixes and code refactoring
+- ✅ Type safety improvements (fixing `any` types)
+- ✅ ESLint/linting fixes
+- ✅ Dependency updates (npm install/update)
+- ✅ Security patches (npm audit fix)
+- ✅ Test writing (Vitest, React Testing Library)
+- ✅ Documentation updates
+- ✅ Configuration changes (tsconfig, vite.config, etc.)
+- ✅ Utility functions and helpers
+- ✅ Non-visual logic changes
+- ✅ Performance optimizations (non-UI)
+- ✅ Static assets in `/public`
 
-### 2. Resource Constraint: One Prompt Per Day
-**We get ONE Lovable prompt daily. Make it count.**
+**Use Lovable ONLY for:**
+- 🎨 **UI/UX Design Changes** - New components, layout changes, styling, animations
+- 🎨 **Visual Refinements** - Design system updates, responsive breakpoints, visual polish
+- 🗄️ **Backend/Database Changes** - Schema migrations, RLS policies, Edge Functions (Lovable Cloud)
+- 🗄️ **Backend Logic** - Supabase functions, triggers, complex database operations
+
+### 2. Resource Constraint: One Lovable Prompt Per Day (When Needed)
+**When we DO need Lovable, we get ONE prompt daily. Make it count.**
 
 This means:
-- Every prompt must be comprehensive and well-thought-out
-- No room for "let me try this quick thing"
-- Planning is MORE important than speed
+- Every Lovable prompt must be comprehensive and well-thought-out
+- Exhaust direct coding options before using Lovable
+- Plan Lovable prompts carefully - they're for UI/design and backend only
 - Quality over quantity, always
+- Most tasks should be handled directly in this repo first
 
 ### 3. Backend: Lovable Cloud (NOT Direct Supabase)
 **This project uses Lovable Cloud - the managed backend where Lovable controls the Supabase instance.**
@@ -71,7 +85,7 @@ This means:
 **All backend changes must be Lovable prompts.**
 
 ### 4. The Golden Rule
-**Think Different → Plan Like Da Vinci → Craft Through Lovable → Verify Obsessively → Iterate Relentlessly**
+**Think Different → Plan Like Da Vinci → Code Directly (or Lovable for UI/Backend) → Verify Obsessively → Iterate Relentlessly**
 
 ---
 
@@ -149,36 +163,40 @@ After comprehensive audit, we discovered:
 
 **PHASE 1: TECHNICAL DEBT CLEANUP (THIS WEEK - CRITICAL)**
 
-**Day 1: Security Patches (IMMEDIATE)**
+**Day 1: Security Patches (IMMEDIATE - DIRECT CODING)**
 - [ ] Run `npm audit fix` to patch 4 vulnerabilities
 - [ ] Verify build still works
 - [ ] Commit package-lock.json updates
 - **Why First:** Security vulnerabilities are unacceptable in production
-- **Effort:** 30 minutes manual work
+- **Effort:** Direct coding via Claude Code, 15 minutes
+- **Method:** Direct repo work (not Lovable)
 
-**Day 2-3: ESLint Cleanup (HIGH PRIORITY)**
+**Day 2-3: ESLint Cleanup (HIGH PRIORITY - DIRECT CODING)**
 - [ ] Analyze all 91 ESLint errors systematically
-- [ ] Create focused Lovable prompt to fix `any` types (75 errors)
-- [ ] Create prompt to fix React hooks issues (exhaustive-deps, rules-of-hooks)
-- [ ] Create prompt to fix remaining warnings (react-refresh, prefer-const)
+- [ ] Fix `any` types (75 errors) - direct code changes
+- [ ] Fix React hooks issues (exhaustive-deps, rules-of-hooks)
+- [ ] Fix remaining warnings (react-refresh, prefer-const)
 - **Why:** Type safety is foundational to maintainability
-- **Effort:** 2-3 focused Lovable prompts
+- **Effort:** Direct coding via Claude Code
+- **Method:** Direct repo work (not Lovable)
 
-**Day 4-5: Test Framework & Critical Coverage (HIGH PRIORITY)**
-- [ ] Create Lovable prompt to add Vitest + React Testing Library
-- [ ] Create prompt to add tests for authentication flows
-- [ ] Create prompt to add tests for key user journeys (signup, favorites, property CRUD)
-- [ ] Create prompt to add tests for admin operations
+**Day 4-5: Test Framework & Critical Coverage (HIGH PRIORITY - DIRECT CODING)**
+- [ ] Add Vitest + React Testing Library config
+- [ ] Write tests for authentication flows
+- [ ] Write tests for key user journeys (signup, favorites, property CRUD)
+- [ ] Write tests for admin operations
 - **Why:** No tests = no confidence in changes
-- **Effort:** 2-3 Lovable prompts
+- **Effort:** Direct coding via Claude Code
+- **Method:** Direct repo work (not Lovable)
 
-**Day 6-7: Dependency Updates (MEDIUM PRIORITY)**
-- [ ] Create Lovable prompt to update React 18.x → 19.x (if stable)
-- [ ] Create prompt to update Vite to latest
-- [ ] Create prompt to update Tailwind, Zod, other critical deps
+**Day 6-7: Dependency Updates (MEDIUM PRIORITY - DIRECT CODING)**
+- [ ] Update React 18.x → 19.x (if stable)
+- [ ] Update Vite to latest
+- [ ] Update Tailwind, Zod, other critical deps
 - [ ] Test thoroughly after each major update
 - **Why:** Outdated dependencies accumulate vulnerabilities
-- **Effort:** 2-3 careful Lovable prompts
+- **Effort:** Direct coding via Claude Code
+- **Method:** Direct repo work (not Lovable)
 
 **PHASE 2: LAUNCH PREP (NEXT WEEK - AFTER QUALITY GATES PASS)**
 
@@ -232,7 +250,7 @@ git fetch && git pull origin main
 git log --oneline -10  # Review recent commits
 ```
 
-**Purpose**: Understand what Lovable built since last session
+**Purpose**: Understand recent changes (from Lovable or direct coding)
 - Read commit messages
 - Review changed files
 - Check for any issues or regressions
@@ -241,10 +259,11 @@ git log --oneline -10  # Review recent commits
 ### Step 2: ANALYZE & ASSESS (Understand Reality)
 **Questions to answer:**
 - Where are we actually at? (vs where we think we are)
-- What did Lovable implement well?
+- What was implemented well?
 - What needs refinement?
 - What's the highest-value next step?
 - Are there any blockers or dependencies?
+- Can this be done directly in the repo, or does it require Lovable?
 
 **Check these files:**
 - `README.md` - Current completion status
@@ -267,11 +286,11 @@ git log --oneline -10  # Review recent commits
 4. **Low** - Future consideration
 
 ### Step 4: COLLABORATE & CLARIFY (Get Alignment)
-**Before creating prompts, confirm with Carlo:**
-- The specific problem we're solving
-- The desired outcome
-- Any constraints or preferences
-- Priority relative to other work
+**Before implementing, confirm with Carlo when:**
+- The specific problem we're solving needs clarification
+- The desired outcome is unclear
+- There are constraints or preferences to consider
+- Priority relative to other work is ambiguous
 
 **Use AskUserQuestion tool when:**
 - Multiple valid approaches exist
@@ -279,37 +298,75 @@ git log --oneline -10  # Review recent commits
 - Trade-offs need human judgment
 - Design decisions affect brand/UX
 
-### Step 5: CRAFT PROMPT (Make It Count)
-**Remember: ONE prompt per day. Make it insanely great.**
+### Step 5: IMPLEMENT (Code Directly or Lovable)
 
-See "LOVABLE PROMPT ENGINEERING" section below.
+**Decision Tree:**
+
+1. **Is this a UI/design change or backend/database modification?**
+   - YES → Use Lovable (see "LOVABLE PROMPT ENGINEERING" section)
+   - NO → Continue to step 2
+
+2. **Can this be handled with direct code changes in the repo?**
+   - YES → Code it directly using Claude Code tools (Edit, Write, Bash)
+   - NO → Use Lovable
+
+**For Direct Coding:**
+- Use Edit tool for existing files
+- Use Write tool for new files (rarely needed)
+- Use Bash tool for npm commands, git operations
+- Run tests and builds to verify
+- Commit changes with clear messages
+
+**For Lovable Prompts:**
+- See "LOVABLE PROMPT ENGINEERING" section below
+- Remember: ONE prompt per day, make it count
 
 ### Step 6: DOCUMENT & SYNC (Leave No Trace Behind)
-**After Lovable implements, update:**
+
+**After implementing (direct code OR Lovable), update:**
 - `AUDIT.md` - Mark completed items, update percentages
-- `README.md` - Add new features to list
+- `README.md` - Add new features to list (if applicable)
 - `TESTING_CHECKLIST.md` - Add test cases for new features
 - Any relevant guides (DEPLOYMENT.md, FEATURES.md, etc.)
 
-**Commit changes:**
+**For Direct Coding - Commit changes:**
 ```bash
 git add .
-git commit -m "docs: update after [feature name] implementation"
+git commit -m "type(scope): clear description of what changed"
 git push origin main
 ```
 
+**For Lovable Changes - Pull and review:**
+```bash
+git pull origin main
+# Review what Lovable implemented
+```
+
 ### Step 7: ITERATE (Pursuit of Perfection)
-**Review Lovable's implementation:**
+**Review the implementation:**
 - Does it match the vision?
 - Does it feel right?
 - Is it simple and elegant?
 - Can it be better?
+- Are there bugs or edge cases missed?
 
-If yes to "can it be better?" → Return to Step 3 with refinements
+**If refinement needed:**
+- Direct code fixes → Edit directly
+- UI/design refinements → New Lovable prompt
+- Return to Step 3 with specific improvements in mind
 
 ---
 
 ## 🎨 LOVABLE PROMPT ENGINEERING
+
+**⚠️ USE THIS SECTION ONLY FOR:**
+- UI/UX design changes
+- Visual refinements and styling
+- Backend/database changes (schema, RLS, Edge Functions)
+
+**For everything else (bug fixes, tests, refactoring, dependencies):** Code directly in this repo.
+
+---
 
 ### The Anatomy of a Perfect Prompt
 
@@ -453,20 +510,28 @@ Users currently can only filter properties using the sidebar filters. We need a 
 
 ### What Belongs in This Repo vs Lovable
 
-**This Repo (Documentation & Planning):**
-- Planning documents (this file!)
-- Status tracking (AUDIT.md, README.md)
-- Testing checklists
-- Deployment guides
-- Project decisions and rationale
+**Direct Coding in This Repo (via Claude Code):**
+- ✅ **Documentation** - All markdown files (README, CLAUDE.md, AUDIT.md, etc.)
+- ✅ **Bug Fixes** - Non-UI logic bugs, type errors, ESLint issues
+- ✅ **Refactoring** - Code cleanup, removing `any` types, improving structure
+- ✅ **Testing** - Writing Vitest tests, React Testing Library tests
+- ✅ **Dependencies** - npm install/update, security patches, version updates
+- ✅ **Configuration** - tsconfig.json, vite.config.ts, package.json edits
+- ✅ **Utilities** - Helper functions, hooks (non-UI logic), type definitions
+- ✅ **Performance** - Non-visual optimizations, bundle analysis
+- ✅ **Static Assets** - Files in `/public` (images, fonts, etc.)
+- ✅ **Scripts** - Build scripts, utility scripts, automation
+- ✅ **Git Operations** - Commits, branches, merges, pull requests
 
-**Lovable (All Code):**
-- Component changes
-- New features
-- Bug fixes
-- Style updates
-- Configuration changes
-- Database migrations
+**Lovable Prompts (UI/Design & Backend Only):**
+- 🎨 **UI Components** - New React components, component restructuring
+- 🎨 **Styling** - CSS/Tailwind changes, animations, responsive design
+- 🎨 **Layout Changes** - Page structure, navigation, design system updates
+- 🎨 **Visual Polish** - Aesthetic improvements, spacing, colors, typography
+- 🗄️ **Database Schema** - Table creation, column changes, migrations
+- 🗄️ **RLS Policies** - Row Level Security policy changes
+- 🗄️ **Edge Functions** - Supabase functions, triggers, backend logic
+- 🗄️ **Backend Integrations** - API connections, third-party services
 
 ---
 
@@ -487,7 +552,7 @@ Users currently can only filter properties using the sidebar filters. We need a 
 
 ## ✨ QUALITY STANDARDS (Non-Negotiable)
 
-Every Lovable prompt must ensure:
+Every code change (direct or Lovable) must ensure:
 
 1. **Type Safety** - Full TypeScript, no `any` types
 2. **Accessibility** - WCAG 2.1 AA compliance
@@ -547,26 +612,36 @@ Each prompt is a complete specification for a piece of work. Make it worthy of a
 
 ## 🎯 TODAY'S SESSION CHECKLIST
 
-Before writing today's prompt:
-
+**Before starting work:**
 - [ ] Pulled latest changes from remote
 - [ ] Reviewed recent commits
 - [ ] Read current AUDIT.md status
 - [ ] Identified highest-value next step
 - [ ] Confirmed priority with Carlo (if needed)
+- [ ] Decided: Direct coding or Lovable prompt?
+
+**For Direct Coding:**
+- [ ] Identified files to change
+- [ ] Made changes using Edit/Write tools
+- [ ] Ran tests/builds to verify (`npm run build`, `npm run lint`)
+- [ ] Tested functionality manually (if applicable)
+- [ ] Updated documentation (AUDIT.md, README.md)
+- [ ] Committed changes with clear message
+- [ ] Pushed to remote
+
+**For Lovable Prompts:**
 - [ ] Drafted comprehensive prompt
 - [ ] Reviewed prompt against quality standards
-- [ ] Ready to send to Lovable
-
-After Lovable implements:
-
-- [ ] Pulled changes and reviewed implementation
+- [ ] Sent to Lovable
+- [ ] Pulled changes after implementation
 - [ ] Tested key functionality
-- [ ] Updated AUDIT.md
-- [ ] Updated README.md (if needed)
-- [ ] Updated TESTING_CHECKLIST.md
+- [ ] Updated AUDIT.md, README.md, TESTING_CHECKLIST.md
 - [ ] Committed documentation updates
-- [ ] Planned next session (if refinement needed)
+
+**After any work:**
+- [ ] Documentation is up to date
+- [ ] Changes are committed and pushed
+- [ ] Next steps are clear (if more work needed)
 
 ---
 
@@ -579,7 +654,7 @@ Every prompt, every feature, every refinement should make someone's day better -
 
 ---
 
-**Last Updated**: 2025-11-16
+**Last Updated**: 2025-11-20
 **Project**: YR Inmobiliaria - Real Estate Platform
 **Lovable Project**: https://lovable.dev/projects/85042ab5-51cc-4730-a42e-b9fceaafa3a2
 
