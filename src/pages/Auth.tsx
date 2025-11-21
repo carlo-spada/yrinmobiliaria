@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -25,12 +25,18 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
+    // Prevent infinite redirect loop
+    if (!user || hasRedirected.current || authLoading) {
+      return;
+    }
+
     const checkUserRole = async () => {
-      if (user) {
+      try {
         // Check user's role from role_assignments table
         const { data: roleData } = await supabase
           .from('role_assignments')
@@ -38,10 +44,13 @@ const Auth = () => {
           .eq('user_id', user.id)
           .single();
 
+        // Mark as redirected before navigating
+        hasRedirected.current = true;
+
         if (roleData) {
           // Redirect based on role
           if (roleData.role === 'admin' || roleData.role === 'superadmin') {
-            navigate('/admin');
+            navigate('/admin', { replace: true });
           } else {
             // Check if user has agent profile
             const { data: profileData } = await supabase
@@ -51,20 +60,23 @@ const Auth = () => {
               .single();
 
             if (profileData?.agent_level) {
-              navigate('/agent/dashboard');
+              navigate('/agent/dashboard', { replace: true });
             } else {
-              navigate('/cuenta');
+              navigate('/cuenta', { replace: true });
             }
           }
         } else {
           // No role assigned, treat as regular user
-          navigate('/cuenta');
+          navigate('/cuenta', { replace: true });
         }
+      } catch (error) {
+        console.error('Error checking user role:', error);
+        hasRedirected.current = false; // Reset on error
       }
     };
 
     checkUserRole();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
