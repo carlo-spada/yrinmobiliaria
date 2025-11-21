@@ -25,7 +25,13 @@
       "Bash(npm outdated:*)",
       "Bash(npm audit:*)",
       "Bash(npm run dev:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(curl:*)",
+      "Bash(open http://localhost:8081)",
+      "Bash(pkill:*)",
+      "Bash(rm:*)",
+      "Bash(npx vite build:*)",
+      "Bash(open http://localhost:8080)"
     ],
     "deny": [],
     "ask": []
