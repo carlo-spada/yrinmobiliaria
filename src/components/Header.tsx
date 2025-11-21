@@ -89,11 +89,11 @@ export function Header() {
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
               <span className="text-2xl font-bold text-primary-foreground">
-                {companyName.split(' ')[0].substring(0, 2).toUpperCase()}
+                {String(companyName).split(' ')[0].substring(0, 2).toUpperCase()}
               </span>
             </div>
             <span className="hidden sm:block text-xl font-semibold text-foreground">
-              {companyName.split(' ').slice(1).join(' ') || companyName}
+              {String(companyName).split(' ').slice(1).join(' ') || companyName}
             </span>
           </Link>
 

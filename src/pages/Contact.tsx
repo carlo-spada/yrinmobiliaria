@@ -110,7 +110,7 @@ export default function Contact() {
       icon: Phone,
       title: t.contact?.phoneTitle || 'Teléfono',
       content: companyPhone,
-      link: `tel:${companyPhone.replace(/\s+/g, '')}`,
+      link: `tel:${String(companyPhone).replace(/\s+/g, '')}`,
     },
     {
       icon: Mail,
@@ -301,7 +301,7 @@ export default function Contact() {
                       return (
                         <a
                           key={social.label}
-                          href={social.url}
+                          href={String(social.url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors ${social.color}`}
