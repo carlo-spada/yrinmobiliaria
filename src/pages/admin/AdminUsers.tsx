@@ -65,7 +65,7 @@ export default function AdminUsers() {
 
       // Group role assignments by user_id
       const userMap = new Map();
-      roleAssignments.forEach((roleAssignment: any) => {
+      roleAssignments.forEach((roleAssignment) => {
         const userId = roleAssignment.user_id;
         const profile = roleAssignment.profiles;
 
