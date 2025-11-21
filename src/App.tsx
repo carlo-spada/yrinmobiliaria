@@ -29,6 +29,7 @@ const AcceptInvitation = lazy(() => import("./pages/auth/AcceptInvitation"));
 const CompleteProfile = lazy(() => import("./pages/onboarding/CompleteProfile"));
 const AgentDashboard = lazy(() => import("./pages/agent/AgentDashboard"));
 const EditProfile = lazy(() => import("./pages/agent/EditProfile"));
+const UserDashboard = lazy(() => import("./pages/user/UserDashboard"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
 const AdminAgents = lazy(() => import("./pages/admin/AdminAgents"));
@@ -118,6 +119,11 @@ const App = () => (
               <Route path="/agent/profile/edit" element={
                 <Suspense fallback={<PageLoader />}>
                   <EditProfile />
+                </Suspense>
+              } />
+              <Route path="/cuenta" element={
+                <Suspense fallback={<PageLoader />}>
+                  <UserDashboard />
                 </Suspense>
               } />
               <Route path="/admin" element={
