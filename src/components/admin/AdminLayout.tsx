@@ -1,17 +1,42 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
+
+// Inner component that has access to sidebar context
+const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
+  const { open } = useSidebar();
+
+  return (
+    <div className="min-h-screen flex w-full">
+      {/* Sidebar space reservation - width changes based on open state */}
+      <div className={cn(
+        "flex-shrink-0 transition-all duration-200",
+        open ? "w-64" : "w-14"
+      )}>
+        <AdminSidebar />
+      </div>
+      {/* Main content - starts after sidebar space */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminHeader />
+        <main className="flex-1 p-6 bg-background overflow-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user, loading, isAdmin } = useAuth();
@@ -73,15 +98,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <ProfileCompletionGuard>
       <SidebarProvider defaultOpen={true}>
-        <div className="min-h-screen flex w-full relative">
-          <AdminSidebar />
-          <div className="flex-1 flex flex-col">
-            <AdminHeader />
-            <main className="flex-1 p-6 bg-background">
-              {children}
-            </main>
-          </div>
-        </div>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
       </SidebarProvider>
     </ProfileCompletionGuard>
   );
