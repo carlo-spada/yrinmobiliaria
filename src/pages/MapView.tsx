@@ -773,7 +773,7 @@ export default function MapView() {
             <div className="flex-1 min-h-0 min-w-0">
               <MapContainer
                 center={[17.0732, -96.7266]}
-                zoom={12}
+                zoom={10}
                 className="h-full w-full"
               >
                 <TileLayer
