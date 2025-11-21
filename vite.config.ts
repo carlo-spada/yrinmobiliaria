@@ -27,6 +27,8 @@ export default defineConfig(({ mode }) => ({
           'map-vendor': ['leaflet', 'react-leaflet', 'react-leaflet-cluster', 'leaflet.markercluster'],
           // Form/validation stack in its own chunk
           'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          // Auth stack (routing + http clients) kept together
+          'auth-vendor': ['@supabase/supabase-js', '@tanstack/react-query'],
         },
         // Add hash to filenames for cache busting
         assetFileNames: 'assets/[name].[hash][extname]',
