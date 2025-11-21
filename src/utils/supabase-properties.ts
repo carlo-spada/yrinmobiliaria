@@ -1,5 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/property';
+import { Database } from '@/integrations/supabase/types';
+
+type Json = Database['public']['Tables']['properties']['Insert']['location'];
 
 /**
  * Seed the database with initial properties
@@ -32,8 +35,8 @@ export const seedProperties = async (properties: Property[]) => {
           type: property.type,
           operation: property.operation,
           price: property.price,
-          location: property.location as unknown as any,
-          features: property.features as unknown as any,
+          location: property.location as Json,
+          features: property.features as Json,
           amenities: property.amenities,
           status: property.status,
           featured: property.featured,

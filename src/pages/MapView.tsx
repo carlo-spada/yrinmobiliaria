@@ -536,7 +536,7 @@ export default function MapView() {
                 { value: "terrenos", label: t.properties.types.terrenos },
               ]}
               value={filters.type}
-              onChange={(e) => setFilters({ ...filters, type: e.target.value as any })}
+              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
             />
 
             <Select

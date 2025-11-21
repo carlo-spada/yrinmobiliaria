@@ -2,9 +2,28 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Property, PropertyFilters } from '@/types/property';
 import { logger } from '@/utils/logger';
+import { Database } from '@/integrations/supabase/types';
+
+type PropertyRow = Database['public']['Tables']['properties']['Row'];
+type PropertyImageRow = Database['public']['Tables']['property_images']['Row'];
+
+interface PropertyWithRelations extends PropertyRow {
+  property_images?: PropertyImageRow[];
+  agent?: {
+    id: string;
+    display_name: string;
+    photo_url: string | null;
+    agent_level: string | null;
+    whatsapp_number?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    bio_es?: string | null;
+    bio_en?: string | null;
+  } | null;
+}
 
 // Transform database row to Property type with proper coordinate handling
-const transformProperty = (row: any): Property => {
+const transformProperty = (row: PropertyWithRelations): Property => {
   // Ensure coordinates are numbers with fallbacks
   const lat = row.location?.coordinates?.lat;
   const lng = row.location?.coordinates?.lng;
@@ -34,8 +53,8 @@ const transformProperty = (row: any): Property => {
     },
     features: row.features || {},
     amenities: row.amenities || [],
-    images: row.property_images?.map((img: any) => img.image_url) || [],
-    imagesAlt: row.property_images?.map((img: any) => ({
+    images: row.property_images?.map((img) => img.image_url) || [],
+    imagesAlt: row.property_images?.map((img) => ({
       es: img.alt_text_es || '',
       en: img.alt_text_en || '',
     })) || [],

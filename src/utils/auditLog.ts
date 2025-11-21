@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "./logger";
+import { Database } from "@/integrations/supabase/types";
+
+type Json = Database['public']['Tables']['audit_logs']['Row']['changes'];
 
 export interface AuditLogEntry {
   action: string;
@@ -27,7 +30,7 @@ export const logAuditEvent = async (entry: AuditLogEntry) => {
         action: entry.action,
         table_name: entry.table_name,
         record_id: entry.record_id,
-        changes: entry.changes ? (entry.changes as unknown as any) : null,
+        changes: entry.changes ? (entry.changes as Json) : null,
       }]);
 
     if (error) {
