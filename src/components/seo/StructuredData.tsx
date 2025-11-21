@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export type SchemaType = 'Organization' | 'Product' | 'BreadcrumbList' | 'LocalBusiness';
+export type SchemaType = 'Organization' | 'Product' | 'BreadcrumbList' | 'LocalBusiness' | 'Person';
 
 interface StructuredDataProps {
   type: SchemaType;

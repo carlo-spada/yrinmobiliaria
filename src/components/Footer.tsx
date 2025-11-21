@@ -22,6 +22,7 @@ export function Footer() {
   const quickLinks = [
     { label: t.nav?.properties || 'Propiedades', href: '/propiedades' },
     { label: t.nav?.map || 'Mapa', href: '/mapa' },
+    { label: language === 'es' ? 'Agentes' : 'Agents', href: '/agentes' },
     { label: t.nav?.about || 'Nosotros', href: '/nosotros' },
     { label: t.nav?.contact || 'Contacto', href: '/contacto' },
   ];

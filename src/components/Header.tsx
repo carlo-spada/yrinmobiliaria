@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const location = useLocation();
   const { count: favoritesCount } = useFavorites();
   const { getSetting } = useSiteSettings();
@@ -143,6 +143,18 @@ export function Header() {
               )}
             >
               {t.nav.map}
+            </Link>
+
+            <Link
+              to="/agentes"
+              className={cn(
+                'px-4 py-2 text-sm font-medium transition-colors rounded-md',
+                isActive('/agentes')
+                  ? 'text-primary bg-primary/10'
+                  : 'text-foreground hover:text-primary hover:bg-muted'
+              )}
+            >
+              {language === 'es' ? 'Agentes' : 'Agents'}
             </Link>
 
             <Link

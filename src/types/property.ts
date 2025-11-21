@@ -51,6 +51,7 @@ export interface Property {
   status: PropertyStatus;
   featured: boolean;
   publishedDate: string;
+  agent_id?: string;
 }
 
 export interface PropertyFilters {
