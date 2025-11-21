@@ -20,15 +20,12 @@ const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="min-h-screen flex w-full">
-      {/* Sidebar space reservation - width changes based on open state */}
+      <AdminSidebar />
+      {/* Main content - uses padding to account for sidebar */}
       <div className={cn(
-        "flex-shrink-0 transition-all duration-200",
-        open ? "w-64" : "w-14"
+        "flex-1 flex flex-col min-w-0 transition-all duration-200",
+        open ? "md:pl-64" : "md:pl-14"
       )}>
-        <AdminSidebar />
-      </div>
-      {/* Main content - starts after sidebar space */}
-      <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader />
         <main className="flex-1 p-6 bg-background overflow-auto">
           {children}

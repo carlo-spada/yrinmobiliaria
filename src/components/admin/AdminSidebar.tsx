@@ -45,7 +45,7 @@ export function AdminSidebar() {
   ];
 
   return (
-    <Sidebar collapsible="icon" className="!relative !w-full h-full">
+    <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={!open ? 'sr-only' : ''}>
