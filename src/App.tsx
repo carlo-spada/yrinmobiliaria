@@ -21,7 +21,6 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const About = lazy(() => import("./pages/About"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
-const ComponentShowcase = lazy(() => import("./pages/ComponentShowcase"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const MapView = lazy(() => import("./pages/MapView"));
@@ -117,7 +116,6 @@ const App = () => (
               <Route path="/admin/settings" element={<Suspense fallback={<PageLoader />}><AdminSettings /></Suspense>} />
               <Route path="/admin/health" element={<Suspense fallback={<PageLoader />}><AdminHealth /></Suspense>} />
               <Route path="/admin/seed" element={<Suspense fallback={<PageLoader />}><DatabaseSeed /></Suspense>} />
-              <Route path="/componentes" element={<Suspense fallback={<PageLoader />}><ComponentShowcase /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
           </PageTransition>

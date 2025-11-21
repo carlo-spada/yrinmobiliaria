@@ -3,18 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 import { logger } from '@/utils/logger';
-
-const FAVORITES_KEY = 'yr-inmobiliaria-favorites';
-
-// Helper: Get favorites from localStorage (pure function, outside component)
-const getLocalFavorites = (): string[] => {
-  try {
-    const stored = localStorage.getItem(FAVORITES_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
+import { FAVORITES_STORAGE_KEY, getLocalFavorites, persistLocalFavorites } from '@/utils/favoritesStorage';
 
 export function useFavorites() {
   const { user } = useAuth();
@@ -102,12 +91,7 @@ export function useFavorites() {
   // Save to localStorage for guests
   useEffect(() => {
     if (!user && favorites.length >= 0) {
-      try {
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-        window.dispatchEvent(new CustomEvent('favoritesChanged', { detail: favorites }));
-      } catch (error) {
-        logger.error('Error saving favorites to localStorage', error);
-      }
+      persistLocalFavorites(favorites);
     }
   }, [favorites, user]);
 

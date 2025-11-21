@@ -23,6 +23,10 @@ export default defineConfig(({ mode }) => ({
           // Split vendor chunks for better caching
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          // Map stack stays isolated from the main bundle
+          'map-vendor': ['leaflet', 'react-leaflet', 'react-leaflet-cluster', 'leaflet.markercluster'],
+          // Form/validation stack in its own chunk
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
         },
         // Add hash to filenames for cache busting
         assetFileNames: 'assets/[name].[hash][extname]',
