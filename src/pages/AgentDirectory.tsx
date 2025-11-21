@@ -15,7 +15,8 @@ import { useLanguage } from '@/utils/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { Search, X } from 'lucide-react';
 import { MetaTags } from '@/components/seo/MetaTags';
-import { StructuredData, getOrganizationSchema } from '@/components/seo/StructuredData';
+import { StructuredData } from '@/components/seo/StructuredData';
+import { getOrganizationSchema } from '@/lib/schema-helpers';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type SortOption = 'name' | 'properties' | 'experience';

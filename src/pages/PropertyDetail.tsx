@@ -14,7 +14,8 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { AgentContactCard } from "@/components/AgentContactCard";
 import { MetaTags } from "@/components/seo/MetaTags";
-import { StructuredData, getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/components/seo/StructuredData";
+import { StructuredData } from "@/components/seo/StructuredData";
+import { getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/lib/schema-helpers";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import {
   ArrowLeft,
