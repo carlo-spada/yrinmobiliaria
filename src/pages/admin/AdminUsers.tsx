@@ -37,23 +37,57 @@ export default function AdminUsers() {
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
     queryFn: async () => {
+      // Get all role assignments with profile data (display_name, email, photo_url)
       const { data, error } = await supabase
         .from('role_assignments')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(
+            display_name,
+            email,
+            photo_url,
+            agent_level,
+            organization_id
+          )
+        `)
         .order('granted_at', { ascending: false });
+
       if (error) throw error;
-      
-      // Fetch emails for each user
-      const rolesWithEmails = await Promise.all(
-        data.map(async (role) => {
-          const { data: emailData } = await supabase.rpc('get_user_email', {
-            target_user_id: role.user_id,
+
+      // Group by user_id to avoid duplicate rows
+      const userMap = new Map();
+      data.forEach((roleAssignment) => {
+        const userId = roleAssignment.user_id;
+        if (!userMap.has(userId)) {
+          userMap.set(userId, {
+            user_id: userId,
+            display_name: roleAssignment.profiles.display_name,
+            email: roleAssignment.profiles.email,
+            photo_url: roleAssignment.profiles.photo_url,
+            agent_level: roleAssignment.profiles.agent_level,
+            organization_id: roleAssignment.profiles.organization_id,
+            roles: [],
+            latest_granted_at: roleAssignment.granted_at || roleAssignment.created_at,
           });
-          return { ...role, email: emailData || 'N/A' };
-        })
+        }
+
+        const user = userMap.get(userId);
+        user.roles.push({
+          role: roleAssignment.role,
+          granted_at: roleAssignment.granted_at || roleAssignment.created_at,
+        });
+
+        // Update latest_granted_at if this role is newer
+        const roleDate = new Date(roleAssignment.granted_at || roleAssignment.created_at);
+        const currentDate = new Date(user.latest_granted_at);
+        if (roleDate > currentDate) {
+          user.latest_granted_at = roleAssignment.granted_at || roleAssignment.created_at;
+        }
+      });
+
+      return Array.from(userMap.values()).sort((a, b) =>
+        new Date(b.latest_granted_at).getTime() - new Date(a.latest_granted_at).getTime()
       );
-      
-      return rolesWithEmails;
     },
   });
 
@@ -155,31 +189,81 @@ export default function AdminUsers() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>ID de Usuario</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Fecha de Asignación</TableHead>
+                <TableHead>Roles</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Última Actualización</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {userRoles?.map((userRole) => (
-                <TableRow key={userRole.id}>
-                  <TableCell>{userRole.email}</TableCell>
-                  <TableCell className="font-mono text-xs">{userRole.user_id}</TableCell>
-                  <TableCell>
-                    <Badge variant={userRole.role === 'admin' ? 'default' : 'secondary'}>
-                      {userRole.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(userRole.granted_at || userRole.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    Cargando usuarios...
                   </TableCell>
                 </TableRow>
-              ))}
-              {(!userRoles || userRoles.length === 0) && (
+              ) : userRoles && userRoles.length > 0 ? (
+                userRoles.map((user) => (
+                  <TableRow key={user.user_id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {user.photo_url ? (
+                          <img
+                            src={user.photo_url}
+                            alt={user.display_name}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary">
+                              {user.display_name?.charAt(0).toUpperCase() || '?'}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium">{user.display_name || 'Sin nombre'}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{user.user_id.slice(0, 8)}...</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles.map((roleInfo, idx) => (
+                          <Badge
+                            key={idx}
+                            variant={
+                              roleInfo.role === 'superadmin'
+                                ? 'default'
+                                : roleInfo.role === 'admin'
+                                ? 'secondary'
+                                : 'outline'
+                            }
+                          >
+                            {roleInfo.role}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {user.agent_level ? (
+                        <Badge variant="outline">Agente</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          Usuario
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(user.latest_granted_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No hay roles asignados
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No hay usuarios registrados
                   </TableCell>
                 </TableRow>
               )}
@@ -187,16 +271,31 @@ export default function AdminUsers() {
           </Table>
         </div>
 
-        <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-          <p className="text-sm text-muted-foreground">
-            <strong>Administración automática:</strong> Los usuarios con email 
-            <code className="mx-1 px-1 bg-background rounded">ruizvasquezyazmin@gmail.com</code> y
-            <code className="mx-1 px-1 bg-background rounded">carlo.spada22@gmail.com</code>
-            recibirán automáticamente rol de administrador al registrarse.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Para promover otros usuarios a administrador, usa el botón "Promover a Admin" arriba.
-          </p>
+        <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+          <div>
+            <p className="text-sm font-medium mb-1">📋 Sobre esta vista</p>
+            <p className="text-sm text-muted-foreground">
+              Esta tabla muestra <strong>todos los usuarios del sistema</strong> con sus roles y tipo (Usuario regular o Agente).
+              Los usuarios marcados como "Agente" tienen perfiles completos en la pestaña de Agentes.
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-1">🔐 Roles del Sistema</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+              <li><strong>SuperAdmin:</strong> Acceso completo a todo el sistema (sin organización)</li>
+              <li><strong>Admin:</strong> Gestiona propiedades, agentes, consultas de su organización</li>
+              <li><strong>User:</strong> Usuario regular que puede guardar favoritos y ver propiedades</li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-1">⚡ Administración automática</p>
+            <p className="text-sm text-muted-foreground">
+              Los usuarios con email
+              <code className="mx-1 px-1 bg-background rounded">ruizvasquezyazmin@gmail.com</code> y
+              <code className="mx-1 px-1 bg-background rounded">carlo.spada22@gmail.com</code>
+              reciben automáticamente rol de administrador al registrarse.
+            </p>
+          </div>
         </div>
       </div>
     </AdminLayout>
