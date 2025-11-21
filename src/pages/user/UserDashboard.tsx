@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { PropertyCard } from '@/components/PropertyCard';
-import { AlertCircle, Heart, Mail, Phone, Check, LogOut, Trash2 } from 'lucide-react';
+import { AlertCircle, Heart, Mail, Phone, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/utils/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,6 +26,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
+
+const profileSchema = z.object({
+  display_name: z.string().min(1, 'Name is required').max(100),
+  phone: z.string().optional(),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function UserDashboard() {
   const { user, signOut, profile } = useAuth();
@@ -33,8 +44,23 @@ export default function UserDashboard() {
   const { data: allProperties = [] } = useProperties();
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isResending, setIsResending] = useState(false);
   const [lastResendTime, setLastResendTime] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isDirty },
+    reset,
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      display_name: profile?.display_name || '',
+      phone: profile?.phone || '',
+    },
+  });
 
   // Redirect if not authenticated
   if (!user) {
@@ -90,13 +116,47 @@ export default function UserDashboard() {
     navigate('/');
   };
 
+  const handleSaveProfile = async (data: ProfileFormData) => {
+    if (!profile?.id) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: data.display_name,
+          phone: data.phone || null,
+        })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      reset(data);
+      toast.success(
+        language === 'es' ? 'Perfil actualizado exitosamente' : 'Profile updated successfully'
+      );
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     try {
-      const { error } = await supabase.auth.admin.deleteUser(user.id);
+      if (!profile?.id) return;
+
+      // Deactivate account by setting is_active to false
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: false })
+        .eq('id', profile.id);
+
       if (error) throw error;
-      
+
       toast.success(
-        language === 'es' ? 'Cuenta eliminada exitosamente' : 'Account deleted successfully'
+        language === 'es' ? 'Cuenta desactivada exitosamente' : 'Account deactivated successfully'
       );
       await signOut();
       navigate('/');
@@ -246,27 +306,39 @@ export default function UserDashboard() {
               <CardHeader>
                 <CardTitle>{language === 'es' ? 'Tu Perfil' : 'Your Profile'}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{language === 'es' ? 'Nombre' : 'Name'}</Label>
-                  <Input value={profile?.display_name || user.email || ''} disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <div className="flex items-center gap-2">
-                    <Input value={user.email || ''} disabled />
-                    {isEmailVerified && <Check className="h-4 w-4 text-green-600" />}
-                  </div>
-                </div>
-                {profile?.phone && (
+              <CardContent>
+                <form onSubmit={handleSubmit(handleSaveProfile)} className="space-y-4">
                   <div className="space-y-2">
-                    <Label>{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                    <Label htmlFor="display_name">{language === 'es' ? 'Nombre' : 'Name'}</Label>
+                    <Input
+                      id="display_name"
+                      {...register('display_name')}
+                      placeholder={language === 'es' ? 'Tu nombre' : 'Your name'}
+                    />
+                    {errors.display_name && (
+                      <p className="text-sm text-destructive">{errors.display_name.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <Input value={profile.phone} disabled />
+                      <Input value={user.email || ''} disabled />
+                      {isEmailVerified && <Check className="h-4 w-4 text-green-600" />}
                     </div>
                   </div>
-                )}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                    <Input
+                      id="phone"
+                      {...register('phone')}
+                      placeholder={language === 'es' ? 'Tu teléfono (opcional)' : 'Your phone (optional)'}
+                    />
+                  </div>
+                  <Button type="submit" disabled={!isDirty || isSaving} className="w-full">
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {language === 'es' ? 'Guardar cambios' : 'Save changes'}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
 
@@ -285,7 +357,7 @@ export default function UserDashboard() {
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full">
                       <Trash2 className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Eliminar cuenta' : 'Delete account'}
+                      {language === 'es' ? 'Desactivar cuenta' : 'Deactivate account'}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -295,8 +367,8 @@ export default function UserDashboard() {
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         {language === 'es'
-                          ? 'Esta acción no se puede deshacer. Se eliminarán permanentemente tu cuenta y todos tus datos.'
-                          : 'This action cannot be undone. This will permanently delete your account and all your data.'}
+                          ? 'Tu cuenta será desactivada y no podrás acceder a ella. Contacta a soporte para reactivarla.'
+                          : 'Your account will be deactivated and you will not be able to access it. Contact support to reactivate.'}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -304,7 +376,7 @@ export default function UserDashboard() {
                         {language === 'es' ? 'Cancelar' : 'Cancel'}
                       </AlertDialogCancel>
                       <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive">
-                        {language === 'es' ? 'Eliminar cuenta' : 'Delete account'}
+                        {language === 'es' ? 'Desactivar cuenta' : 'Deactivate account'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
