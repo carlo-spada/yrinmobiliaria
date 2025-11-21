@@ -10,17 +10,18 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useLanguage } from '@/utils/LanguageContext';
 import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { SettingValue } from '@/hooks/useSiteSettings';
 
 interface SettingEditorProps {
   settingKey: string;
   label: string;
   description: string;
-  value: any;
+  value: SettingValue;
   multiline?: boolean;
   icon?: React.ReactNode;
-  onSave: (args: { key: string; value: any }) => void;
+  onSave: (args: { key: string; value: SettingValue }) => void;
   isUpdating: boolean;
-  defaultValue?: any;
+  defaultValue?: SettingValue;
 }
 
 const SettingEditor = ({ 
@@ -34,12 +35,12 @@ const SettingEditor = ({
   isUpdating,
   defaultValue 
 }: SettingEditorProps) => {
-  const [editValue, setEditValue] = useState(value || '');
+  const [editValue, setEditValue] = useState<string>(String(value || ''));
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleChange = (newValue: string) => {
     setEditValue(newValue);
-    setHasChanges(newValue !== value);
+    setHasChanges(newValue !== String(value));
   };
 
   const handleSave = () => {
@@ -77,7 +78,7 @@ const SettingEditor = ({
 
   const handleReset = () => {
     if (defaultValue !== undefined) {
-      setEditValue(defaultValue);
+      setEditValue(String(defaultValue));
       setHasChanges(true);
     }
   };

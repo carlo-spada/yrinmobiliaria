@@ -30,9 +30,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { logAuditEvent } from '@/utils/auditLog';
+import { Database } from '@/integrations/supabase/types';
+
+type ContactInquiry = Database['public']['Tables']['contact_inquiries']['Row'] & {
+  properties?: { title_es: string } | null;
+};
 
 export default function AdminInquiries() {
-  const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
+  const [selectedInquiry, setSelectedInquiry] = useState<ContactInquiry | null>(null);
   const queryClient = useQueryClient();
 
   const { data: inquiries, isLoading } = useQuery({

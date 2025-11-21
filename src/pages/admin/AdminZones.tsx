@@ -27,10 +27,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { logAuditEvent } from '@/utils/auditLog';
+import { Database } from '@/integrations/supabase/types';
+
+type ServiceZone = Database['public']['Tables']['service_zones']['Row'];
+
+interface ZoneFormData {
+  name_es: string;
+  name_en: string;
+  description_es?: string;
+  description_en?: string;
+  active: boolean;
+  display_order: number;
+}
 
 export default function AdminZones() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingZone, setEditingZone] = useState<any>(null);
+  const [editingZone, setEditingZone] = useState<ServiceZone | null>(null);
   const [zoneImages, setZoneImages] = useState<Array<{ url: string; path?: string }>>([]);
   const queryClient = useQueryClient();
   const { register, handleSubmit, reset, setValue, watch } = useForm();
@@ -48,7 +60,7 @@ export default function AdminZones() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (formData: any) => {
+    mutationFn: async (formData: Omit<ServiceZone, 'id' | 'created_at' | 'updated_at'>) => {
       if (editingZone) {
         const { error } = await supabase
           .from('service_zones')
@@ -78,8 +90,9 @@ export default function AdminZones() {
       setZoneImages([]);
       reset();
     },
-    onError: (error: any) => {
-      toast.error('Error: ' + error.message);
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar';
+      toast.error('Error: ' + errorMessage);
     },
   });
 
@@ -101,12 +114,13 @@ export default function AdminZones() {
       queryClient.invalidateQueries({ queryKey: ['service-zones'] });
       toast.success('Zona eliminada correctamente');
     },
-    onError: (error: any) => {
-      toast.error('Error: ' + error.message);
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error al eliminar';
+      toast.error('Error: ' + errorMessage);
     },
   });
 
-  const handleEdit = (zone: any) => {
+  const handleEdit = (zone: ServiceZone) => {
     setEditingZone(zone);
     setValue('name_es', zone.name_es);
     setValue('name_en', zone.name_en);
@@ -129,7 +143,7 @@ export default function AdminZones() {
     setIsDialogOpen(true);
   };
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: ZoneFormData) => {
     mutation.mutate({
       name_es: data.name_es,
       name_en: data.name_en,
@@ -137,7 +151,7 @@ export default function AdminZones() {
       description_en: data.description_en,
       image_url: zoneImages.length > 0 ? zoneImages[0].url : null,
       active: data.active,
-      display_order: parseInt(data.display_order),
+      display_order: parseInt(String(data.display_order)),
     });
   };
 

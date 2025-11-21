@@ -4,8 +4,8 @@ import { logger } from './logger';
  * Maps detailed Supabase auth errors to generic user-friendly messages
  * to prevent information leakage and user enumeration attacks
  */
-export const mapAuthError = (error: any): string => {
-  const message = error?.message?.toLowerCase() || '';
+export const mapAuthError = (error: unknown): string => {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
 
   // Log detailed error for debugging (only in development)
   logger.error('Auth error', error);

@@ -3,10 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 
+// Setting value can be string, number, boolean, or null
+export type SettingValue = string | number | boolean | null;
+
 export interface SiteSetting {
   id: string;
   setting_key: string;
-  setting_value: any;
+  setting_value: SettingValue;
   category: string;
   description: string;
   created_at: string;
@@ -14,7 +17,7 @@ export interface SiteSetting {
 }
 
 export interface SiteSettingsMap {
-  [key: string]: any;
+  [key: string]: SettingValue;
 }
 
 export function useSiteSettings() {
@@ -45,7 +48,7 @@ export function useSiteSettings() {
   }, {} as SiteSettingsMap) || {};
 
   const updateSettingMutation = useMutation({
-    mutationFn: async ({ key, value }: { key: string; value: any }) => {
+    mutationFn: async ({ key, value }: { key: string; value: SettingValue }) => {
       const { data, error } = await supabase
         .from('site_settings')
         .update({ setting_value: value, updated_at: new Date().toISOString() })
@@ -77,7 +80,7 @@ export function useSiteSettings() {
     },
   });
 
-  const getSetting = (key: string, fallback?: any): any => {
+  const getSetting = (key: string, fallback?: SettingValue): SettingValue => {
     return settings?.[key] ?? fallback;
   };
 

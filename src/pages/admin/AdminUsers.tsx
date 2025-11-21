@@ -71,8 +71,9 @@ export default function AdminUsers() {
       setUserId('');
       setUserEmail(null);
     },
-    onError: (error: any) => {
-      toast.error('Error al promover usuario: ' + error.message);
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error al promover usuario';
+      toast.error('Error al promover usuario: ' + errorMessage);
     },
   });
 
