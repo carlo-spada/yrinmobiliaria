@@ -37,10 +37,20 @@ export default function AdminUsers() {
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
     queryFn: async () => {
-      // Fetch role assignments
+      // Fetch role assignments with profiles using JOIN (now possible with foreign key)
       const { data: roleAssignments, error: rolesError } = await supabase
         .from('role_assignments')
-        .select('*')
+        .select(`
+          *,
+          profiles!fk_role_assignments_profiles (
+            user_id,
+            display_name,
+            email,
+            photo_url,
+            agent_level,
+            organization_id
+          )
+        `)
         .order('granted_at', { ascending: false });
 
       if (rolesError) {
@@ -53,30 +63,11 @@ export default function AdminUsers() {
         return [];
       }
 
-      // Get unique user IDs
-      const userIds = [...new Set(roleAssignments.map(ra => ra.user_id))];
-
-      // Fetch profiles for those user IDs
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, email, photo_url, agent_level, organization_id')
-        .in('user_id', userIds);
-
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        // Continue without profiles rather than failing completely
-      }
-
-      // Create a map of user_id -> profile
-      const profileMap = new Map(
-        (profiles || []).map(p => [p.user_id, p])
-      );
-
       // Group role assignments by user_id
       const userMap = new Map();
       roleAssignments.forEach((roleAssignment) => {
         const userId = roleAssignment.user_id;
-        const profile = profileMap.get(userId);
+        const profile = roleAssignment.profiles;
 
         if (!userMap.has(userId)) {
           userMap.set(userId, {
