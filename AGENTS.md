@@ -2,7 +2,7 @@
 
 > **Primary Reference**: See `CLAUDE.md` for complete project philosophy and workflow.
 
-**Last Updated:** November 20, 2025
+**Last Updated:** November 21, 2025
 
 ---
 
@@ -51,18 +51,18 @@
 - Commit secrets or environment variables
 
 ## Project Structure & Modules
-- Frontend: `src/` (React 18 + TypeScript, Vite). Key areas: `components/`, `pages/`, `hooks/`, `utils/`, `integrations/`.
+- Frontend: `src/` (React 19 + TypeScript, Vite 7). Key areas: `components/`, `pages/`, `hooks/`, `utils/`, `integrations/`.
 - Assets: Optimized hero images in `/public` (AVIF/WebP). Generate with `node scripts/generate-hero-images.js`.
 - Styling/config: `tailwind.config.ts`, `postcss.config.js`.
 - Maps: `src/pages/MapView.tsx` uses React Leaflet 4.x + optional clustering.
-- Docs: `CLAUDE.md` (primary), `AUDIT.md` (status), guides in repo root.
+- Docs: `CLAUDE.md` (primary), `AGENTS.md`, `README.md`, `PRODUCTION_CHECKLIST.md`.
 
 ## Build, Test, and Development
 - Install deps: `npm install`.
 - Dev server: `npm run dev` (Vite).
 - Build: `npm run build`.
-- Preview built app: `npm run preview`.
-- Lint: `npm run lint` (if configured).
+- Lint: `npm run lint`.
+- Tests: not yet configured—add Vitest + RTL before shipping changes that risk regressions.
 
 ## Coding Style & Naming
 - TypeScript strict; avoid `any`.
@@ -91,8 +91,9 @@
   - Use `ResponsiveImage` with `imageVariants` when available
   - Supabase transform API as fallback
   - Hero uses `<picture>` with AVIF-first srcset
-- **Current phase**: Map UX polish, then Oaxaca coordinate validation (bounds: lat 15.6-18.7, lng -98.6 to -93.8)
+- **Current phase**: Technical debt cleanup (lint + bundle). Oaxaca bounds: lat 15.6-18.7, lng -98.6 to -93.8
 
 ## Security & Configuration
 - Do not commit secrets. Environment/config is managed in Lovable Cloud.
-- If adding new assets or dependencies, validate build (`npm run build`) to avoid regressions.
+- `git status -sb` currently shows untracked `supabase/migrations/*` — leave untouched unless Carlo asks.
+- Build is currently passing with a 980 KB main chunk warning; lint is now clean. Reduce bundle and add tests before shipping.

@@ -2,26 +2,26 @@
 
 A modern, bilingual (Spanish/English) real estate website built with React, TypeScript, and Tailwind CSS, showcasing properties in Oaxaca, Mexico.
 
-**Last Updated:** November 20, 2025 (Comprehensive Audit Complete - Technical Debt Identified)
+**Last Updated:** November 21, 2025 (Fresh lint/build audit; docs updated)
 
 ---
 
 ## 📊 Project Status
 
-**Overall Completion:** 80% ⚠️ (Features 99%, Code Quality 60%, Tests 0%)
+**Overall Completion:** ~80% ⚠️ (Features 99%, Code Quality ~75%, Tests 0%)
 **Current Phase:** Technical Debt Cleanup (Quality First)
-**Last Updated:** November 20, 2025
+**Last Updated:** November 21, 2025
 
 ### The Reality Check
-After comprehensive audit, we have:
+After the current audit:
 - ✅ **Features**: Multi-agent platform 99% functionally complete
-- ❌ **Code Quality**: 91 ESLint errors (75 `any` types, React hooks issues)
-- ❌ **Test Coverage**: 0% - No automated tests
-- ❌ **Security**: 4 npm vulnerabilities (3 moderate, 1 high)
-- ⚠️ **Dependencies**: Major versions outdated (React, Vite, Tailwind, Zod)
-- ⚠️ **Bundle Size**: 829 KB (exceeds 600 KB recommendation)
+- ⚠️ **Code Quality**: `npm run lint` now clean after typing admin sidebar & map popup refs
+- ❌ **Test Coverage**: 0% - No automated tests yet
+- ✅ **Security**: `npm audit --audit-level=high` reports 0 vulnerabilities
+- ⚠️ **Dependencies**: React 19 / Vite 7 / Tailwind 4; keep them patched
+- ⚠️ **Bundle Size**: 980 KB main chunk (Vite build warning) — needs more code-splitting
 
-**Lighthouse Scores:**
+**Lighthouse Scores (last measured Nov 20, 2025):**
 - Desktop: Performance **97/100** ⭐ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
 - Mobile: Performance **80/100** ⚠️ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
 
@@ -93,54 +93,17 @@ After comprehensive audit, we have:
 - ✅ **Property-Agent Integration** - PropertyCard shows agent attribution, PropertyDetail has agent contact card
 - ✅ **Agent Filter in Properties** - Filter properties by agent with dropdown and active badge
 
-### 🎯 Next Steps: QUALITY FIRST
+### 🎯 Current Priorities (Quality First)
 
-**PHASE 1: Technical Debt Cleanup (THIS WEEK - CRITICAL)**
+- [ ] Add Vitest + React Testing Library and seed smoke tests (auth/favorites/map)
+- [ ] Reduce bundle (code-split heavy routes; watch 980 KB main chunk)
+- [ ] Keep bilingual strings through `LanguageContext`; avoid new `any` types
 
-**Day 1 - Security (IMMEDIATE):**
-- [ ] Run `npm audit fix` to patch 4 vulnerabilities
-- [ ] Verify build & commit updates
-- **Effort:** 15 minutes (direct coding)
-
-**Day 2-3 - ESLint Cleanup (HIGH):**
-- [ ] Fix all 91 ESLint errors via direct code changes
-- [ ] Eliminate `any` types (75 errors)
-- [ ] Fix React hooks issues
-- **Effort:** Direct coding via Claude Code
-
-**Day 4-5 - Testing Framework (HIGH):**
-- [ ] Add Vitest + React Testing Library
-- [ ] Write tests for auth, user flows, admin operations
-- [ ] Target: 70%+ coverage for critical paths
-- **Effort:** Direct coding via Claude Code
-
-**Day 6-7 - Dependency Updates (MEDIUM):**
-- [ ] Update React, Vite, Tailwind, Zod
-- [ ] Test thoroughly after each update
-- **Effort:** Direct coding via Claude Code
-
-**Quality Gates (Must Pass Before Launch):**
-- ✅ Zero ESLint errors
-- ✅ Test coverage ≥ 70% for critical paths
-- ✅ Zero npm vulnerabilities
-- ✅ All dependencies current
-- ✅ Bundle size < 700 KB (or justified)
-
-**PHASE 2: Launch Prep (NEXT WEEK - AFTER QUALITY GATES):**
-- Yas & Carlo: Complete profiles
-- Yas: Add properties
-- Write About Us content
-- Launch with confidence! 🚀
-
-**Strategic (1-3 Months):**
-- Multi-agent platform (subscription system, agent profiles, custom pages)
-- See [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) for full details
-
-### 📋 Full Documentation
-- **[AUDIT.md](AUDIT.md)** - Detailed 98% completion status + known issues
-- **[TESTING_MANUAL.md](TESTING_MANUAL.md)** - Comprehensive manual testing guide
-- **[STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)** - Feature planning & multi-agent platform architecture
-- **[CLAUDE.md](CLAUDE.md)** - Project intelligence & Lovable workflow
+### 📋 Core Docs (keep under 5 total)
+- **[CLAUDE.md](CLAUDE.md)** - Project rules, audit snapshot, and workflow
+- **[AGENTS.md](AGENTS.md)** - Fast guidance for contributors/agents
+- **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** - Launch readiness steps
+- **README.md** - You are here
 
 ## 🌟 Features
 
@@ -192,12 +155,7 @@ npm run dev
 
 ## 📚 Documentation
 
-- **[AUDIT.md](AUDIT.md)** - **START HERE** - Comprehensive project audit with current status
-- **[TESTING_MANUAL.md](TESTING_MANUAL.md)** - Manual testing checklist with known issues
-- **[STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)** - Feature planning and growth strategy
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide
-- **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** - Pre-launch checklist
-- **[FEATURES.md](FEATURES.md)** - Detailed features list
+We keep documentation lean—only the four files above. Add new docs only after consolidating existing ones and stamping the date.
 
 ## 🔐 Admin Access
 

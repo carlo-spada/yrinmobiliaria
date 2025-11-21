@@ -1,13 +1,11 @@
 # ✅ Production Readiness Checklist - YR Inmobiliaria
 
-**Last Updated:** November 20, 2025
-**Current Status:** 80% Complete - Technical Debt Cleanup in Progress ⚠️
+**Last Updated:** November 21, 2025
+**Current Status:** ~80% Complete — lint failing, bundle heavy ⚠️
 
-**Decision:** Quality First. We fix technical debt BEFORE launch, not after.
+**Decision:** Quality first: clear lint, control bundle, add tests before launch.
 
-Use this checklist before going live with your website.
-
-**IMPORTANT:** See [TESTING_MANUAL.md](TESTING_MANUAL.md) for comprehensive manual testing guide and [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) for feature planning.
+Use this checklist before going live with your website. Keep docs lean (max 5 files) and stamp dates on edits.
 
 ## 📈 Quick Status Overview
 
@@ -41,29 +39,23 @@ Use this checklist before going live with your website.
 **TECHNICAL DEBT BLOCKERS (Must Fix Before Launch):**
 
 ### ❌ Code Quality (CRITICAL)
-- **91 ESLint Errors** (75 `any` types, React hooks violations)
-- **Impact:** Undermines type safety, potential runtime bugs
-- **Fix:** Direct code changes via Claude Code
-
-### ❌ Security (CRITICAL)
-- **4 npm Vulnerabilities** (3 moderate, 1 high)
-- **Affected:** esbuild, glob, js-yaml
-- **Fix:** `npm audit fix` (15 minutes direct coding)
+- `npm run lint` now clean after typing admin sidebar/map popups and fixing `useMemo` deps.
+- **Next:** Keep lint at zero while refactoring and code-splitting.
 
 ### ❌ Testing (CRITICAL)
-- **0% Test Coverage** - No automated tests
-- **Impact:** No safety net for changes, high regression risk
-- **Fix:** Add Vitest + React Testing Library via direct coding
+- **0% automated coverage.**
+- **Fix:** Add Vitest + React Testing Library and seed smoke tests (auth, favorites, map, admin).
 
-### ⚠️ Dependencies (HIGH)
-- **9 Major Version Outdated** (React, Vite, Tailwind, Zod, etc.)
-- **Impact:** Missing security patches, performance improvements
-- **Fix:** Direct code updates via Claude Code
+### ⚠️ Performance (HIGH)
+- Vite build passes but main chunk ~980 KB (warning threshold 600 KB). `MapView` chunk ~216 KB.
+- **Fix:** Code-split heavy routes/assets; lazy-load map/admin modules.
 
-### ⚠️ Performance (MEDIUM)
-- **Bundle Size 829 KB** (exceeds 600 KB recommendation)
-- **Impact:** Slower initial load, poor mobile performance
-- **Fix:** Further code-splitting and optimization
+### ⚠️ Security (MEDIUM)
+- `npm audit --audit-level=high` reports 0 vulnerabilities.
+- **Fix:** Re-run audit after dependency changes.
+
+### ⚠️ Repo Hygiene
+- Git shows untracked `supabase/migrations/*` files from Lovable; leave intact unless directed.
 
 ---
 
@@ -78,18 +70,16 @@ Use this checklist before going live with your website.
 
 ---
 
-**WEEK 1: Technical Debt Cleanup**
-1. **Day 1:** Security patches (`npm audit fix`)
-2. **Day 2-3:** ESLint cleanup (fix `any` types, React hooks)
-3. **Day 4-5:** Add testing framework + write critical tests
-4. **Day 6-7:** Update dependencies (React, Vite, Tailwind, Zod)
+**Current Technical Debt Sprint**
+1. Run `npm audit` / patch if needed, then re-run build.
+2. Add Vitest + React Testing Library; write smoke tests for auth/favorites/map/admin routing.
+3. Code-split heavy routes to cut the 980 KB main chunk.
 
-**WEEK 2: Launch Prep (After Quality Gates Pass)**
-1. Yas & Carlo complete profiles
-2. Yas adds 10-20 properties
-3. Write real About Us content
-4. Final testing pass
-5. **Launch with confidence!** 🚀
+**Launch Prep (after gates pass)**
+1. Yas & Carlo complete profiles and add real properties.
+2. Write real About Us content.
+3. Final manual + automated test pass.
+4. **Launch with confidence!** 🚀
 
 **Deferred to Post-Launch:**
 - Map experience fixes (JSON path bug, cluster CSS)

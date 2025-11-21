@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
+import type { Marker as LeafletMarker } from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
@@ -153,7 +154,7 @@ export default function MapView() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(urlPropertyId);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const openPopupRef = useRef<any>(null);
+  const openPopupRef = useRef<LeafletMarker | null>(null);
 
   // Logarithmic slider values
   const [sliderValues, setSliderValues] = useState<[number, number]>([
@@ -234,7 +235,7 @@ export default function MapView() {
   }, [filters, selectedPropertyId, setSearchParams]);
 
   // Handle property selection
-  const handlePropertyClick = useCallback((property: Property, markerRef?: any) => {
+  const handlePropertyClick = useCallback((property: Property, markerRef?: LeafletMarker | null) => {
     // Close previous popup if exists
     if (openPopupRef.current && openPopupRef.current !== markerRef) {
       openPopupRef.current.closePopup();
@@ -451,7 +452,7 @@ export default function MapView() {
         </Marker>
       );
     }).filter(Boolean);
-  }, [filteredProperties, selectedPropertyId, language, handlePropertyClick]);
+  }, [filteredProperties, selectedPropertyId, language, handlePropertyClick, urlPropertyId]);
 
   // Loading state
   if (isLoading) {

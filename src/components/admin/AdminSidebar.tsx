@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   Home,
@@ -31,7 +32,7 @@ import {
 interface MenuItem {
   title: string;
   url: string;
-  icon: any;
+  icon: LucideIcon;
   exactMatch?: boolean;
   roles: ('superadmin' | 'admin' | 'agent')[];
 }
