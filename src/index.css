@@ -31,6 +31,16 @@
   --color-input: hsl(35 30% 85%);
   --color-ring: hsl(12 54% 51%);
 
+  /* Sidebar colors */
+  --color-sidebar: hsl(0 0% 100%);
+  --color-sidebar-foreground: hsl(0 0% 20%);
+  --color-sidebar-primary: hsl(12 54% 51%);
+  --color-sidebar-primary-foreground: hsl(0 0% 100%);
+  --color-sidebar-accent: hsl(35 54% 65%);
+  --color-sidebar-accent-foreground: hsl(0 0% 20%);
+  --color-sidebar-border: hsl(35 30% 85%);
+  --color-sidebar-ring: hsl(12 54% 51%);
+
   /* Font families */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-serif: 'Playfair Display', serif;
@@ -88,6 +98,15 @@
     --input: 35 30% 85%;
     --ring: 12 54% 51%;
 
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 12 54% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 54% 65%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 35 30% 85%;
+    --sidebar-ring: 12 54% 51%;
+
     --radius: 0.5rem;
 
     /* Custom variables for hero and effects */
@@ -127,6 +146,15 @@
     --input: 159 25% 25%;
     --ring: 12 54% 51%;
 
+    --sidebar: 159 35% 15%;
+    --sidebar-foreground: 35 44% 93%;
+    --sidebar-primary: 12 54% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 54% 65%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 159 25% 25%;
+    --sidebar-ring: 12 54% 51%;
+
     /* Update Tailwind v4 theme colors for dark mode */
     --color-background: hsl(159 35% 12%);
     --color-foreground: hsl(35 44% 93%);
@@ -141,6 +169,14 @@
     --color-destructive-foreground: hsl(35 44% 93%);
     --color-border: hsl(159 25% 25%);
     --color-input: hsl(159 25% 25%);
+    --color-sidebar: hsl(159 35% 15%);
+    --color-sidebar-foreground: hsl(35 44% 93%);
+    --color-sidebar-primary: hsl(12 54% 51%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-accent: hsl(35 54% 65%);
+    --color-sidebar-accent-foreground: hsl(0 0% 20%);
+    --color-sidebar-border: hsl(159 25% 25%);
+    --color-sidebar-ring: hsl(12 54% 51%);
   }
 
   * {

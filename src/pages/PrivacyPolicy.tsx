@@ -1,5 +1,4 @@
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { PageLayout } from '@/components/PageLayout';
 import { useLanguage } from '@/utils/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Shield, Lock, FileText, AlertCircle } from 'lucide-react';
@@ -212,11 +211,8 @@ export default function PrivacyPolicy() {
   const currentContent = content[language];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1 pt-20 pb-16">
-        <div className="container mx-auto px-4 max-w-4xl">
+    <PageLayout>
+      <div className="container mx-auto px-4 max-w-4xl py-8">
           {/* Header */}
           <div className="mb-12 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
@@ -284,9 +280,6 @@ export default function PrivacyPolicy() {
             </p>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 }

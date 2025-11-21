@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./MapView.css";
+import { PageLayout } from "@/components/PageLayout";
 import { useLanguage } from "@/utils/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
 import { Property, PropertyType } from "@/types/property";
@@ -414,14 +415,16 @@ export default function MapView() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">
-            {language === "es" ? "Cargando propiedades..." : "Loading properties..."}
-          </p>
+      <PageLayout includeFooter={false} fullHeight>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">
+              {language === "es" ? "Cargando propiedades..." : "Loading properties..."}
+            </p>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
@@ -429,32 +432,35 @@ export default function MapView() {
   // Empty state for no valid properties
   if (validProperties.length === 0) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold mb-2">
-            {language === "es" ? "No hay propiedades disponibles" : "No properties available"}
-          </h2>
-          <p className="text-muted-foreground mb-4">
-            {language === "es"
-              ? "No encontramos propiedades con ubicaciones válidas en este momento."
-              : "We couldn't find properties with valid locations at this time."}
-          </p>
-          <Button asChild>
-            <Link to="/propiedades">
-              {language === "es" ? "Ver todas las propiedades" : "View all properties"}
-            </Link>
-          </Button>
+      <PageLayout includeFooter={false} fullHeight>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">
+              {language === "es" ? "No hay propiedades disponibles" : "No properties available"}
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              {language === "es"
+                ? "No encontramos propiedades con ubicaciones válidas en este momento."
+                : "We couldn't find properties with valid locations at this time."}
+            </p>
+            <Button asChild>
+              <Link to="/propiedades">
+                {language === "es" ? "Ver todas las propiedades" : "View all properties"}
+              </Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
     <MapErrorBoundary language={language}>
-      <div className="h-screen flex flex-col">
-        {/* Map-specific header (below fixed site header) */}
-        <div className="bg-background border-b z-10 px-4 py-3 flex items-center justify-between mt-20">
+      <PageLayout includeFooter={false} fullHeight>
+        <div className="flex-1 flex flex-col">
+          {/* Map-specific controls bar */}
+          <div className="bg-background border-b px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold">
             {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
           </h1>
@@ -492,13 +498,12 @@ export default function MapView() {
             </Button>
           </div>
         </div>
-
-        <div className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <div
           className={`
             ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-            fixed lg:relative z-20 h-full w-80 bg-background border-r
+            absolute lg:relative h-full w-80 bg-background border-r
             transition-transform duration-300 ease-in-out
             flex flex-col
           `}
@@ -764,8 +769,9 @@ export default function MapView() {
             />
           )}
         </div>
-      </div>
-      </div>
+        </div>
+        </div>
+      </PageLayout>
     </MapErrorBoundary>
   );
 }

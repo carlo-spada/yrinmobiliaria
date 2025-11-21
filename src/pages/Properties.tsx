@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { PageLayout } from '@/components/PageLayout';
 import { PropertyCard } from '@/components/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';
@@ -175,11 +174,8 @@ export default function Properties() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="pt-20 lg:pt-24">
-        <div className="container mx-auto px-4 lg:px-8 py-8">
+    <PageLayout>
+      <div className="container mx-auto px-4 lg:px-8 py-8">
           <div className="flex gap-8">
             {/* Desktop Filters Sidebar */}
             <aside className="hidden lg:block w-80 flex-shrink-0">
@@ -408,9 +404,6 @@ export default function Properties() {
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 }

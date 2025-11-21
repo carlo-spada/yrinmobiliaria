@@ -1,37 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C /Users/carlo/Desktop/Projects/yrinmobiliaria log --oneline -20)",
-      "Bash(npm run build:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git pull:*)",
-      "Bash(find:*)",
-      "Bash(git stash:*)",
-      "Bash(git fetch:*)",
-      "Bash(git check-ignore:*)",
-      "WebFetch(domain:googlechrome.github.io)",
-      "WebFetch(domain:pagespeed.web.dev)",
-      "WebFetch(domain:www.googleapis.com)",
-      "Bash(mkdir:*)",
-      "Bash(node scripts/generate-hero-images.js:*)",
-      "WebSearch",
-      "WebFetch(domain:docs.lovable.dev)",
-      "Bash(__NEW_LINE__ echo \"=== Checking price range consistency ===\" echo \"From priceSliderHelpers.ts:\" grep \"MIN_PRICE\\|MAX_PRICE\" /Users/carlo/Desktop/Projects/yrinmobiliaria/src/utils/priceSliderHelpers.ts)",
-      "Bash(npm install:*)",
-      "Bash(npm uninstall:*)",
-      "Bash(npm run lint:*)",
-      "Bash(npm outdated:*)",
-      "Bash(npm audit:*)",
-      "Bash(npm run dev:*)",
-      "Bash(git rebase:*)",
-      "Bash(curl:*)",
-      "Bash(open http://localhost:8081)",
-      "Bash(pkill:*)",
-      "Bash(rm:*)",
-      "Bash(npx vite build:*)",
-      "Bash(open http://localhost:8080)"
+      "Bash(open http://localhost:8080/admin)"
     ],
     "deny": [],
     "ask": []
