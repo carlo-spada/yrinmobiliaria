@@ -99,7 +99,7 @@ export default function Properties() {
 
   // Filter and sort properties
   const filteredProperties = useMemo(() => {
-    let filtered = allProperties.filter(property => {
+    const filtered = allProperties.filter(property => {
       // Status filter - only show available
       if (property.status !== 'disponible') return false;
 

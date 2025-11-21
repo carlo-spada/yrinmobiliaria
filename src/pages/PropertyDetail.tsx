@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useToast } from "@/hooks/use-toast";
@@ -39,13 +39,8 @@ export default function PropertyDetail() {
   const navigate = useNavigate();
   const { getSetting } = useSiteSettings();
   const { toast } = useToast();
-  
-  // Validate UUID format
-  if (id && !isValidUUID(id)) {
-    navigate('/404', { replace: true });
-    return null;
-  }
-  
+
+  // All hooks must be called before any conditional returns
   const { data: property } = useProperty(id || '');
   const { data: properties = [] } = useProperties();
 
@@ -57,6 +52,18 @@ export default function PropertyDetail() {
     phone: "",
     message: "",
   });
+
+  // Handle invalid UUID navigation in useEffect
+  useEffect(() => {
+    if (id && !isValidUUID(id)) {
+      navigate('/404', { replace: true });
+    }
+  }, [id, navigate]);
+
+  // Return null for invalid UUID (navigation happens in useEffect)
+  if (id && !isValidUUID(id)) {
+    return null;
+  }
 
   if (!property) {
     return (
