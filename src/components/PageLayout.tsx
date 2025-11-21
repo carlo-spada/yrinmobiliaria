@@ -20,17 +20,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      {fixedHeader ? (
-        <>
-          <Header />
-          {/* Fixed header spacer - ensures content never goes under header */}
-          <div className="h-20 flex-shrink-0" aria-hidden="true" />
-        </>
-      ) : (
-        <div className="sticky top-0 z-50">
-          <Header />
-        </div>
-      )}
+      <Header />
 
       <main className={cn(
         "flex-1 flex flex-col",

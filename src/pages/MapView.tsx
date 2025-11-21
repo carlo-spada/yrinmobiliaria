@@ -468,9 +468,9 @@ export default function MapView() {
   return (
     <MapErrorBoundary language={language}>
       <PageLayout includeFooter={false} fullHeight>
-        <div className="flex-1 flex flex-col">
+        <div className="h-full flex flex-col">
           {/* Map-specific controls bar */}
-          <div className="bg-background border-b px-4 py-3 flex items-center justify-between relative">
+          <div className="bg-background border-b px-4 py-3 flex items-center justify-between relative flex-shrink-0">
           <h1 className="text-xl font-bold">
             {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
           </h1>
