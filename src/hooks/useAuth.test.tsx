@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { Session, User } from "@supabase/supabase-js";
@@ -112,5 +112,46 @@ describe("useAuth", () => {
 
     expect(result.current.user?.id).toBe("user-2");
     expect(result.current.isAdmin).toBe(false);
+  });
+
+  it("signIn returns supabase error shape", async () => {
+    const session = createSession({ id: "user-3", email: "user3@example.com" });
+    setupAuthMock({
+      session,
+      roles: [],
+      profile: null,
+    });
+    const authError = new Error("wrong creds");
+    supabaseMock.auth.signInWithPassword.mockResolvedValue({ error: authError });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    let error;
+    await act(async () => {
+      ({ error } = await result.current.signIn("user3@example.com", "pwd"));
+    });
+    expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: "user3@example.com",
+      password: "pwd",
+    });
+    expect(error).toBe(authError);
+  });
+
+  it("signUp returns supabase error shape", async () => {
+    const session = createSession({ id: "user-4", email: "user4@example.com" });
+    setupAuthMock({
+      session,
+      roles: [],
+      profile: null,
+    });
+    const authError = new Error("signup failed");
+    supabaseMock.auth.signUp.mockResolvedValue({ data: { user: null }, error: authError });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    let error;
+    await act(async () => {
+      ({ error } = await result.current.signUp("user4@example.com", "pwd"));
+    });
+    expect(supabaseMock.auth.signUp).toHaveBeenCalled();
+    expect(error).toBe(authError);
   });
 });
