@@ -72,8 +72,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <ProfileCompletionGuard>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
+      <SidebarProvider defaultOpen={true}>
+        <div className="min-h-screen flex w-full relative">
           <AdminSidebar />
           <div className="flex-1 flex flex-col">
             <AdminHeader />
