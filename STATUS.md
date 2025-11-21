@@ -77,10 +77,13 @@
   - Audit logging for all reassignments (PROPERTY_REASSIGNED event)
   - useAgents hook for fetching organization agents
 
-- ❌ **Multi-Language Property Support** (Deferred)
+- ❌ **Multi-Language Property Support** (Deferred - NEEDS IMPLEMENTATION)
   - Optional/stretch goal not implemented in Prompt #3
   - DB columns exist (`language`, `is_translation_of`)
-  - Will implement in future prompt if needed
+  - **TODO:** Implement UI to create property translations
+  - **TODO:** Add language badges to property tables/cards
+  - **TODO:** Link translations together (view all language versions)
+  - Priority: MEDIUM (implement before public launch if targeting bilingual market)
 
 ---
 
@@ -113,6 +116,49 @@
 - Property cards show assigned agent
 - Property detail → agent contact card
 - Filters (zone, language, specialty)
+
+---
+
+## ⚠️ DEFERRED FEATURES (TODO)
+
+### Multi-Language Property Support
+**Status:** Deferred from Prompt #3 (optional stretch goal)
+**Priority:** MEDIUM (needed before targeting bilingual international market)
+
+**Database:** ✅ Ready
+- `properties.language` column exists (TEXT: 'es' or 'en')
+- `properties.is_translation_of` column exists (UUID foreign key)
+
+**Missing Implementation:**
+1. **AddTranslationDialog component**
+   - Allow agents to create EN version of ES property (or vice versa)
+   - Pre-fill with original property data
+   - User edits translated fields (title_en, description_en)
+   - Creates new property row with `language='en'` and `is_translation_of=original_id`
+
+2. **Language badges in UI**
+   - Show "ES" or "EN" badge on property cards
+   - Show in property tables (admin, agent dashboard)
+
+3. **Translation links**
+   - "Ver en Español/English" link on property detail page
+   - Admin can see all language versions of a property
+
+4. **Validation**
+   - Prevent duplicate translations (one property can't have 2 EN versions)
+   - Warn agent: "Creating translation assigns YOU as agent for this language"
+
+**Estimated Effort:** 1 Lovable prompt (similar complexity to Prompt #3 requirement #4)
+
+**Why Deferred:**
+- Not critical for Phase 1 launch (single-language market: Oaxaca, Mexico)
+- Can be added later without breaking changes (DB ready)
+- Focus on core multi-agent features first
+
+**When to Implement:**
+- Before expanding to international/bilingual markets
+- If agents request feature for foreign clients
+- As part of Phase 2 expansion
 
 ---
 

@@ -37,6 +37,12 @@ Use this checklist before going live with your website.
 5. ⚠️ **Homepage operation filter** - Missing buy/rent toggle
 6. ⚠️ **A11y gaps** - Icon buttons missing aria-labels (Score 83, target 95+)
 
+**Deferred Features (Not Launch Blockers):**
+1. ⏳ **Multi-Language Property Support** - DB ready, UI not implemented
+   - Can add properties in ES or EN manually via DB
+   - Translation UI deferred to post-launch
+   - See STATUS.md for full implementation plan
+
 **Next Steps:**
 1. Submit critical bug fix prompt to Lovable (zone filter + enums + sliders)
 2. Yas & Carlo: Sign up at `/auth`
