@@ -43,7 +43,7 @@ serve(async (req) => {
 
     // Check if user has admin role
     const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
+      .from('role_assignments')
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'admin')

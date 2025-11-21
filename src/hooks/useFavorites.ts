@@ -37,7 +37,7 @@ export function useFavorites() {
         setFavorites([...dbFavorites, ...favoritesToSync]);
         
         // Clear localStorage after successful sync
-        localStorage.removeItem(FAVORITES_KEY);
+        localStorage.removeItem(FAVORITES_STORAGE_KEY);
       }
     } catch (error) {
       logger.error('Error syncing favorites to database', error);
