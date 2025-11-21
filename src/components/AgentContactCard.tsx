@@ -4,12 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
-import { PublicAgent } from '@/hooks/usePublicAgents';
 import { generateSlug } from '@/hooks/useAgentBySlug';
 import { useLanguage } from '@/utils/LanguageContext';
 
+interface PropertyAgent {
+  id: string;
+  display_name: string;
+  photo_url: string | null;
+  agent_level: 'junior' | 'associate' | 'senior' | 'partner' | null;
+  whatsapp_number?: string | null;
+  phone?: string | null;
+  email?: string;
+  bio_es?: string | null;
+  bio_en?: string | null;
+}
+
 interface AgentContactCardProps {
-  agent: PublicAgent;
+  agent: PropertyAgent;
   propertyId?: string;
 }
 

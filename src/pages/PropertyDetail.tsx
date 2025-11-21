@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { PropertyCard } from "@/components/PropertyCard";
 import { ShareButtons } from "@/components/ShareButtons";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { AgentContactCard } from "@/components/AgentContactCard";
 import { MetaTags } from "@/components/seo/MetaTags";
 import { StructuredData, getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/components/seo/StructuredData";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
@@ -416,83 +417,87 @@ export default function PropertyDetail() {
 
           {/* Right Column - Contact Card (Sticky) */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-8">
-              <CardContent className="p-6 space-y-4">
-                <h3 className="text-xl font-semibold">
-                  {language === "es"
-                    ? "¿Interesado en esta propiedad?"
-                    : "Interested in this property?"}
-                </h3>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <Input
-                    label={language === "es" ? "Nombre" : "Name"}
-                    placeholder={language === "es" ? "Tu nombre" : "Your name"}
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label={language === "es" ? "Correo" : "Email"}
-                    type="email"
-                    placeholder={language === "es" ? "tu@email.com" : "your@email.com"}
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label={language === "es" ? "Teléfono" : "Phone"}
-                    type="tel"
-                    placeholder="(951) 123-4567"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    required
-                  />
-                  <div>
-                    <label className="text-sm font-medium mb-1.5 block">
-                      {language === "es" ? "Mensaje" : "Message"}
-                    </label>
-                    <Textarea
-                      placeholder={
-                        language === "es"
-                          ? "Me gustaría obtener más información..."
-                          : "I would like to get more information..."
-                      }
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      rows={4}
+            {property.agent ? (
+              <AgentContactCard agent={property.agent} propertyId={property.id} />
+            ) : (
+              <Card className="sticky top-8">
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">
+                    {language === "es"
+                      ? "¿Interesado en esta propiedad?"
+                      : "Interested in this property?"}
+                  </h3>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <Input
+                      label={language === "es" ? "Nombre" : "Name"}
+                      placeholder={language === "es" ? "Tu nombre" : "Your name"}
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
                     />
-                  </div>
-                  <Button type="submit" variant="primary" className="w-full">
-                    {language === "es" ? "Enviar mensaje" : "Send message"}
-                  </Button>
-                </form>
-
-                <div className="space-y-2 pt-2">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleWhatsApp}
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    WhatsApp
-                  </Button>
-                  <Link to={`/agendar?propertyId=${property.id}`} className="w-full">
-                    <Button variant="outline" className="w-full">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {language === "es" ? "Agendar visita" : "Schedule visit"}
+                    <Input
+                      label={language === "es" ? "Correo" : "Email"}
+                      type="email"
+                      placeholder={language === "es" ? "tu@email.com" : "your@email.com"}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                    <Input
+                      label={language === "es" ? "Teléfono" : "Phone"}
+                      type="tel"
+                      placeholder="(951) 123-4567"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      required
+                    />
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block">
+                        {language === "es" ? "Mensaje" : "Message"}
+                      </label>
+                      <Textarea
+                        placeholder={
+                          language === "es"
+                            ? "Me gustaría obtener más información..."
+                            : "I would like to get more information..."
+                        }
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        rows={4}
+                      />
+                    </div>
+                    <Button type="submit" variant="primary" className="w-full">
+                      {language === "es" ? "Enviar mensaje" : "Send message"}
                     </Button>
-                  </Link>
-                  <div className="w-full">
-                    <ShareButtons 
-                      title={property.title[language]}
-                      description={property.description[language]}
-                      variant="default"
-                    />
+                  </form>
+
+                  <div className="space-y-2 pt-2">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleWhatsApp}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      WhatsApp
+                    </Button>
+                    <Link to={`/agendar?propertyId=${property.id}`} className="w-full">
+                      <Button variant="outline" className="w-full">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {language === "es" ? "Agendar visita" : "Schedule visit"}
+                      </Button>
+                    </Link>
+                    <div className="w-full">
+                      <ShareButtons 
+                        title={property.title[language]}
+                        description={property.description[language]}
+                        variant="default"
+                      />
+                    </div>
+                    <FavoriteButton propertyId={property.id} variant="button" className="w-full" />
                   </div>
-                  <FavoriteButton propertyId={property.id} variant="button" className="w-full" />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
@@ -516,6 +521,7 @@ export default function PropertyDetail() {
                   bathrooms={prop.features.bathrooms}
                   area={prop.features.constructionArea}
                   featured={prop.featured}
+                  agent={prop.agent}
                   status={
                     prop.status === "disponible"
                       ? prop.operation === "venta"

@@ -52,6 +52,17 @@ export interface Property {
   featured: boolean;
   publishedDate: string;
   agent_id?: string;
+  agent?: {
+    id: string;
+    display_name: string;
+    photo_url: string | null;
+    agent_level: 'junior' | 'associate' | 'senior' | 'partner' | null;
+    whatsapp_number?: string | null;
+    phone?: string | null;
+    email?: string;
+    bio_es?: string | null;
+    bio_en?: string | null;
+  };
 }
 
 export interface PropertyFilters {
