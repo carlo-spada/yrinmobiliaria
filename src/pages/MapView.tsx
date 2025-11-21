@@ -425,7 +425,7 @@ export default function MapView() {
   // Loading state
   if (isLoading) {
     return (
-      <PageLayout includeFooter={false} fullHeight>
+      <PageLayout includeFooter={false} fullHeight fixedHeader={false}>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
@@ -442,7 +442,7 @@ export default function MapView() {
   // Empty state for no valid properties
   if (validProperties.length === 0) {
     return (
-      <PageLayout includeFooter={false} fullHeight>
+      <PageLayout includeFooter={false} fullHeight fixedHeader={false}>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md px-4">
             <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -467,10 +467,10 @@ export default function MapView() {
 
   return (
     <MapErrorBoundary language={language}>
-      <PageLayout includeFooter={false} fullHeight>
+      <PageLayout includeFooter={false} fullHeight fixedHeader={false}>
         <div className="flex-1 flex flex-col">
           {/* Map-specific controls bar */}
-          <div className="bg-background border-b px-4 py-3 flex items-center justify-between relative z-20">
+          <div className="bg-background border-b px-4 py-3 flex items-center justify-between relative">
           <h1 className="text-xl font-bold">
             {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
           </h1>
@@ -515,7 +515,7 @@ export default function MapView() {
             ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
             absolute lg:relative h-full w-80 bg-background border-r
             transition-transform duration-300 ease-in-out
-            flex flex-col z-30
+            flex flex-col
           `}
         >
           {/* Filters */}
@@ -725,7 +725,7 @@ export default function MapView() {
         </div>
 
         {/* Map Container */}
-        <div className="flex-1 relative z-10">
+        <div className="flex-1 relative">
           <MapContainer
             center={[17.0732, -96.7266]}
             zoom={12}
@@ -774,7 +774,7 @@ export default function MapView() {
           {/* Mobile overlay when sidebar is open */}
           {isSidebarOpen && (
             <div
-              className="lg:hidden absolute inset-0 bg-black/50 z-10"
+              className="lg:hidden absolute inset-0 bg-black/50"
               onClick={() => setIsSidebarOpen(false)}
             />
           )}
