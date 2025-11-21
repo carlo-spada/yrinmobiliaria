@@ -1,7 +1,9 @@
 # ✅ Production Readiness Checklist - YR Inmobiliaria
 
 **Last Updated:** November 20, 2025
-**Current Status:** 99% Complete - Multi-Agent Platform Ready! 🎉
+**Current Status:** 80% Complete - Technical Debt Cleanup in Progress ⚠️
+
+**Decision:** Quality First. We fix technical debt BEFORE launch, not after.
 
 Use this checklist before going live with your website.
 
@@ -36,24 +38,63 @@ Use this checklist before going live with your website.
 - ✅ Agent profile pages (/agentes/:slug)
 - ✅ Property-agent integration throughout site
 
-**Optional Polish Items (Not Launch Blockers):**
-1. ⚠️ **Map experience** - JSON path bug, missing cluster CSS
-2. ⚠️ **Mobile performance** - LCP 5.0s (target <2.5s)
-3. ⚠️ **Accessibility** - Already at 96! (can improve further to 100 if desired)
+**TECHNICAL DEBT BLOCKERS (Must Fix Before Launch):**
 
-**Deferred Features (Not Launch Blockers):**
-1. ⏳ **Multi-Language Property Support** - DB ready, UI not implemented
-   - Can add properties in ES or EN manually via DB
-   - Translation UI deferred to post-launch
-   - See STATUS.md for full implementation plan
+### ❌ Code Quality (CRITICAL)
+- **91 ESLint Errors** (75 `any` types, React hooks violations)
+- **Impact:** Undermines type safety, potential runtime bugs
+- **Fix:** 2-3 focused Lovable prompts
 
-**Next Steps:**
-1. **Yas & Carlo: Complete profiles** at `/onboarding/complete-profile` (~10 min each)
-2. **Yas: Add properties** via `/admin/properties` (test end-to-end workflow)
-3. **Write real About Us content** (currently placeholder text)
-4. **Optional:** Submit polish prompts (map fixes, mobile performance, a11y)
-5. **Run testing checklist** (see TESTING_MANUAL.md)
-6. **Launch!** 🚀
+### ❌ Security (CRITICAL)
+- **4 npm Vulnerabilities** (3 moderate, 1 high)
+- **Affected:** esbuild, glob, js-yaml
+- **Fix:** `npm audit fix` (30 minutes)
+
+### ❌ Testing (CRITICAL)
+- **0% Test Coverage** - No automated tests
+- **Impact:** No safety net for changes, high regression risk
+- **Fix:** Add Vitest + React Testing Library, write tests for auth/critical flows
+
+### ⚠️ Dependencies (HIGH)
+- **9 Major Version Outdated** (React, Vite, Tailwind, Zod, etc.)
+- **Impact:** Missing security patches, performance improvements
+- **Fix:** 2-3 careful Lovable prompts with testing
+
+### ⚠️ Performance (MEDIUM)
+- **Bundle Size 829 KB** (exceeds 600 KB recommendation)
+- **Impact:** Slower initial load, poor mobile performance
+- **Fix:** Further code-splitting and optimization
+
+---
+
+**QUALITY GATES (Must Pass Before Launch):**
+- [ ] ✅ **Zero ESLint errors**
+- [ ] ✅ **Test coverage ≥ 70%** for critical paths (auth, user flows, admin)
+- [ ] ✅ **Zero npm vulnerabilities**
+- [ ] ✅ **All dependencies current** (within 6 months)
+- [ ] ✅ **Bundle size < 700 KB** (or justified)
+- [ ] ✅ **Build time < 10 seconds**
+- [ ] ✅ **Lighthouse scores maintained** (Desktop 97/96/100/100, Mobile 80/96/100/100)
+
+---
+
+**WEEK 1: Technical Debt Cleanup**
+1. **Day 1:** Security patches (`npm audit fix`)
+2. **Day 2-3:** ESLint cleanup (fix `any` types, React hooks)
+3. **Day 4-5:** Add testing framework + write critical tests
+4. **Day 6-7:** Update dependencies (React, Vite, Tailwind, Zod)
+
+**WEEK 2: Launch Prep (After Quality Gates Pass)**
+1. Yas & Carlo complete profiles
+2. Yas adds 10-20 properties
+3. Write real About Us content
+4. Final testing pass
+5. **Launch with confidence!** 🚀
+
+**Deferred to Post-Launch:**
+- Map experience fixes (JSON path bug, cluster CSS)
+- Mobile performance optimization (LCP < 2.5s)
+- Multi-language property support (translation UI)
 
 ---
 

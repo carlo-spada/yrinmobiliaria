@@ -1,6 +1,6 @@
 # YR Inmobiliaria - Status & Roadmap
-**Last Updated:** November 20, 2025 (Multi-Agent Platform Complete!)
-**Current Phase:** Launch Prep & Content Updates
+**Last Updated:** November 20, 2025 (Comprehensive Audit - Quality First Decision)
+**Current Phase:** Technical Debt Cleanup (Week 1 of 2 Before Launch)
 
 ---
 
@@ -126,7 +126,67 @@
 
 ---
 
-## ⚠️ DEFERRED FEATURES (TODO)
+## ❌ TECHNICAL DEBT (MUST FIX BEFORE LAUNCH)
+
+### The Uncomfortable Reality
+After comprehensive code audit (Nov 20, 2025), we discovered significant technical debt that must be addressed:
+
+### Code Quality Issues
+**91 ESLint Errors (75 errors, 16 warnings)**
+- **75 errors**: `@typescript-eslint/no-explicit-any` - Rampant use of `any` types undermining TypeScript safety
+- **React Hooks Violations**:
+  - `react-hooks/rules-of-hooks` - Conditional hook calls (potential runtime bugs)
+  - `react-hooks/exhaustive-deps` - Missing dependencies in useEffect
+- **Other Warnings**:
+  - `react-refresh/only-export-components` - Affecting Fast Refresh DX
+  - `prefer-const` - Mutable variables that should be constants
+  - `no-useless-escape` - Unnecessary escape characters
+  - `no-require-imports` - Should use ES6 imports
+
+**Impact:** Undermines type safety, increases cognitive complexity, potential runtime bugs
+
+### Security Vulnerabilities
+**4 npm Vulnerabilities (3 moderate, 1 high)**
+- Affected packages: `esbuild`, `glob`, `js-yaml`
+- **Fix:** Run `npm audit fix`
+- **Impact:** Security holes in production
+
+### Dependency Health
+**Major Version Outdated:**
+- `@react-leaflet/core` - Major version difference
+- `@types/react` - Major version difference
+- `eslint-plugin-react-hooks` - Major version difference
+- `react` & `react-dom` - Major version difference
+- `react-leaflet` - Major version difference
+- `react-router-dom` - Major version difference
+- `tailwindcss` - Major version difference
+- `vite` - Major version difference
+- `zod` - Major version difference
+
+**Impact:** Missing security patches, performance improvements, new features
+
+### Test Coverage
+**0% Automated Test Coverage**
+- No testing framework installed
+- No unit tests
+- No integration tests
+- No CI/CD testing pipeline
+
+**Impact:** No safety net for refactoring, high risk of regressions, difficult to maintain
+
+### Performance Issues
+**Bundle Size: 829 KB (exceeds 600 KB recommendation)**
+- Largest chunk: `index.B2S2rGsI.js` - 829.12 KB (238.43 kB gzip)
+- Second largest: `MapView.B2bv_WsB.js` - 216.01 kB (65.77 kB gzip)
+
+**Potential Bottleneck:**
+- Client-side filtering on Properties page could struggle with large datasets
+
+**Impact:** Slower initial load times, poor mobile performance
+
+---
+
+## ⚠️ DEFERRED FEATURES (Not Launch Blockers)
 
 ### Multi-Language Property Support
 **Status:** Deferred from Prompt #3 (optional stretch goal)
@@ -144,48 +204,101 @@
 
 ---
 
-## 🎯 RECOMMENDED PATH FORWARD
+## 🎯 QUALITY FIRST ROADMAP
 
-### IMMEDIATE: Launch Prep (NO LOVABLE NEEDED)
-**Priority:** P0 - Do this first!
+### WEEK 1: Technical Debt Cleanup (THIS WEEK - CRITICAL)
 
-1. **Yas & Carlo Complete Profiles**
-   - Go to `/onboarding/complete-profile`
-   - Upload photos, bios, contact info, zones, social
-   - ~10 minutes each
-   - **Rationale:** Test real data, catch edge cases
+**Day 1: Security Patches (IMMEDIATE - 30 minutes)**
+```bash
+npm audit fix
+npm run build  # Verify
+git add package-lock.json
+git commit -m "security: patch 4 vulnerabilities (esbuild, glob, js-yaml)"
+git push
+```
+**Why First:** Security vulnerabilities are unacceptable in production
+**Success Criteria:** Zero npm audit vulnerabilities
 
-2. **Yas Adds Properties**
-   - Go to `/admin/properties`
-   - Add real listings with photos
-   - Test end-to-end workflow
-   - **Rationale:** Validate production readiness
+**Day 2-3: ESLint Cleanup (HIGH PRIORITY - 2-3 Lovable prompts)**
+- [ ] Analyze all 91 errors systematically
+- [ ] **Prompt 1:** Fix all `any` types (75 errors) - Replace with proper TypeScript interfaces/types
+- [ ] **Prompt 2:** Fix React hooks issues (exhaustive-deps, rules-of-hooks)
+- [ ] **Prompt 3:** Fix remaining warnings (react-refresh, prefer-const, etc.)
 
-3. **Write Real Content**
-   - About Us page content
-   - Company story, mission, team
-   - **Rationale:** Professional launch presence
+**Why:** Type safety is foundational to maintainability
+**Success Criteria:** Zero ESLint errors, build passes
 
-### THEN: Polish for Launch (Optional - 1-2 Lovable Prompts)
-**Priority:** P1 - After content is ready
+**Day 4-5: Testing Framework (HIGH PRIORITY - 2-3 Lovable prompts)**
+- [ ] **Prompt 1:** Add Vitest + React Testing Library + test scripts
+- [ ] **Prompt 2:** Write tests for authentication flows (signup, login, signout, password reset)
+- [ ] **Prompt 3:** Write tests for critical user journeys (favorites, property CRUD, admin operations)
 
-1. **Accessibility Improvements** (HIGH)
-   - Add ARIA labels to icon buttons
-   - Fix form label associations
-   - Improve color contrast ratios
-   - **Target:** Maintain Lighthouse 96
-   - **Effort:** 1 Lovable prompt
+**Why:** No tests = no confidence in changes
+**Success Criteria:** ≥70% coverage for critical paths (auth, user flows, admin)
 
-2. **Map Experience Fixes** (MEDIUM)
-   - Fix invalid JSON path in bounds filter
-   - Import cluster CSS files
-   - Bounds-synced list, location toggle
-   - **Effort:** 1 Lovable prompt
+**Day 6-7: Dependency Updates (MEDIUM PRIORITY - 2-3 Lovable prompts)**
+- [ ] **Prompt 1:** Update React ecosystem (react, react-dom, @types/react)
+- [ ] **Prompt 2:** Update build tools (vite, tailwindcss, @vitejs/plugin-react)
+- [ ] **Prompt 3:** Update libraries (zod, react-router-dom, react-leaflet)
 
-3. **Mobile Performance** (MEDIUM)
-   - Fix LCP (5.0s → <2.5s)
-   - Cache headers
-   - **Effort:** 1-2 Lovable prompts
+**Why:** Outdated dependencies accumulate vulnerabilities
+**Success Criteria:** All dependencies within last 6 months, build passes, tests pass
+
+---
+
+### QUALITY GATES (Must Pass Before Week 2)
+
+**Gate 1: Code Quality**
+- ✅ Zero ESLint errors
+- ✅ Zero TypeScript `any` types (or explicitly typed with justification)
+- ✅ All React hooks follow rules
+
+**Gate 2: Testing**
+- ✅ Test coverage ≥ 70% for critical paths:
+  - Authentication (signup, login, logout, password reset)
+  - User flows (favorites, profile management)
+  - Admin operations (property CRUD, agent management)
+- ✅ All tests passing in CI
+
+**Gate 3: Security**
+- ✅ Zero npm audit vulnerabilities
+- ✅ All dependencies current (within 6 months)
+
+**Gate 4: Performance**
+- ✅ Bundle size < 700 KB (or 829 KB with documented justification)
+- ✅ Build time < 10 seconds
+- ✅ Lighthouse scores maintained or improved
+
+---
+
+### WEEK 2: Launch Prep (AFTER QUALITY GATES PASS)
+
+**Content Updates (NO CODE - 2-3 days)**
+1. Yas & Carlo complete profiles at `/onboarding/complete-profile` (~10 min each)
+2. Yas adds 10-20 properties via `/admin/properties` (test full workflow)
+3. Write real About Us content (company story, mission, team)
+4. Review all public-facing text for typos and consistency
+
+**Final Testing (1-2 days)**
+1. Run complete manual testing checklist (TESTING_MANUAL.md)
+2. Test on multiple devices/browsers
+3. Verify email flows work end-to-end
+4. Load test with realistic data
+
+**Launch (1 day)**
+1. Deploy to production
+2. Configure custom domain
+3. Set up monitoring and alerts
+4. Announce launch! 🚀
+
+---
+
+### POST-LAUNCH: Continuous Improvement
+
+**Polish & Optimization (Optional)**
+1. Map experience fixes (JSON path bug, cluster CSS)
+2. Mobile performance optimization (LCP < 2.5s)
+3. Accessibility improvements (maintain 96+ score)
 
 ### FUTURE: Strategic Features
 **Priority:** P2 - Post-launch enhancements
