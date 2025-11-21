@@ -104,8 +104,9 @@ export default function UserDashboard() {
           : 'Confirmation email sent! Check your inbox'
       );
       setLastResendTime(Date.now());
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al reenviar email';
+      toast.error(errorMessage);
     } finally {
       setIsResending(false);
     }
@@ -136,8 +137,9 @@ export default function UserDashboard() {
       toast.success(
         language === 'es' ? 'Perfil actualizado exitosamente' : 'Profile updated successfully'
       );
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar perfil';
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -160,8 +162,9 @@ export default function UserDashboard() {
       );
       await signOut();
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al desactivar cuenta';
+      toast.error(errorMessage);
     }
   };
 

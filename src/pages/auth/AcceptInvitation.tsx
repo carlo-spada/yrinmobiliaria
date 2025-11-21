@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type AgentInvitation = Database['public']['Tables']['agent_invitations']['Row'] & {
+  organization: Database['public']['Tables']['organizations']['Row'] | null;
+};
 
 export default function AcceptInvitation() {
   const [searchParams] = useSearchParams();
@@ -15,7 +20,7 @@ export default function AcceptInvitation() {
   const { user } = useAuth();
   const token = searchParams.get("token");
 
-  const [invitation, setInvitation] = useState<any>(null);
+  const [invitation, setInvitation] = useState<AgentInvitation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
@@ -131,9 +136,10 @@ export default function AcceptInvitation() {
 
       toast.success("¡Invitación aceptada! Completa tu perfil para comenzar.");
       navigate("/onboarding/complete-profile");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error accepting invitation:", err);
-      toast.error(err.message || "Error al aceptar la invitación");
+      const errorMessage = err instanceof Error ? err.message : "Error al aceptar la invitación";
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }

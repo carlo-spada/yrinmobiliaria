@@ -5,7 +5,7 @@ export interface AuditLogEntry {
   action: string;
   table_name?: string;
   record_id?: string;
-  changes?: Record<string, any>;
+  changes?: Record<string, unknown>;
 }
 
 // NOTE: The user_id is enforced by RLS policy on the audit_logs table.
@@ -22,13 +22,13 @@ export const logAuditEvent = async (entry: AuditLogEntry) => {
 
     const { error } = await supabase
       .from('audit_logs')
-      .insert({
+      .insert([{
         user_id: user.id,
         action: entry.action,
         table_name: entry.table_name,
         record_id: entry.record_id,
-        changes: entry.changes,
-      });
+        changes: entry.changes ? (entry.changes as unknown as any) : null,
+      }]);
 
     if (error) {
       logger.error('Failed to log audit event', error);

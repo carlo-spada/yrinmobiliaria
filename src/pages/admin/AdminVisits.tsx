@@ -29,9 +29,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { logAuditEvent } from '@/utils/auditLog';
+import { Database } from '@/integrations/supabase/types';
+
+type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & {
+  properties?: { title_es: string } | null;
+};
 
 export default function AdminVisits() {
-  const [selectedVisit, setSelectedVisit] = useState<any>(null);
+  const [selectedVisit, setSelectedVisit] = useState<ScheduledVisit | null>(null);
   const queryClient = useQueryClient();
 
   const { data: visits, isLoading } = useQuery({

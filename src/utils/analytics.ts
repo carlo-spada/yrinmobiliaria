@@ -3,8 +3,8 @@
 
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
@@ -25,7 +25,7 @@ export const initGA = () => {
 
   // Initialize dataLayer and gtag
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function(...args: any[]) {
+  window.gtag = function(...args: unknown[]) {
     window.dataLayer?.push(args);
   };
   window.gtag('js', new Date());
@@ -90,7 +90,7 @@ export const trackScheduleVisit = (propertyId: string) => {
   });
 };
 
-export const trackSearch = (filters: any) => {
+export const trackSearch = (filters: Record<string, unknown>) => {
   event({
     action: 'search',
     category: 'Properties',
