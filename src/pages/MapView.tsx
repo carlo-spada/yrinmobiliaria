@@ -37,7 +37,7 @@ import {
   Maximize2,
   LandPlot,
 } from "lucide-react";
-import { isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
+import { filterPropertiesByMap, isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
 
 // Property type colors
 const propertyColors = {
@@ -175,26 +175,7 @@ export default function MapView() {
 
   // Apply filters (including bounds filtering client-side)
   const filteredProperties = useMemo(() => {
-    return validProperties.filter((p) => {
-      // Guard required fields
-      if (!p.location || !p.location.zone) return false;
-      if (typeof p.price !== "number" || isNaN(p.price)) return false;
-
-      if (filters.type !== "all" && p.type !== filters.type) return false;
-      if (filters.zone !== "all" && p.location.zone !== filters.zone) return false;
-      if (p.price < filters.priceRange[0] || p.price > filters.priceRange[1]) return false;
-      
-      // Client-side bounds filtering
-      if (mapBounds) {
-        const lat = normalizeCoord(p.location.coordinates.lat);
-        const lng = normalizeCoord(p.location.coordinates.lng);
-        if (lat === null || lng === null) return false;
-        if (lat < mapBounds.getSouth() || lat > mapBounds.getNorth()) return false;
-        if (lng < mapBounds.getWest() || lng > mapBounds.getEast()) return false;
-      }
-      
-      return true;
-    });
+    return filterPropertiesByMap(validProperties, filters, mapBounds);
   }, [validProperties, filters, mapBounds]);
 
   const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
