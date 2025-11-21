@@ -38,7 +38,7 @@ export default function AdminUsers() {
     queryKey: ['role-assignments'],
     queryFn: async () => {
       // Fetch role assignments with profiles using JOIN (now possible with foreign key)
-      const { data: roleAssignments, error: rolesError } = await supabase
+      const { data: roleAssignments, error } = await supabase
         .from('role_assignments')
         .select(`
           *,
@@ -53,9 +53,9 @@ export default function AdminUsers() {
         `)
         .order('granted_at', { ascending: false });
 
-      if (rolesError) {
-        console.error('Error fetching role assignments:', rolesError);
-        throw rolesError;
+      if (error) {
+        console.error('Error fetching role assignments:', error);
+        throw error;
       }
 
       if (!roleAssignments || roleAssignments.length === 0) {
@@ -65,7 +65,7 @@ export default function AdminUsers() {
 
       // Group role assignments by user_id
       const userMap = new Map();
-      roleAssignments.forEach((roleAssignment) => {
+      roleAssignments.forEach((roleAssignment: any) => {
         const userId = roleAssignment.user_id;
         const profile = roleAssignment.profiles;
 
