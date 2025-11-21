@@ -78,8 +78,9 @@ export function ReassignPropertyDialog({
       onOpenChange(false);
       setSelectedAgentId('');
     },
-    onError: (error: any) => {
-      toast.error('Error al reasignar: ' + error.message);
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error('Error al reasignar: ' + errorMessage);
     },
   });
 

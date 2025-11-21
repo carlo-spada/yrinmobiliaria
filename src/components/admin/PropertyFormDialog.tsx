@@ -26,6 +26,14 @@ import { toast } from 'sonner';
 import { logAuditEvent } from '@/utils/auditLog';
 import { ImageUploadZone } from './ImageUploadZone';
 import { useState } from 'react';
+import { Database } from '@/integrations/supabase/types';
+
+type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
+  property_images?: Array<{ image_url: string; display_order: number }>;
+  agent?: { id: string; display_name: string } | null;
+};
+
+type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
 const propertyFormSchema = z.object({
   title_es: z.string().min(1, 'Título en español es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
@@ -74,7 +82,7 @@ const propertyFormSchema = z.object({
 interface PropertyFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  property?: any;
+  property?: PropertyWithRelations;
 }
 
 export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFormDialogProps) => {
@@ -113,6 +121,9 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
   useEffect(() => {
     if (property) {
+      const location = property.location as { zone?: string; neighborhood?: string; address?: string; coordinates?: { lat: number; lng: number } } | null;
+      const features = property.features as { bedrooms?: number; bathrooms?: number; parking?: number; constructionArea?: number; landArea?: number } | null;
+      
       reset({
         title_es: property.title_es,
         title_en: property.title_en,
@@ -123,21 +134,21 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         price: property.price,
         status: property.status,
         featured: property.featured,
-        zone: property.location?.zone,
-        neighborhood: property.location?.neighborhood,
-        address: property.location?.address,
-        lat: property.location?.coordinates?.lat,
-        lng: property.location?.coordinates?.lng,
-        bedrooms: property.features?.bedrooms,
-        bathrooms: property.features?.bathrooms,
-        parking: property.features?.parking,
-        constructionArea: property.features?.constructionArea,
-        landArea: property.features?.landArea,
+        zone: location?.zone,
+        neighborhood: location?.neighborhood,
+        address: location?.address,
+        lat: location?.coordinates?.lat,
+        lng: location?.coordinates?.lng,
+        bedrooms: features?.bedrooms,
+        bathrooms: features?.bathrooms,
+        parking: features?.parking,
+        constructionArea: features?.constructionArea,
+        landArea: features?.landArea,
       });
       
       // Load existing images
       if (property.property_images && Array.isArray(property.property_images)) {
-        setImages(property.property_images.map((img: any) => ({ url: img.image_url })));
+        setImages(property.property_images.map((img) => ({ url: img.image_url })));
       }
     } else {
       reset({
@@ -151,7 +162,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   }, [property, reset]);
 
   const mutation = useMutation({
-    mutationFn: async (formData: any) => {
+    mutationFn: async (formData: PropertyFormData) => {
       // Validate that zone exists in service_zones table
       const { data: zoneExists, error: zoneError } = await supabase
         .from('service_zones')
@@ -304,12 +315,13 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       reset();
       setImages([]);
     },
-    onError: (error: any) => {
-      toast.error('Error: ' + error.message);
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error('Error: ' + errorMessage);
     },
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: PropertyFormData) => {
     mutation.mutate(data);
   };
 

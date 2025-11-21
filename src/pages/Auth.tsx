@@ -105,7 +105,7 @@ const Auth = () => {
           // Redirect will be handled by useEffect after user state updates
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error(mapAuthError(error));
     } finally {
       setLoading(false);
