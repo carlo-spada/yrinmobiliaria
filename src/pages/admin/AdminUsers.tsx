@@ -37,36 +37,46 @@ export default function AdminUsers() {
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
     queryFn: async () => {
-      // Get all role assignments with profile data
-      const { data, error } = await supabase
+      // Fetch role assignments
+      const { data: roleAssignments, error: rolesError } = await supabase
         .from('role_assignments')
-        .select(`
-          *,
-          profiles(
-            display_name,
-            email,
-            photo_url,
-            agent_level,
-            organization_id
-          )
-        `)
+        .select('*')
         .order('granted_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching role assignments:', error);
-        throw error;
+      if (rolesError) {
+        console.error('Error fetching role assignments:', rolesError);
+        throw rolesError;
       }
 
-      if (!data || data.length === 0) {
+      if (!roleAssignments || roleAssignments.length === 0) {
         console.log('No role assignments found');
         return [];
       }
 
-      // Group by user_id to avoid duplicate rows
+      // Get unique user IDs
+      const userIds = [...new Set(roleAssignments.map(ra => ra.user_id))];
+
+      // Fetch profiles for those user IDs
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email, photo_url, agent_level, organization_id')
+        .in('user_id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without profiles rather than failing completely
+      }
+
+      // Create a map of user_id -> profile
+      const profileMap = new Map(
+        (profiles || []).map(p => [p.user_id, p])
+      );
+
+      // Group role assignments by user_id
       const userMap = new Map();
-      data.forEach((roleAssignment) => {
+      roleAssignments.forEach((roleAssignment) => {
         const userId = roleAssignment.user_id;
-        const profile = roleAssignment.profiles;
+        const profile = profileMap.get(userId);
 
         if (!userMap.has(userId)) {
           userMap.set(userId, {
