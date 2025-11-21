@@ -70,20 +70,27 @@ const Auth = () => {
           return;
         }
 
-        // Redirect based on role
-        if (roleData?.role === 'admin' || roleData?.role === 'superadmin') {
+        // Redirect based on role hierarchy:
+        // - Superadmin → /admin (full system access)
+        // - Admin → /admin (org-scoped access)
+        // - Agent → /admin (agent-scoped access)
+        // - Regular user → /cuenta
+        if (roleData?.role === 'superadmin' || roleData?.role === 'admin') {
+          // Superadmins and Admins go to admin panel
           navigate('/admin', { replace: true });
         } else {
-          // Check if user has agent profile
+          // Check if user has agent profile (agent without explicit role_assignment)
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('agent_level')
+            .select('agent_level, organization_id')
             .eq('user_id', user.id)
             .maybeSingle();
 
-          if (profileData?.agent_level) {
-            navigate('/agent/dashboard', { replace: true });
+          if (profileData?.agent_level && profileData?.organization_id) {
+            // Agents go to admin panel with agent-specific views
+            navigate('/admin', { replace: true });
           } else {
+            // Regular users go to user dashboard
             navigate('/cuenta', { replace: true });
           }
         }

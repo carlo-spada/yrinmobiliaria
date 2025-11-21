@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate, useLocation } from 'react-router-dom';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AdminSidebar } from './AdminSidebar';
@@ -36,8 +37,11 @@ const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
 };
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { isStaff, role, loading: roleLoading } = useUserRole();
   const location = useLocation();
+
+  const loading = authLoading || roleLoading;
 
   if (loading) {
     return (
@@ -55,8 +59,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
-  if (!isAdmin) {
-    // Show access denied message instead of silent redirect
+  if (!isStaff) {
+    // Show access denied message for non-staff users
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-md">
@@ -66,12 +70,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               <CardTitle>Acceso Denegado</CardTitle>
             </div>
             <CardDescription>
-              No tienes permisos de administrador para acceder a esta página.
+              No tienes permisos para acceder al panel de administración.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Esta área está restringida solo para administradores del sistema.
+              Esta área está restringida solo para administradores y agentes del sistema.
               Si crees que deberías tener acceso, contacta al administrador principal.
             </p>
             <div className="flex gap-2">
@@ -84,7 +88,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
             <div className="text-xs text-muted-foreground pt-4 border-t">
               <p className="font-mono">Usuario: {user.email}</p>
-              <p className="font-mono">ID: {user.id}</p>
+              <p className="font-mono">Rol: {role}</p>
             </div>
           </CardContent>
         </Card>

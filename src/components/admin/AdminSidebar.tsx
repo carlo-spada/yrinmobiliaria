@@ -1,18 +1,21 @@
-import { 
-  LayoutDashboard, 
-  Home, 
-  MapPin, 
-  MessageSquare, 
-  Calendar, 
-  Users, 
+import {
+  LayoutDashboard,
+  Home,
+  MapPin,
+  MessageSquare,
+  Calendar,
+  Users,
   UserPlus,
+  UserCircle,
   FileText,
   Settings,
-  Activity
+  Activity,
+  Building2
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from '@/utils/LanguageContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   Sidebar,
   SidebarContent,
@@ -25,24 +28,102 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
+interface MenuItem {
+  title: string;
+  url: string;
+  icon: any;
+  exactMatch?: boolean;
+  roles: ('superadmin' | 'admin' | 'agent')[];
+}
+
 export function AdminSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
   const { t } = useLanguage();
+  const { role } = useUserRole();
   const currentPath = location.pathname;
 
-  const menuItems = [
-    { title: t.admin.dashboard, url: '/admin', icon: LayoutDashboard, exactMatch: true },
-    { title: t.admin.properties, url: '/admin/properties', icon: Home },
-    { title: "Agentes", url: '/admin/agents', icon: UserPlus },
-    { title: t.admin.zones, url: '/admin/zones', icon: MapPin },
-    { title: t.admin.inquiries, url: '/admin/inquiries', icon: MessageSquare },
-    { title: t.admin.visits, url: '/admin/visits', icon: Calendar },
-    { title: t.admin.users, url: '/admin/users', icon: Users },
-    { title: t.admin.auditLogs, url: '/admin/audit-logs', icon: FileText },
-    { title: t.admin.health, url: '/admin/health', icon: Activity },
-    { title: t.admin.settings, url: '/admin/settings', icon: Settings },
+  // Define all menu items with role-based access
+  const allMenuItems: MenuItem[] = [
+    {
+      title: t.admin.dashboard,
+      url: '/admin',
+      icon: LayoutDashboard,
+      exactMatch: true,
+      roles: ['superadmin', 'admin', 'agent']
+    },
+    {
+      title: t.admin.properties,
+      url: '/admin/properties',
+      icon: Home,
+      roles: ['superadmin', 'admin', 'agent']
+    },
+    {
+      title: "Agentes",
+      url: '/admin/agents',
+      icon: UserPlus,
+      roles: ['superadmin', 'admin']
+    },
+    {
+      title: "Organizaciones",
+      url: '/admin/organizations',
+      icon: Building2,
+      roles: ['superadmin'] // Only superadmin can manage orgs
+    },
+    {
+      title: t.admin.zones,
+      url: '/admin/zones',
+      icon: MapPin,
+      roles: ['superadmin', 'admin']
+    },
+    {
+      title: t.admin.inquiries,
+      url: '/admin/inquiries',
+      icon: MessageSquare,
+      roles: ['superadmin', 'admin', 'agent']
+    },
+    {
+      title: t.admin.visits,
+      url: '/admin/visits',
+      icon: Calendar,
+      roles: ['superadmin', 'admin', 'agent']
+    },
+    {
+      title: t.admin.users,
+      url: '/admin/users',
+      icon: Users,
+      roles: ['superadmin', 'admin']
+    },
+    {
+      title: "Mi Perfil",
+      url: '/admin/profile',
+      icon: UserCircle,
+      roles: ['agent'] // Agents see profile instead of settings
+    },
+    {
+      title: t.admin.auditLogs,
+      url: '/admin/audit-logs',
+      icon: FileText,
+      roles: ['superadmin', 'admin']
+    },
+    {
+      title: t.admin.health,
+      url: '/admin/health',
+      icon: Activity,
+      roles: ['superadmin', 'admin']
+    },
+    {
+      title: t.admin.settings,
+      url: '/admin/settings',
+      icon: Settings,
+      roles: ['superadmin', 'admin']
+    },
   ];
+
+  // Filter menu items based on user role
+  const menuItems = allMenuItems.filter(item =>
+    item.roles.includes(role as 'superadmin' | 'admin' | 'agent')
+  );
 
   return (
     <Sidebar collapsible="icon">
