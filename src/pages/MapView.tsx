@@ -470,7 +470,7 @@ export default function MapView() {
       <PageLayout includeFooter={false} fullHeight>
         <div className="flex-1 flex flex-col">
           {/* Map-specific controls bar */}
-          <div className="bg-background border-b px-4 py-3 flex items-center justify-between">
+          <div className="bg-background border-b px-4 py-3 flex items-center justify-between relative z-20">
           <h1 className="text-xl font-bold">
             {language === "es" ? "Mapa de Propiedades" : "Properties Map"}
           </h1>
@@ -515,7 +515,7 @@ export default function MapView() {
             ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
             absolute lg:relative h-full w-80 bg-background border-r
             transition-transform duration-300 ease-in-out
-            flex flex-col
+            flex flex-col z-30
           `}
         >
           {/* Filters */}
@@ -725,7 +725,7 @@ export default function MapView() {
         </div>
 
         {/* Map Container */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative z-10">
           <MapContainer
             center={[17.0732, -96.7266]}
             zoom={12}

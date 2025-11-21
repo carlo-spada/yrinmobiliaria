@@ -3,6 +3,33 @@
 .leaflet-container {
   font-family: inherit;
   background-color: hsl(var(--muted));
+  z-index: 1 !important; /* Ensure map stays below header (z-50) */
+  position: relative;
+}
+
+/* Ensure all map panes have proper z-index */
+.leaflet-pane {
+  z-index: 1;
+}
+
+.leaflet-tile-pane {
+  z-index: 2;
+}
+
+.leaflet-overlay-pane {
+  z-index: 4;
+}
+
+.leaflet-marker-pane {
+  z-index: 6;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 7;
+}
+
+.leaflet-popup-pane {
+  z-index: 7;
 }
 
 .leaflet-popup-content-wrapper {
@@ -10,11 +37,11 @@
   color: hsl(var(--card-foreground));
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  z-index: 1000 !important;
+  z-index: 700 !important; /* Above map markers but below header */
 }
 
 .leaflet-popup {
-  z-index: 1000 !important;
+  z-index: 700 !important; /* Above map markers but below header */
 }
 
 .leaflet-popup-content {
