@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const hasRedirected = useRef(false);
 
   useEffect(() => {
@@ -37,6 +38,9 @@ const Auth = () => {
 
     const checkUserRole = async () => {
       try {
+        // Check for redirect parameter
+        const redirectTo = searchParams.get('redirect');
+
         // Check user's role from role_assignments table
         const { data: roleData } = await supabase
           .from('role_assignments')
@@ -46,6 +50,12 @@ const Auth = () => {
 
         // Mark as redirected before navigating
         hasRedirected.current = true;
+
+        // If there's a redirect parameter, use it (for admin/protected routes)
+        if (redirectTo && redirectTo.startsWith('/')) {
+          navigate(redirectTo, { replace: true });
+          return;
+        }
 
         if (roleData) {
           // Redirect based on role
@@ -76,7 +86,7 @@ const Auth = () => {
     };
 
     checkUserRole();
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
