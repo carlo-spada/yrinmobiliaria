@@ -508,14 +508,14 @@ export default function MapView() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Sidebar - Takes its own space, no overlapping */}
         <div
           className={`
-            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-            absolute lg:relative h-full w-80 bg-background border-r
-            transition-transform duration-300 ease-in-out
-            flex flex-col
+            ${isSidebarOpen ? "block" : "hidden"} lg:block
+            w-full lg:w-80 bg-background lg:border-r
+            flex flex-col flex-shrink-0
+            h-64 lg:h-auto overflow-y-auto lg:overflow-visible
           `}
         >
           {/* Filters */}
@@ -724,7 +724,7 @@ export default function MapView() {
           </div>
         </div>
 
-        {/* Map Container */}
+        {/* Map Container - Only takes remaining space, no overlapping */}
         <div className="flex-1 relative">
           <MapContainer
             center={[17.0732, -96.7266]}
@@ -735,7 +735,7 @@ export default function MapView() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            
+
             <MapBoundsTracker onBoundsChange={handleBoundsChange} onMapClick={handleMapClick} />
             <FlyToLocation center={flyToCenter} />
 
@@ -770,14 +770,6 @@ export default function MapView() {
               />
             )}
           </MapContainer>
-
-          {/* Mobile overlay when sidebar is open */}
-          {isSidebarOpen && (
-            <div
-              className="lg:hidden absolute inset-0 bg-black/50"
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          )}
         </div>
         </div>
         </div>
