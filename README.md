@@ -2,21 +2,21 @@
 
 A modern, bilingual (Spanish/English) real estate website built with React, TypeScript, and Tailwind CSS, showcasing properties in Oaxaca, Mexico.
 
-**Last Updated:** November 20, 2025 (Email Routing & Property Assignment Complete)
+**Last Updated:** November 20, 2025 (Multi-Agent Platform Complete!)
 
 ---
 
 ## 📊 Project Status
 
-**Overall Completion:** 98% 🚀
-**Current Phase:** Multi-Agent Platform - User Features & Authentication (Phase 4 of 5)
+**Overall Completion:** 99% 🚀
+**Current Phase:** Multi-Agent Platform - COMPLETE (Phase 4-5 of 5)
 **Last Updated:** November 20, 2025
 
 **Lighthouse Scores:**
 - Desktop: Performance **97/100** ⭐ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
 - Mobile: Performance **80/100** ⚠️ | Accessibility **96/100** ✅ | Best Practices **100/100** ✅ | SEO **100/100** ✅
 
-**Bundle Size:** 811 KB (optimized from 814 KB)
+**Bundle Size:** 829 KB (includes new user & agent features)
 
 ### ✅ Recently Completed
 
@@ -72,15 +72,27 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - ✅ **Property Reassignment UI** - Admin can reassign properties with audit logging
 - ✅ **useAgents Hook** - Reusable hook for fetching organization agents
 
+**Phase 7 (Nov 20 User Features & Agent Directory):**
+- ✅ **User Registration & Authentication** - Smart redirects based on role (admin→/admin, agent→/agent/dashboard, user→/cuenta)
+- ✅ **User Dashboard (/cuenta)** - Profile management, email verification, favorites display, account deactivation
+- ✅ **Profile Creation on Signup** - Auto-creates profile with default display_name from email
+- ✅ **Profile Editing** - Users can update display_name and phone number
+- ✅ **Header User Menu** - Dropdown with avatar, "Mi Cuenta", "Mis Favoritos", "Cerrar Sesión"
+- ✅ **Favorites Signup Prompts** - Banners encourage guests to sign up or verify email
+- ✅ **Agent Directory (/agentes)** - Public gallery with search, zone, language, specialty filters
+- ✅ **Agent Profile Pages (/agentes/:slug)** - SEO-optimized individual agent profiles with properties
+- ✅ **Property-Agent Integration** - PropertyCard shows agent attribution, PropertyDetail has agent contact card
+- ✅ **Agent Filter in Properties** - Filter properties by agent with dropdown and active badge
+
 ### 🎯 Next Steps
 
 **Immediate (This Week):**
-- **Multi-Agent Platform (Phases 4-5):**
-  - ✅ Multi-tenant foundation (organizations, profiles, roles) - COMPLETE
-  - ✅ Agent management UI (invite agents, profile completion) - COMPLETE
-  - ✅ Email routing & property assignment - COMPLETE
-  - 🚧 User features (registration, auth, favorites, profile) - IN PROGRESS
-  - ⏳ Agent directory & public profiles
+- **Multi-Agent Platform (Phases 4-5):** ✅ COMPLETE
+  - ✅ Multi-tenant foundation (organizations, profiles, roles)
+  - ✅ Agent management UI (invite agents, profile completion)
+  - ✅ Email routing & property assignment
+  - ✅ User features (registration, auth, favorites, profile)
+  - ✅ Agent directory & public profiles
 - **Content Updates** (NO LOVABLE NEEDED):
   - Yas & Carlo: Complete profiles at `/onboarding/complete-profile`
   - Yas: Add properties via `/admin/properties`
