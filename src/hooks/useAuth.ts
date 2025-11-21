@@ -104,13 +104,29 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
       },
     });
+
+    // Create profile after successful signup
+    if (!error && data.user) {
+      const { error: profileError } = await supabase.from('profiles').insert({
+        user_id: data.user.id,
+        email: data.user.email!,
+        display_name: data.user.email!.split('@')[0],
+        organization_id: null,
+        is_complete: true,
+      });
+
+      if (profileError) {
+        logger.error('Failed to create profile', profileError);
+      }
+    }
+
     return { error };
   };
 
