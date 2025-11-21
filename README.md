@@ -100,24 +100,24 @@ After comprehensive audit, we have:
 **Day 1 - Security (IMMEDIATE):**
 - [ ] Run `npm audit fix` to patch 4 vulnerabilities
 - [ ] Verify build & commit updates
-- **Effort:** 30 minutes
+- **Effort:** 15 minutes (direct coding)
 
 **Day 2-3 - ESLint Cleanup (HIGH):**
-- [ ] Fix all 91 ESLint errors via focused Lovable prompts
+- [ ] Fix all 91 ESLint errors via direct code changes
 - [ ] Eliminate `any` types (75 errors)
 - [ ] Fix React hooks issues
-- **Effort:** 2-3 Lovable prompts
+- **Effort:** Direct coding via Claude Code
 
 **Day 4-5 - Testing Framework (HIGH):**
-- [ ] Add Vitest + React Testing Library via Lovable
+- [ ] Add Vitest + React Testing Library
 - [ ] Write tests for auth, user flows, admin operations
 - [ ] Target: 70%+ coverage for critical paths
-- **Effort:** 2-3 Lovable prompts
+- **Effort:** Direct coding via Claude Code
 
 **Day 6-7 - Dependency Updates (MEDIUM):**
-- [ ] Update React, Vite, Tailwind, Zod via Lovable
+- [ ] Update React, Vite, Tailwind, Zod
 - [ ] Test thoroughly after each update
-- **Effort:** 2-3 Lovable prompts
+- **Effort:** Direct coding via Claude Code
 
 **Quality Gates (Must Pass Before Launch):**
 - ✅ Zero ESLint errors

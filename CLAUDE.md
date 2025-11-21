@@ -8,23 +8,33 @@
 
 ## ⚡ CRITICAL CONSTRAINTS
 
-### 0. Documentation Discipline: LESS IS MORE
-**Maximum 5 documentation files. Maximum 20,000 words each. Keep it lean.**
+### 0. Documentation Discipline: RUTHLESSLY LEAN
+**ABSOLUTE LIMITS: Maximum 5 documentation files. Maximum 5,000 words (~500 lines) per file.**
 
-**Documentation Rules:**
+**Documentation Rules (NON-NEGOTIABLE):**
 - ✅ Every doc MUST have "Last Updated: [date]" at the top
 - ✅ Update this date EVERY time you modify the file
 - ✅ Synthesize and consolidate - never create new docs without deleting old ones
-- ✅ If you can't fit it in 5 docs × 20k words, it doesn't belong
-- ❌ NEVER create temporary docs, reports, or guides
+- ✅ If you can't fit it in 5 docs × 5,000 words, it doesn't belong
+- ✅ If a doc exceeds 500 lines, consolidate or delete content
+- ❌ NEVER create temporary docs, reports, guides, or "just for now" files
 - ❌ NEVER let documentation proliferate beyond 5 files
+- ❌ NEVER add content that could be in code comments instead
+
+**Why these limits?**
+- Documentation that's too long doesn't get read
+- Forces clarity and prioritization
+- Prevents documentation debt
+- Makes maintenance tractable
+- Respects the reader's time
 
 **Current Essential Docs:**
 1. **README.md** - Project overview, status, quick start
-2. **CLAUDE.md** - This file - workflow and strategic planning (you're reading it)
+2. **CLAUDE.md** - This file - workflow and strategic planning
 3. **AGENTS.md** - Guidelines for Codex/other agents
+4. **PRODUCTION_CHECKLIST.md** - Pre-launch checklist
 
-**Slots remaining:** 2 files (use wisely, delete when done)
+**Slots remaining:** 1 file (use wisely, temporary only)
 
 ## ⚡ CRITICAL CONSTRAINTS
 

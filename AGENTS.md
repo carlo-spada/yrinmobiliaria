@@ -1,6 +1,6 @@
-# Repository Guidelines
+# Repository Guidelines for AI Agents
 
-> **Primary Reference**: See `CLAUDE.md` for complete project philosophy, workflow, and Lovable prompt engineering guidelines.
+> **Primary Reference**: See `CLAUDE.md` for complete project philosophy and workflow.
 
 **Last Updated:** November 20, 2025
 
@@ -8,37 +8,47 @@
 
 ## 🚨 DOCUMENTATION DISCIPLINE
 
-**CRITICAL RULE: Maximum 5 documentation files, 20,000 words each.**
+**ABSOLUTE LIMITS: Maximum 5 files, Maximum 5,000 words (~500 lines) per file.**
 
 **Before creating ANY new document:**
 - ❌ **STOP** - Can this be added to existing docs?
 - ❌ **STOP** - Is there an old doc you can delete first?
 - ❌ **STOP** - Will this doc exist beyond today?
+- ❌ **STOP** - Could this be code comments instead?
 
 **Every document you modify:**
 - ✅ Update "Last Updated: [date]" at the top
-- ✅ Keep content under 20,000 words
-- ✅ Synthesize and consolidate
+- ✅ Keep content under 500 lines
+- ✅ Synthesize and consolidate ruthlessly
 
-**Current Docs (3/5 slots):**
-1. README.md
-2. CLAUDE.md
-3. AGENTS.md (this file)
+**Current Docs (4/5 slots):**
+1. README.md - Project overview
+2. CLAUDE.md - Workflow & philosophy
+3. AGENTS.md - This file
+4. PRODUCTION_CHECKLIST.md - Launch checklist
 
-**If you need slot 4 or 5:** Delete a temporary doc first.
+**Slot 5:** Reserved for temporary docs only (delete after use)
 
 ---
 
-## Critical Constraint: Lovable-First Development
+## Development Model: Direct Coding First
 
-This project uses **Lovable Cloud** with managed Supabase. All code changes must go through Lovable prompts.
+**Code directly in this repo when possible. Use Lovable ONLY for UI/design and backend.**
 
-- ❌ Do NOT edit code directly in this repo
-- ❌ Do NOT create `supabase/migrations/` or `supabase/functions/`
-- ❌ Do NOT use react-leaflet v5.x (requires React 19)
-- ✅ DO coordinate with Claude Code for prompt drafting
-- ✅ DO use react-leaflet 4.x (compatible with React 18)
-- ✅ DO use `--legacy-peer-deps` flag if npm install fails
+**✅ DO code directly via Claude Code:**
+- Bug fixes, refactoring, ESLint fixes
+- Type safety improvements, dependency updates
+- Test writing, configuration changes
+- Documentation updates, git operations
+
+**🎨 USE Lovable ONLY for:**
+- UI components, styling, layouts, animations
+- Database schema, RLS policies, Edge Functions
+
+**❌ DO NOT:**
+- Create `supabase/migrations/` or `supabase/functions/` (Lovable Cloud manages these)
+- Use react-leaflet v5.x (requires React 19; use 4.x)
+- Commit secrets or environment variables
 
 ## Project Structure & Modules
 - Frontend: `src/` (React 18 + TypeScript, Vite). Key areas: `components/`, `pages/`, `hooks/`, `utils/`, `integrations/`.

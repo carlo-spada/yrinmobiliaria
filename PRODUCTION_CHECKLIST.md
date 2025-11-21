@@ -43,22 +43,22 @@ Use this checklist before going live with your website.
 ### ❌ Code Quality (CRITICAL)
 - **91 ESLint Errors** (75 `any` types, React hooks violations)
 - **Impact:** Undermines type safety, potential runtime bugs
-- **Fix:** 2-3 focused Lovable prompts
+- **Fix:** Direct code changes via Claude Code
 
 ### ❌ Security (CRITICAL)
 - **4 npm Vulnerabilities** (3 moderate, 1 high)
 - **Affected:** esbuild, glob, js-yaml
-- **Fix:** `npm audit fix` (30 minutes)
+- **Fix:** `npm audit fix` (15 minutes direct coding)
 
 ### ❌ Testing (CRITICAL)
 - **0% Test Coverage** - No automated tests
 - **Impact:** No safety net for changes, high regression risk
-- **Fix:** Add Vitest + React Testing Library, write tests for auth/critical flows
+- **Fix:** Add Vitest + React Testing Library via direct coding
 
 ### ⚠️ Dependencies (HIGH)
 - **9 Major Version Outdated** (React, Vite, Tailwind, Zod, etc.)
 - **Impact:** Missing security patches, performance improvements
-- **Fix:** 2-3 careful Lovable prompts with testing
+- **Fix:** Direct code updates via Claude Code
 
 ### ⚠️ Performance (MEDIUM)
 - **Bundle Size 829 KB** (exceeds 600 KB recommendation)
@@ -287,13 +287,13 @@ Use this checklist before going live with your website.
 
 ## 📧 Integrations
 
-### Email (Resend - Planned)
-- [ ] Resend account created
-- [ ] Domain verified (DNS records added)
-- [ ] API key obtained and secured
-- [ ] Contact form email integration (Lovable prompt)
-- [ ] Schedule visit email integration (Lovable prompt)
-- [ ] Email delivery tested
+### Email (Resend)
+- [x] ✅ Resend account created
+- [x] ✅ Domain verified (DNS records added)
+- [x] ✅ API key obtained and secured
+- [x] ✅ Contact form email integration
+- [x] ✅ Schedule visit email integration
+- [ ] Email delivery tested end-to-end
 - [ ] Auto-reply configured (optional)
 
 ### Analytics
