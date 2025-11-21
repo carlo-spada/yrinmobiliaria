@@ -16,7 +16,7 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 After the current audit:
 - ✅ **Features**: Multi-agent platform 99% functionally complete
 - ⚠️ **Code Quality**: `npm run lint` now clean after typing admin sidebar & map popup refs
-- ⚠️ **Test Coverage**: Vitest + RTL routing smokes + utilities (map coords, favorites storage, favorites hook); coverage still minimal
+- ⚠️ **Test Coverage**: Vitest + RTL routing smokes + utilities (map coords, favorites storage/hook, price slider); coverage still minimal
 - ✅ **Security**: `npm audit --audit-level=high` reports 0 vulnerabilities
 - ⚠️ **Dependencies**: React 19 / Vite 7 / Tailwind 4; keep them patched
 - ⚠️ **Bundle Size**: Main chunk ~631 KB (warning threshold 600); MapView chunk ~199 KB (map-vendor chunk) — further shaving optional
@@ -95,8 +95,8 @@ After the current audit:
 
 ### 🎯 Current Priorities (Quality First)
 
-- [ ] Add more automated coverage beyond routing smoke tests (auth flows, favorites logic, map interactions)
-- [ ] Further reduce bundle if needed (main chunk ~631 KB; target <600 KB if feasible; map-vendor ~199 KB)
+- [ ] Add more automated coverage beyond current smokes/utilities (auth flows, map filtering interactions)
+- [ ] Bundle is now below the warning threshold (main ~432 KB); keep an eye on heavy routes.
 - [ ] Keep bilingual strings through `LanguageContext`; avoid new `any` types
 
 ### 📋 Core Docs (keep under 5 total)
