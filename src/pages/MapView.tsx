@@ -365,11 +365,21 @@ export default function MapView() {
           position={[lat, lng]}
           icon={createCustomIcon(property.type, isSelected)}
           eventHandlers={{
-            click: () => handlePropertyClick(property),
+            click: (e) => {
+              handlePropertyClick(property);
+              // Ensure the popup opens
+              e.target.openPopup();
+            },
           }}
         >
-          <Popup>
-            <div className="w-64">
+          <Popup
+            autoPan={true}
+            keepInView={true}
+            closeButton={true}
+            autoClose={false}
+            closeOnClick={false}
+          >
+            <div className="w-64 p-2">
               <ResponsiveImage
                 src={property.images[0]}
                 variants={property.imageVariants?.[0]?.variants}
