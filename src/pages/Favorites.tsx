@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ArrowLeft, Trash2 } from 'lucide-react';
+import { Heart, ArrowLeft, Trash2, UserPlus, LogIn, X } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
+import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/utils/LanguageContext';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer';
@@ -24,19 +26,107 @@ import {
 
 export default function Favorites() {
   const { language, t } = useLanguage();
+  const { user } = useAuth();
   const { favorites, clearFavorites } = useFavorites();
   const { data: properties = [] } = useProperties();
   const [viewMode] = useState<'grid' | 'list'>('grid');
+  const [isDismissed, setIsDismissed] = useState(false);
 
   const favoriteProperties = properties.filter(property =>
     favorites.includes(property.id)
   );
+
+  const isEmailVerified = user?.email_confirmed_at != null;
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissed-favorites-banner');
+    if (dismissed === 'true') {
+      setIsDismissed(true);
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    localStorage.setItem('dismissed-favorites-banner', 'true');
+    setIsDismissed(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
       <main className="flex-1">
+        {/* Auth Prompts */}
+        {!isDismissed && (
+          <>
+            {!user && (
+              <div className="bg-primary/5 border-b border-primary/10">
+                <div className="container mx-auto px-4 py-4">
+                  <Alert className="border-primary/20 bg-primary/5">
+                    <UserPlus className="h-4 w-4 text-primary" />
+                    <AlertDescription className="flex items-center justify-between gap-4">
+                      <span className="text-sm">
+                        📱 Crea una cuenta para sincronizar tus favoritos entre dispositivos
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Link to="/auth">
+                          <Button variant="outline" size="sm" className="gap-2">
+                            <UserPlus className="h-4 w-4" />
+                            Crear Cuenta
+                          </Button>
+                        </Link>
+                        <Link to="/auth">
+                          <Button variant="default" size="sm" className="gap-2">
+                            <LogIn className="h-4 w-4" />
+                            Iniciar Sesión
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleDismissBanner}
+                          aria-label="Cerrar"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              </div>
+            )}
+
+            {user && !isEmailVerified && (
+              <div className="bg-yellow-500/10 border-b border-yellow-500/20">
+                <div className="container mx-auto px-4 py-4">
+                  <Alert className="border-yellow-500/20 bg-yellow-500/5">
+                    <Heart className="h-4 w-4 text-yellow-600" />
+                    <AlertDescription className="flex items-center justify-between gap-4">
+                      <span className="text-sm">
+                        ⚠️ Confirma tu email para guardar tus favoritos en la nube
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Link to="/cuenta">
+                          <Button variant="outline" size="sm">
+                            Ir a Mi Cuenta
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleDismissBanner}
+                          aria-label="Cerrar"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         {/* Hero Section */}
         <FadeIn>
           <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-16 md:py-24">

@@ -103,14 +103,36 @@ export const useAuth = () => {
   };
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
+    const redirectUrl = `${window.location.origin}/cuenta`;
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
       },
     });
+
+    // Create profile for new user
+    if (data.user && !error) {
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
+            email: data.user.email || email,
+            display_name: email.split('@')[0],
+            organization_id: null,
+            is_complete: true,
+          });
+
+        if (profileError) {
+          logger.error('Error creating profile on signup', profileError);
+        }
+      } catch (err) {
+        logger.error('Error creating profile on signup', err);
+      }
+    }
+
     return { error };
   };
 
@@ -122,6 +144,27 @@ export const useAuth = () => {
     return { error };
   };
 
+  const deleteAccount = async () => {
+    if (!user) return { error: new Error('No user logged in') };
+
+    try {
+      // Delete user's profile (this will cascade delete favorites via RLS)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Sign out after deletion
+      await signOut();
+      return { error: null };
+    } catch (error) {
+      logger.error('Error deleting account', error);
+      return { error };
+    }
+  };
+
   return {
     user,
     session,
@@ -131,5 +174,6 @@ export const useAuth = () => {
     signIn,
     signUp,
     signOut,
+    deleteAccount,
   };
 };

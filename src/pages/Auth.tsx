@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 import { z } from 'zod';
 import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 import { mapAuthError } from '@/utils/authErrors';
+import { supabase } from '@/integrations/supabase/client';
 
 const passwordSchema = z.string()
   .min(12, "La contraseña debe tener al menos 12 caracteres")
@@ -25,14 +25,46 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [isCheckingRole, setIsCheckingRole] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      navigate('/admin');
-    }
-  }, [user, navigate]);
+    const checkRoleAndRedirect = async () => {
+      if (user && !isCheckingRole) {
+        setIsCheckingRole(true);
+        
+        // Check user's role
+        const { data: roleData } = await supabase
+          .from('role_assignments')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+
+        // Smart redirect based on role
+        if (roleData?.role === 'admin' || roleData?.role === 'superadmin') {
+          navigate('/admin');
+        } else {
+          // Check if user is an agent
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('agent_level')
+            .eq('user_id', user.id)
+            .single();
+
+          if (profile?.agent_level) {
+            navigate('/agent/dashboard');
+          } else {
+            navigate('/cuenta');
+          }
+        }
+        
+        setIsCheckingRole(false);
+      }
+    };
+
+    checkRoleAndRedirect();
+  }, [user, navigate, isCheckingRole]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +94,14 @@ const Auth = () => {
           toast.error(mapAuthError(error));
         } else {
           toast.success('¡Sesión iniciada correctamente!');
-          navigate('/admin');
+          // Redirect happens in useEffect based on role
         }
       } else {
         const { error } = await signUp(email, password);
         if (error) {
           toast.error(mapAuthError(error));
         } else {
-          toast.success('¡Cuenta creada! Revisa tu email para confirmar.');
+          toast.success('¡Cuenta creada! Revisa tu email para confirmar tu cuenta.');
         }
       }
     } catch (error: any) {
@@ -86,8 +118,8 @@ const Auth = () => {
           <CardTitle>{isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}</CardTitle>
           <CardDescription>
             {isLogin
-              ? 'Ingresa tus credenciales para acceder al panel de administración'
-              : 'Crea una cuenta para comenzar'}
+              ? 'Ingresa para ver tus favoritos y propiedades guardadas'
+              : 'Crea una cuenta para guardar tus propiedades favoritas'}
           </CardDescription>
         </CardHeader>
         <CardContent>
