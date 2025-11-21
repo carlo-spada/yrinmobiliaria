@@ -29,6 +29,9 @@ const AcceptInvitation = lazy(() => import("./pages/auth/AcceptInvitation"));
 const CompleteProfile = lazy(() => import("./pages/onboarding/CompleteProfile"));
 const AgentDashboard = lazy(() => import("./pages/agent/AgentDashboard"));
 const EditProfile = lazy(() => import("./pages/agent/EditProfile"));
+const UserDashboard = lazy(() => import("./pages/user/UserDashboard"));
+const AgentDirectory = lazy(() => import("./pages/AgentDirectory"));
+const AgentProfile = lazy(() => import("./pages/AgentProfile"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
 const AdminAgents = lazy(() => import("./pages/admin/AdminAgents"));
@@ -100,6 +103,21 @@ const App = () => (
               <Route path="/privacidad" element={<PrivacyPolicy />} />
               <Route path="/terminos" element={<TermsOfService />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/cuenta" element={
+                <Suspense fallback={<PageLoader />}>
+                  <UserDashboard />
+                </Suspense>
+              } />
+              <Route path="/agentes" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AgentDirectory />
+                </Suspense>
+              } />
+              <Route path="/agentes/:slug" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AgentProfile />
+                </Suspense>
+              } />
               <Route path="/auth/accept-invitation" element={
                 <Suspense fallback={<PageLoader />}>
                   <AcceptInvitation />
