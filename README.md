@@ -2,14 +2,14 @@
 
 A modern, bilingual (Spanish/English) real estate website built with React, TypeScript, and Tailwind CSS, showcasing properties in Oaxaca, Mexico.
 
-**Last Updated:** November 20, 2025 (Agent Management UI Complete)
+**Last Updated:** November 20, 2025 (Email Routing & Property Assignment Complete)
 
 ---
 
 ## 📊 Project Status
 
 **Overall Completion:** 98% 🚀
-**Current Phase:** Multi-Agent Platform - Email Routing & Property Assignment (Phase 3 of 5)
+**Current Phase:** Multi-Agent Platform - User Features & Authentication (Phase 4 of 5)
 **Last Updated:** November 20, 2025
 
 **Lighthouse Scores:**
@@ -65,15 +65,21 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 - ✅ **Agent Dashboard** - Protected dashboard with stats (properties, inquiries, visits)
 - ✅ **Edit Profile Page** - Agents can update their profile anytime
 
+**Phase 6 (Nov 20 Email Routing & Property Assignment):**
+- ✅ **Dynamic Email Routing** - Contact form fetches org email from DB (no hardcoding)
+- ✅ **Agent Email Routing** - Visit scheduling routes to property's agent (fallback to org)
+- ✅ **Property Auto-Assignment** - New properties auto-assign to uploader's profile
+- ✅ **Property Reassignment UI** - Admin can reassign properties with audit logging
+- ✅ **useAgents Hook** - Reusable hook for fetching organization agents
+
 ### 🎯 Next Steps
 
 **Immediate (This Week):**
-- **Multi-Agent Platform (Phases 3-5):**
+- **Multi-Agent Platform (Phases 4-5):**
   - ✅ Multi-tenant foundation (organizations, profiles, roles) - COMPLETE
   - ✅ Agent management UI (invite agents, profile completion) - COMPLETE
-  - 🚧 Email routing updates (property → agent email) - IN PROGRESS
-  - ⏳ Property assignment (auto-assign, reassignment UI, multi-language)
-  - ⏳ User features (favorites, account management)
+  - ✅ Email routing & property assignment - COMPLETE
+  - 🚧 User features (registration, auth, favorites, profile) - IN PROGRESS
   - ⏳ Agent directory & public profiles
 - **Content Updates** (NO LOVABLE NEEDED):
   - Yas & Carlo: Complete profiles at `/onboarding/complete-profile`

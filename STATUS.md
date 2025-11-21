@@ -1,6 +1,6 @@
 # YR Inmobiliaria - Status & Roadmap
-**Last Updated:** November 20, 2025 (Evening)
-**Current Phase:** Multi-Agent Platform Development (Phase 2 of 5)
+**Last Updated:** November 20, 2025 (Late Evening)
+**Current Phase:** Multi-Agent Platform Development (Phase 4 of 5)
 
 ---
 
@@ -32,7 +32,7 @@
   - RLS policies for data isolation
   - Database ready for multi-agent, multi-org SaaS
 
-### Phase 5: Agent Management UI ← **JUST COMPLETED!**
+### Phase 5: Agent Management UI
 - ✅ **Admin Agents Page** (`/admin/agents`) (Nov 20)
   - View all agents in organization
   - Search agents by name/email
@@ -60,32 +60,47 @@
   - Redirects incomplete profiles to onboarding
   - Prevents access to agent dashboard until complete
 
+### Phase 6: Email Routing & Property Assignment ← **JUST COMPLETED!**
+- ✅ **Dynamic Email Routing** (Nov 20)
+  - Contact form → fetches org email from database (not hardcoded)
+  - Visit scheduling → routes to property's agent email with fallback to org
+  - Logs which email was used (agent vs org)
+
+- ✅ **Property Auto-Assignment** (Nov 20)
+  - New properties auto-assign `agent_id` to uploader's profile
+  - Existing properties preserve agent assignment on edit
+  - PropertyFormDialog updated with agent assignment logic
+
+- ✅ **Property Reassignment UI** (Nov 20)
+  - ReassignPropertyDialog component
+  - Admin can reassign properties to different agents
+  - Audit logging for all reassignments (PROPERTY_REASSIGNED event)
+  - useAgents hook for fetching organization agents
+
+- ❌ **Multi-Language Property Support** (Deferred)
+  - Optional/stretch goal not implemented in Prompt #3
+  - DB columns exist (`language`, `is_translation_of`)
+  - Will implement in future prompt if needed
+
 ---
 
 ## 🚧 IN PROGRESS (This Week)
 
-### Multi-Agent Platform - Prompt #3
+### Multi-Agent Platform - Prompt #4
 **Status:** Drafting now
 
 **Deliverables:**
-- Update contact form → route email to org email (not hardcoded)
-- Update visit scheduling → route email to property's assigned agent
-- Property upload → auto-assign to uploader's agent profile
-- Property reassignment UI (admin can reassign properties)
-- Multi-language property support (is_translation_of)
+- User registration/login flow
+- Favorites system requiring authentication
+- User profile management
+- Email verification
+- User dashboard
 
 ---
 
 ## ⏳ UPCOMING (Next 2 Weeks)
 
-### Prompt #3: Email Routing & Property Assignment
-- Update contact form → route to org email
-- Update visit scheduling → route to property's agent
-- Property upload → assign to agent
-- Property reassignment UI
-- Multi-language property support
-
-### Prompt #4: User Features & Favorites
+### Prompt #5: Agent Directory & Public Profiles
 - User registration/login flow
 - Save favorites (requires auth)
 - View saved properties
