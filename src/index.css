@@ -1,23 +1,47 @@
 @import "tailwindcss";
 
-/* Content sources for Tailwind 4 tree-shaking */
-@source "../src/**/*.{js,ts,jsx,tsx}";
-@source "../pages/**/*.{js,ts,jsx,tsx}";
-@source "../components/**/*.{js,ts,jsx,tsx}";
-@source "../app/**/*.{js,ts,jsx,tsx}";
-
-/* Tailwind 4 Theme Configuration */
+/* Tailwind 4 Theme Configuration - Migrated from v3 config */
 @theme {
+  /* Custom colors from YR Inmobiliaria palette */
+  --color-background: hsl(35 44% 93%);
+  --color-foreground: hsl(0 0% 20%);
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(0 0% 20%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(0 0% 20%);
+
+  --color-primary: hsl(12 54% 51%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(159 35% 27%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+
+  --color-muted: hsl(35 44% 88%);
+  --color-muted-foreground: hsl(0 0% 40%);
+
+  --color-accent: hsl(35 54% 65%);
+  --color-accent-foreground: hsl(0 0% 20%);
+
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-border: hsl(35 30% 85%);
+  --color-input: hsl(35 30% 85%);
+  --color-ring: hsl(12 54% 51%);
+
   /* Font families */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-serif: 'Playfair Display', serif;
 
-  /* Border radius from config */
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  /* Border radius */
+  --radius: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
 
-  /* Animation keyframes for accordion */
+  /* Animations */
   @keyframes accordion-down {
     from { height: 0; }
     to { height: var(--radix-accordion-content-height); }
@@ -28,20 +52,16 @@
     to { height: 0; }
   }
 
-  /* Animation utilities */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 }
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
-All colors MUST be HSL.
-*/
-
+/* Base layer for CSS variables and dark mode support */
 @layer base {
   :root {
-    /* YR Inmobiliaria Color Palette */
-    --background: 35 44% 93%; /* Beige #F5EFE6 */
-    --foreground: 0 0% 20%; /* Text #333333 */
+    /* Legacy CSS variables for direct usage in components */
+    --background: 35 44% 93%;
+    --foreground: 0 0% 20%;
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 20%;
@@ -49,16 +69,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 20%;
 
-    --primary: 12 54% 51%; /* Terracota #C85A3C */
+    --primary: 12 54% 51%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 159 35% 27%; /* Verde Jade #2D5E4F */
+    --secondary: 159 35% 27%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 35 44% 88%;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 35 54% 65%; /* Dorado #D4A574 */
+    --accent: 35 54% 65%;
     --accent-foreground: 0 0% 20%;
 
     --destructive: 0 84.2% 60.2%;
@@ -106,6 +126,21 @@ All colors MUST be HSL.
     --border: 159 25% 25%;
     --input: 159 25% 25%;
     --ring: 12 54% 51%;
+
+    /* Update Tailwind v4 theme colors for dark mode */
+    --color-background: hsl(159 35% 12%);
+    --color-foreground: hsl(35 44% 93%);
+    --color-card: hsl(159 35% 15%);
+    --color-card-foreground: hsl(35 44% 93%);
+    --color-popover: hsl(159 35% 15%);
+    --color-popover-foreground: hsl(35 44% 93%);
+    --color-secondary: hsl(159 35% 35%);
+    --color-muted: hsl(159 25% 20%);
+    --color-muted-foreground: hsl(35 30% 70%);
+    --color-destructive: hsl(0 62.8% 30.6%);
+    --color-destructive-foreground: hsl(35 44% 93%);
+    --color-border: hsl(159 25% 25%);
+    --color-input: hsl(159 25% 25%);
   }
 
   * {
@@ -118,6 +153,7 @@ All colors MUST be HSL.
   }
 }
 
+/* Custom animations */
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
