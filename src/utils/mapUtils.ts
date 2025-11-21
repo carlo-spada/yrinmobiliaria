@@ -32,6 +32,7 @@ export type MapFilters = {
   type: PropertyType | "all";
   zone: string;
   priceRange: [number, number];
+  operation?: "venta" | "renta" | "all";
 };
 
 export const filterPropertiesByMap = (
@@ -45,6 +46,10 @@ export const filterPropertiesByMap = (
 
     if (filters.type !== "all" && p.type !== filters.type) return false;
     if (filters.zone !== "all" && p.location.zone !== filters.zone) return false;
+    if (filters.operation && filters.operation !== "all" && p.operation !== filters.operation) {
+      return false;
+    }
+
     if (p.price < filters.priceRange[0] || p.price > filters.priceRange[1]) return false;
 
     if (mapBounds) {

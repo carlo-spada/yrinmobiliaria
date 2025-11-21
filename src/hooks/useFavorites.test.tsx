@@ -4,10 +4,15 @@ import { useFavorites } from "./useFavorites";
 import { FAVORITES_STORAGE_KEY } from "@/utils/favoritesStorage";
 
 const mockToast = vi.fn();
-const mockFrom = vi.fn();
+const supabaseMock = vi.hoisted(() => ({
+  from: vi.fn(),
+  auth: { onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })), getSession: vi.fn() },
+}));
+
+const authState = { user: null as { id: string } | null };
 
 vi.mock("@/hooks/useAuth", () => ({
-  useAuth: () => ({ user: null }),
+  useAuth: () => ({ user: authState.user }),
 }));
 
 vi.mock("@/hooks/use-toast", () => ({
@@ -15,10 +20,7 @@ vi.mock("@/hooks/use-toast", () => ({
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    from: (...args: unknown[]) => mockFrom(...args),
-    auth: { onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })), getSession: vi.fn() },
-  },
+  supabase: supabaseMock,
 }));
 
 describe("useFavorites (guest/local mode)", () => {
@@ -61,5 +63,41 @@ describe("useFavorites (guest/local mode)", () => {
     });
     expect(result.current.favorites).toEqual([]);
     expect(JSON.parse(window.localStorage.getItem(FAVORITES_STORAGE_KEY)!)).toEqual([]);
+  });
+
+  it("loads and mutates favorites for signed-in users", async () => {
+    authState.user = { id: "user-1" };
+    supabaseMock.from.mockImplementation((table: string) => {
+      if (table === "user_favorites") {
+        return {
+          select: () => ({
+            eq: () => Promise.resolve({ data: [{ property_id: "existing" }], error: null }),
+          }),
+          insert: vi.fn().mockResolvedValue({ error: null }),
+          delete: () => ({
+            eq: () => ({
+              eq: () => Promise.resolve({ error: null }),
+            }),
+          }),
+        };
+      }
+      return {};
+    });
+
+    const { result } = renderHook(() => useFavorites());
+    await act(async () => {
+      // wait for load
+    });
+    expect(result.current.favorites).toContain("existing");
+
+    await act(async () => {
+      await result.current.addFavorite("new-prop");
+    });
+    expect(result.current.favorites).toContain("new-prop");
+
+    await act(async () => {
+      await result.current.removeFavorite("existing");
+    });
+    expect(result.current.favorites).not.toContain("existing");
   });
 });

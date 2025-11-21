@@ -21,7 +21,7 @@ describe("mapUtils", () => {
     expect(normalizeCoord(undefined)).toBeNull();
   });
 
-  it("filters properties by type/zone/price and bounds", () => {
+  it("filters properties by type/zone/price/operation and bounds", () => {
     const properties: Property[] = [
       {
         id: "1",
@@ -65,7 +65,7 @@ describe("mapUtils", () => {
       },
     ];
 
-    const filters: MapFilters = { type: "casa", zone: "centro", priceRange: [0, 6000000] };
+    const filters: MapFilters = { type: "casa", zone: "centro", priceRange: [0, 6000000], operation: "venta" };
     const bounds = {
       getSouth: () => 16.0,
       getNorth: () => 18.0,
@@ -75,5 +75,41 @@ describe("mapUtils", () => {
 
     const filtered = filterPropertiesByMap(properties, filters, bounds);
     expect(filtered.map((p) => p.id)).toEqual(["1"]);
+  });
+
+  it("drops properties with invalid coordinates", () => {
+    const properties: Property[] = [
+      {
+        id: "bad",
+        title: { es: "Casa", en: "House" },
+        description: { es: "", en: "" },
+        type: "casa",
+        operation: "venta",
+        price: 1000000,
+        location: {
+          zone: "centro",
+          neighborhood: "n1",
+          address: "a1",
+          coordinates: { lat: Number.NaN as unknown as number, lng: "bad" as unknown as number },
+        },
+        features: { bathrooms: 1, constructionArea: 80 },
+        amenities: [],
+        images: [],
+        status: "disponible",
+        featured: false,
+        publishedDate: "",
+      },
+    ];
+
+    const filters: MapFilters = { type: "all", zone: "all", priceRange: [0, 6000000] };
+    const bounds = {
+      getSouth: () => -90,
+      getNorth: () => 90,
+      getWest: () => -180,
+      getEast: () => 180,
+    };
+
+    const filtered = filterPropertiesByMap(properties, filters, bounds);
+    expect(filtered).toHaveLength(0);
   });
 });
