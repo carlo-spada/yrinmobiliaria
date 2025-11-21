@@ -153,7 +153,7 @@ export default function Properties() {
     }
 
     return filtered;
-  }, [filters, sortBy]);
+  }, [filters, sortBy, allProperties, selectedAgentId]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProperties.length / ITEMS_PER_PAGE);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,17 +26,7 @@ export default function AcceptInvitation() {
   const [password, setPassword] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    if (!token) {
-      setError("Token de invitación no válido");
-      setIsLoading(false);
-      return;
-    }
-
-    validateInvitation();
-  }, [token]);
-
-  const validateInvitation = async () => {
+  const validateInvitation = useCallback(async () => {
     try {
       const { data, error: fetchError } = await supabase
         .from("agent_invitations")
@@ -71,7 +61,17 @@ export default function AcceptInvitation() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) {
+      setError("Token de invitación no válido");
+      setIsLoading(false);
+      return;
+    }
+
+    validateInvitation();
+  }, [token, validateInvitation]);
 
   const handleAccept = async () => {
     if (!invitation || !password || password.length < 6) {
