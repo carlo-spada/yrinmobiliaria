@@ -79,7 +79,7 @@ export const useAuth = () => {
         .select('role')
         .eq('user_id', userId)
         .in('role', ['admin', 'superadmin'])
-        .maybeSingle();
+        .limit(1);
 
       if (error) {
         logger.error('Error checking admin role', error);
@@ -87,7 +87,8 @@ export const useAuth = () => {
         return;
       }
 
-      setIsAdmin(!!data);
+      // Check if user has at least one admin/superadmin role
+      setIsAdmin(data && data.length > 0);
     } catch (error) {
       logger.error('Error checking admin role', error);
       setIsAdmin(false);
