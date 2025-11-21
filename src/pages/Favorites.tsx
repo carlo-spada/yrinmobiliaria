@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ArrowLeft, Trash2 } from 'lucide-react';
+import { Heart, ArrowLeft, Trash2, X, AlertCircle, Check } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
 import { useLanguage } from '@/utils/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer';
 import {
@@ -26,11 +28,27 @@ export default function Favorites() {
   const { language, t } = useLanguage();
   const { favorites, clearFavorites } = useFavorites();
   const { data: properties = [] } = useProperties();
+  const { user } = useAuth();
   const [viewMode] = useState<'grid' | 'list'>('grid');
+  const [showSignupBanner, setShowSignupBanner] = useState(true);
 
   const favoriteProperties = properties.filter(property =>
     favorites.includes(property.id)
   );
+
+  const isEmailVerified = user?.email_confirmed_at !== null;
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissed-favorites-banner');
+    if (dismissed) {
+      setShowSignupBanner(false);
+    }
+  }, []);
+
+  const dismissBanner = () => {
+    localStorage.setItem('dismissed-favorites-banner', 'true');
+    setShowSignupBanner(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -91,6 +109,70 @@ export default function Favorites() {
             </div>
           </section>
         </FadeIn>
+
+        {/* Signup/Verification Banners */}
+        {showSignupBanner && (
+          <section className="py-4">
+            <div className="container mx-auto px-4">
+              {!user ? (
+                <Alert className="relative border-primary/50 bg-primary/5">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription className="flex items-center justify-between gap-4 pr-8">
+                    <span className="text-foreground">
+                      {language === 'es'
+                        ? '📱 Crea una cuenta para sincronizar tus favoritos entre dispositivos'
+                        : '📱 Create an account to sync your favorites across devices'}
+                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Link to="/auth?mode=signup">
+                        <Button size="sm" variant="default">
+                          {language === 'es' ? 'Crear Cuenta' : 'Sign Up'}
+                        </Button>
+                      </Link>
+                      <Link to="/auth?mode=login">
+                        <Button size="sm" variant="outline">
+                          {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
+                        </Button>
+                      </Link>
+                    </div>
+                  </AlertDescription>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={dismissBanner}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </Alert>
+              ) : !isEmailVerified ? (
+                <Alert className="relative border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="flex items-center justify-between gap-4 pr-8">
+                    <span className="text-foreground">
+                      {language === 'es'
+                        ? '⚠️ Confirma tu email para guardar tus favoritos en la nube'
+                        : '⚠️ Confirm your email to save your favorites in the cloud'}
+                    </span>
+                    <Link to="/cuenta">
+                      <Button size="sm" variant="outline">
+                        {language === 'es' ? 'Ir a Mi Cuenta →' : 'Go to My Account →'}
+                      </Button>
+                    </Link>
+                  </AlertDescription>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={dismissBanner}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </Alert>
+              ) : null}
+            </div>
+          </section>
+        )}
 
         {/* Properties Grid */}
         <section className="py-16">
