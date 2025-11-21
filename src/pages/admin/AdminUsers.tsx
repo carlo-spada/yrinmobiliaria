@@ -37,12 +37,12 @@ export default function AdminUsers() {
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
     queryFn: async () => {
-      // Get all role assignments with profile data (display_name, email, photo_url)
+      // Get all role assignments with profile data
       const { data, error } = await supabase
         .from('role_assignments')
         .select(`
           *,
-          profiles!inner(
+          profiles(
             display_name,
             email,
             photo_url,
@@ -52,20 +52,30 @@ export default function AdminUsers() {
         `)
         .order('granted_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching role assignments:', error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No role assignments found');
+        return [];
+      }
 
       // Group by user_id to avoid duplicate rows
       const userMap = new Map();
       data.forEach((roleAssignment) => {
         const userId = roleAssignment.user_id;
+        const profile = roleAssignment.profiles;
+
         if (!userMap.has(userId)) {
           userMap.set(userId, {
             user_id: userId,
-            display_name: roleAssignment.profiles.display_name,
-            email: roleAssignment.profiles.email,
-            photo_url: roleAssignment.profiles.photo_url,
-            agent_level: roleAssignment.profiles.agent_level,
-            organization_id: roleAssignment.profiles.organization_id,
+            display_name: profile?.display_name || 'Sin nombre',
+            email: profile?.email || 'Sin email',
+            photo_url: profile?.photo_url || null,
+            agent_level: profile?.agent_level || null,
+            organization_id: profile?.organization_id || null,
             roles: [],
             latest_granted_at: roleAssignment.granted_at || roleAssignment.created_at,
           });
@@ -85,9 +95,12 @@ export default function AdminUsers() {
         }
       });
 
-      return Array.from(userMap.values()).sort((a, b) =>
+      const result = Array.from(userMap.values()).sort((a, b) =>
         new Date(b.latest_granted_at).getTime() - new Date(a.latest_granted_at).getTime()
       );
+
+      console.log('Processed users:', result.length, result);
+      return result;
     },
   });
 
@@ -271,32 +284,11 @@ export default function AdminUsers() {
           </Table>
         </div>
 
-        <div className="bg-muted/50 p-4 rounded-lg space-y-3">
-          <div>
-            <p className="text-sm font-medium mb-1">📋 Sobre esta vista</p>
-            <p className="text-sm text-muted-foreground">
-              Esta tabla muestra <strong>todos los usuarios del sistema</strong> con sus roles y tipo (Usuario regular o Agente).
-              Los usuarios marcados como "Agente" tienen perfiles completos en la pestaña de Agentes.
-            </p>
+        {userRoles && userRoles.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Total: {userRoles.length} {userRoles.length === 1 ? 'usuario' : 'usuarios'}
           </div>
-          <div>
-            <p className="text-sm font-medium mb-1">🔐 Roles del Sistema</p>
-            <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-              <li><strong>SuperAdmin:</strong> Acceso completo a todo el sistema (sin organización)</li>
-              <li><strong>Admin:</strong> Gestiona propiedades, agentes, consultas de su organización</li>
-              <li><strong>User:</strong> Usuario regular que puede guardar favoritos y ver propiedades</li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm font-medium mb-1">⚡ Administración automática</p>
-            <p className="text-sm text-muted-foreground">
-              Los usuarios con email
-              <code className="mx-1 px-1 bg-background rounded">ruizvasquezyazmin@gmail.com</code> y
-              <code className="mx-1 px-1 bg-background rounded">carlo.spada22@gmail.com</code>
-              reciben automáticamente rol de administrador al registrarse.
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </AdminLayout>
   );
