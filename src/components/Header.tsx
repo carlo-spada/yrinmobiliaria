@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail, Heart } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail, Heart, User, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelectorNew';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useLanguage } from '@/utils/LanguageContext';
 import { useServiceZones } from '@/hooks/useServiceZones';
+import { useAuth } from '@/hooks/useAuth';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -18,6 +19,15 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -25,11 +35,25 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t, language } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const { count: favoritesCount } = useFavorites();
   const { getSetting } = useSiteSettings();
   const { zones: dbZones } = useServiceZones();
+  const { user, profile, signOut } = useAuth();
   
   const companyName = getSetting('company_name', 'YR Inmobiliaria');
+
+  const initials = (profile?.display_name || user?.email || 'U')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -211,6 +235,54 @@ export function Header() {
               </Button>
             </Link>
 
+            {/* User Menu */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hidden md:flex rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.photo_url || ''} alt={profile?.display_name || 'User'} />
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{profile?.display_name || user.email}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/cuenta" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Mi Cuenta' : 'My Account'}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/favoritos" className="cursor-pointer">
+                      <Heart className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {language === 'es' ? 'Cerrar Sesión' : 'Sign Out'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/auth" className="hidden md:block">
+                <Button variant="outline" size="sm">
+                  {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
+                </Button>
+              </Link>
+            )}
+
             <LanguageSelector />
             
             <Link to="/agendar" className="hidden md:block">
@@ -324,7 +396,72 @@ export function Header() {
                     >
                       {t.nav.contact}
                     </Link>
+
+                    <Link
+                      to="/agentes"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        'px-4 py-3 text-base font-medium rounded-lg transition-colors',
+                        isActive('/agentes')
+                          ? 'text-primary bg-primary/10'
+                          : 'text-foreground hover:bg-muted'
+                      )}
+                    >
+                      {language === 'es' ? 'Agentes' : 'Agents'}
+                    </Link>
                   </div>
+
+                  <Separator />
+
+                  {/* User Menu - Mobile */}
+                  {user ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 px-4 py-3 bg-muted rounded-lg">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={profile?.photo_url || ''} alt={profile?.display_name || 'User'} />
+                          <AvatarFallback className="text-sm bg-primary/10 text-primary">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{profile?.display_name || user.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        </div>
+                      </div>
+                      <Link
+                        to="/cuenta"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <User className="h-5 w-5" />
+                        {language === 'es' ? 'Mi Cuenta' : 'My Account'}
+                      </Link>
+                      <Link
+                        to="/favoritos"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <Heart className="h-5 w-5" />
+                        {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleSignOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors w-full text-left"
+                      >
+                        <LogOut className="h-5 w-5" />
+                        {language === 'es' ? 'Cerrar Sesión' : 'Sign Out'}
+                      </button>
+                    </div>
+                  ) : (
+                    <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
+                      </Button>
+                    </Link>
+                  )}
 
                   <Separator />
 
