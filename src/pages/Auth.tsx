@@ -42,11 +42,24 @@ const Auth = () => {
         const redirectTo = searchParams.get('redirect');
 
         // Check user's role from role_assignments table
-        const { data: roleData } = await supabase
+        // Check for admin/superadmin roles first (priority redirect)
+        const { data: adminRoleData } = await supabase
           .from('role_assignments')
           .select('role')
           .eq('user_id', user.id)
-          .single();
+          .in('role', ['admin', 'superadmin'])
+          .limit(1);
+
+        // If not admin, check if user has any other role
+        const { data: anyRoleData } = await supabase
+          .from('role_assignments')
+          .select('role')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        const roleData = adminRoleData && adminRoleData.length > 0
+          ? adminRoleData[0]
+          : (anyRoleData && anyRoleData.length > 0 ? anyRoleData[0] : null);
 
         // Mark as redirected before navigating
         hasRedirected.current = true;
@@ -57,27 +70,22 @@ const Auth = () => {
           return;
         }
 
-        if (roleData) {
-          // Redirect based on role
-          if (roleData.role === 'admin' || roleData.role === 'superadmin') {
-            navigate('/admin', { replace: true });
-          } else {
-            // Check if user has agent profile
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('agent_level')
-              .eq('user_id', user.id)
-              .single();
-
-            if (profileData?.agent_level) {
-              navigate('/agent/dashboard', { replace: true });
-            } else {
-              navigate('/cuenta', { replace: true });
-            }
-          }
+        // Redirect based on role
+        if (roleData?.role === 'admin' || roleData?.role === 'superadmin') {
+          navigate('/admin', { replace: true });
         } else {
-          // No role assigned, treat as regular user
-          navigate('/cuenta', { replace: true });
+          // Check if user has agent profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('agent_level')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (profileData?.agent_level) {
+            navigate('/agent/dashboard', { replace: true });
+          } else {
+            navigate('/cuenta', { replace: true });
+          }
         }
       } catch (error) {
         console.error('Error checking user role:', error);
