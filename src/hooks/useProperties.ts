@@ -43,6 +43,12 @@ const transformProperty = (row: any): Property => {
     status: row.status,
     featured: row.featured,
     publishedDate: row.published_date,
+    agent: row.agent ? {
+      id: row.agent.id,
+      display_name: row.agent.display_name,
+      photo_url: row.agent.photo_url,
+      agent_level: row.agent.agent_level,
+    } : undefined,
   };
 };
 
@@ -61,6 +67,12 @@ export const useProperties = (filters?: PropertyFilters) => {
               display_order,
               alt_text_es,
               alt_text_en
+            ),
+            agent:profiles!properties_agent_id_fkey (
+              id,
+              display_name,
+              photo_url,
+              agent_level
             )
           `)
           .order('created_at', { ascending: false });
@@ -125,6 +137,17 @@ export const useProperty = (id: string) => {
               display_order,
               alt_text_es,
               alt_text_en
+            ),
+            agent:profiles!properties_agent_id_fkey (
+              id,
+              display_name,
+              photo_url,
+              agent_level,
+              whatsapp_number,
+              phone,
+              email,
+              bio_es,
+              bio_en
             )
           `)
           .eq('id', id)

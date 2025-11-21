@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal, MapPin } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
@@ -10,8 +10,10 @@ import { SaveSearchDialog } from '@/components/SaveSearchDialog';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select } from '@/components/ui/select-enhanced';
+import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/utils/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
+import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { EmptyPropertyList } from '@/components/EmptyPropertyList';
 import { Property, PropertyFilters as PropertyFiltersType } from '@/types/property';
 
@@ -27,9 +29,11 @@ export default function Properties() {
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   
   // Fetch properties from database
   const { data: allProperties = [], isLoading } = useProperties();
+  const { data: agents = [] } = usePublicAgents();
 
   // Parse filters from URL
   const filtersFromUrl: PropertyFiltersType = useMemo(() => {
@@ -59,6 +63,17 @@ export default function Properties() {
     return filters;
   }, [searchParams]);
 
+  // Parse agent filter from URL
+  useEffect(() => {
+    const agentSlug = searchParams.get('agent');
+    if (agentSlug && agents.length > 0) {
+      const agent = agents.find(
+        (a) => a.display_name.toLowerCase().replace(/\s+/g, '-') === agentSlug
+      );
+      setSelectedAgentId(agent?.id || null);
+    }
+  }, [searchParams, agents]);
+
   const [filters, setFilters] = useState<PropertyFiltersType>(filtersFromUrl);
 
   // Update URL when filters change
@@ -72,9 +87,15 @@ export default function Properties() {
     if (filters.maxPrice) params.set('maxPrice', filters.maxPrice.toString());
     if (filters.minBedrooms) params.set('minBedrooms', filters.minBedrooms.toString());
     if (filters.minBathrooms) params.set('minBathrooms', filters.minBathrooms.toString());
+    if (selectedAgentId) {
+      const agent = agents.find((a) => a.id === selectedAgentId);
+      if (agent) {
+        params.set('agent', agent.display_name.toLowerCase().replace(/\s+/g, '-'));
+      }
+    }
     
     setSearchParams(params, { replace: true });
-  }, [filters, setSearchParams]);
+  }, [filters, selectedAgentId, agents, setSearchParams]);
 
   // Filter and sort properties
   const filteredProperties = useMemo(() => {
@@ -103,6 +124,9 @@ export default function Properties() {
 
       // Bathrooms filter
       if (filters.minBathrooms && property.features.bathrooms < filters.minBathrooms) return false;
+
+      // Agent filter
+      if (selectedAgentId && property.agent?.id !== selectedAgentId) return false;
 
       return true;
     });
@@ -138,10 +162,10 @@ export default function Properties() {
     return filteredProperties.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredProperties, currentPage]);
 
-  // Reset page when filters change
+  // Reset page when filters or agent change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, sortBy]);
+  }, [filters, sortBy, selectedAgentId]);
 
   const sortOptions = [
     { value: 'relevance', label: t.properties?.sort?.relevance || 'Relevancia' },
@@ -205,6 +229,39 @@ export default function Properties() {
                       />
                     </SheetContent>
                   </Sheet>
+                </div>
+
+                {/* Agent Filter */}
+                <div className="mb-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Select
+                      label={language === 'es' ? 'Agente' : 'Agent'}
+                      options={[
+                        { value: 'all', label: language === 'es' ? 'Todos los agentes' : 'All agents' },
+                        ...agents.map((agent) => ({
+                          value: agent.id,
+                          label: agent.display_name,
+                        })),
+                      ]}
+                      value={selectedAgentId || 'all'}
+                      onChange={(e) => setSelectedAgentId(e.target.value === 'all' ? null : e.target.value)}
+                      className="w-full sm:w-64"
+                    />
+
+                    {/* Active Agent Filter Badge */}
+                    {selectedAgentId && (
+                      <Badge variant="secondary" className="gap-2">
+                        {agents.find((a) => a.id === selectedAgentId)?.display_name}
+                        <button
+                          onClick={() => setSelectedAgentId(null)}
+                          className="hover:bg-background/50 rounded-full"
+                          aria-label={language === 'es' ? 'Quitar filtro de agente' : 'Remove agent filter'}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
                 {/* Controls */}
@@ -297,6 +354,7 @@ export default function Properties() {
                           featured={property.featured}
                           status={statusMap[property.operation] || 'sale'}
                           priority={currentPage === 1 && index < 6}
+                          agent={property.agent}
                         />
                       );
                     })}
