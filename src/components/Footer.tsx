@@ -120,26 +120,26 @@ export function Footer() {
                 </>
               ) : (
                 <>
-                  <a
-                    href={`tel:${companyPhone.replace(/\s+/g, '')}`}
-                    className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
-                  >
-                    <Phone className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
-                    <span>{companyPhone}</span>
-                  </a>
-                  <a
-                    href={`mailto:${companyEmail}`}
-                    className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
-                  >
-                    <Mail className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
-                    <span>{companyEmail}</span>
-                  </a>
-                  <div className="flex items-start gap-3 text-sm text-secondary-foreground/80">
-                    <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                    <span className="leading-relaxed whitespace-pre-line">
-                      {companyAddress}
-                    </span>
-                  </div>
+                <a
+                  href={`tel:${String(companyPhone).replace(/\s+/g, '')}`}
+                  className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
+                >
+                  <Phone className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
+                  <span>{companyPhone}</span>
+                </a>
+                <a
+                  href={`mailto:${companyEmail}`}
+                  className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
+                >
+                  <Mail className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />
+                  <span>{companyEmail}</span>
+                </a>
+                <div className="flex items-start gap-3 text-sm text-secondary-foreground/80">
+                  <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <span className="leading-relaxed whitespace-pre-line">
+                    {String(companyAddress)}
+                  </span>
+                </div>
                 </>
               )}
             </div>
@@ -151,13 +151,13 @@ export function Footer() {
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
                   return (
-                    <a
-                      key={social.label}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-secondary-foreground/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors"
-                      aria-label={social.label}
+                  <a
+                    key={social.label}
+                    href={String(social.url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-secondary-foreground/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors"
+                    aria-label={social.label}
                     >
                       <Icon className="h-5 w-5" />
                     </a>

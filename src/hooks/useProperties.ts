@@ -1,14 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Property, PropertyFilters } from '@/types/property';
+import { Property, PropertyFilters, PropertyLocation, PropertyFeatures } from '@/types/property';
 import { logger } from '@/utils/logger';
 import { Database } from '@/integrations/supabase/types';
 
 type PropertyRow = Database['public']['Tables']['properties']['Row'];
-type PropertyImageRow = Database['public']['Tables']['property_images']['Row'];
 
 interface PropertyWithRelations extends PropertyRow {
-  property_images?: PropertyImageRow[];
+  property_images?: {
+    alt_text_en: string | null;
+    alt_text_es: string | null;
+    display_order: number;
+    image_url: string;
+  }[];
   agent?: {
     id: string;
     display_name: string;
@@ -24,9 +28,10 @@ interface PropertyWithRelations extends PropertyRow {
 
 // Transform database row to Property type with proper coordinate handling
 const transformProperty = (row: PropertyWithRelations): Property => {
-  // Ensure coordinates are numbers with fallbacks
-  const lat = row.location?.coordinates?.lat;
-  const lng = row.location?.coordinates?.lng;
+  // Cast Json types to proper structures
+  const location = row.location as unknown as PropertyLocation;
+  const features = row.features as unknown as PropertyFeatures;
+  const imageVariants = row.image_variants as unknown as Property['imageVariants'];
   
   return {
     id: row.id,
@@ -42,23 +47,22 @@ const transformProperty = (row: PropertyWithRelations): Property => {
     operation: row.operation,
     price: Number(row.price) || 0,
     location: {
-      ...row.location,
-      zone: row.location?.zone || '',
-      neighborhood: row.location?.neighborhood || '',
-      address: row.location?.address || '',
+      zone: location?.zone || '',
+      neighborhood: location?.neighborhood || '',
+      address: location?.address || '',
       coordinates: {
-        lat: Number(lat) || 0,
-        lng: Number(lng) || 0,
+        lat: Number(location?.coordinates?.lat) || 0,
+        lng: Number(location?.coordinates?.lng) || 0,
       },
     },
-    features: row.features || {},
+    features: features || { bathrooms: 0, constructionArea: 0 },
     amenities: row.amenities || [],
     images: row.property_images?.map((img) => img.image_url) || [],
     imagesAlt: row.property_images?.map((img) => ({
       es: img.alt_text_es || '',
       en: img.alt_text_en || '',
     })) || [],
-    imageVariants: row.image_variants || [],
+    imageVariants: imageVariants || [],
     status: row.status,
     featured: row.featured,
     publishedDate: row.published_date,
@@ -66,7 +70,7 @@ const transformProperty = (row: PropertyWithRelations): Property => {
       id: row.agent.id,
       display_name: row.agent.display_name,
       photo_url: row.agent.photo_url,
-      agent_level: row.agent.agent_level,
+      agent_level: row.agent.agent_level as Property['agent']['agent_level'],
     } : undefined,
   };
 };
