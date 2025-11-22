@@ -71,20 +71,23 @@ export default function AdminUsers() {
       }
 
       const result = profiles.map((profile) => {
-        const roles =
+        const dbRoles =
           profile.role_assignments?.map((r) => ({
             role: r.role,
             granted_at: r.granted_at || r.created_at,
           })) || [];
 
         const isAgent = !!profile.agent_level;
-        const hasAdmin = roles.some((r) => r.role === 'admin' || r.role === 'superadmin');
+        const hasAdmin = dbRoles.some((r) => r.role === 'admin' || r.role === 'superadmin');
+
+        // Create display roles array that can include pseudo roles
+        const roles: Array<{ role: string; granted_at: string }> = [...dbRoles];
 
         // Add pseudo roles for agent/user for display purposes
-        if (isAgent && !roles.some((r) => r.role === 'agent')) {
+        if (isAgent && !dbRoles.some((r) => r.role === 'admin' || r.role === 'superadmin')) {
           roles.push({ role: 'agent', granted_at: profile.updated_at || new Date().toISOString() });
         }
-        if (!hasAdmin && !isAgent && roles.length === 0) {
+        if (!hasAdmin && !isAgent && dbRoles.length === 0) {
           roles.push({ role: 'user', granted_at: profile.updated_at || new Date().toISOString() });
         }
 
