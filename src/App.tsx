@@ -106,6 +106,7 @@ const App = () => (
               <Route path="/agent/dashboard" element={<Suspense fallback={<PageLoader />}><AgentDashboard /></Suspense>} />
               <Route path="/agent/profile/edit" element={<Suspense fallback={<PageLoader />}><EditProfile /></Suspense>} />
               <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
+              <Route path="/admin/profile" element={<Suspense fallback={<PageLoader />}><EditProfile /></Suspense>} />
               <Route path="/admin/properties" element={<Suspense fallback={<PageLoader />}><AdminProperties /></Suspense>} />
               <Route path="/admin/agents" element={<Suspense fallback={<PageLoader />}><AdminAgents /></Suspense>} />
               <Route path="/admin/zones" element={<Suspense fallback={<PageLoader />}><AdminZones /></Suspense>} />

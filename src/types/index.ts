@@ -203,6 +203,7 @@ export interface Translation {
     inquiries: string;
     visits: string;
     users: string;
+    profile: string;
     auditLogs: string;
     health: string;
     settings: string;

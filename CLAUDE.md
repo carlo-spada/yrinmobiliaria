@@ -12,7 +12,7 @@
 - No Supabase migrations or edge functions in-repo. Untracked files exist under `supabase/migrations/`; leave them untouched unless Carlo confirms.
 - Bilingual always: route all UI strings through `LanguageContext`; never hardcode ES/EN.
 - TypeScript stays strict: avoid `any`, respect React hook rules, keep props typed.
-- Maps: continue using React Leaflet 4.x; client-side filtering only. Validate Oaxaca bounds (lat 15.6–18.7, lng -98.6 to -93.8) when touching map features.
+- Maps: use React Leaflet with client-side filtering only. Validate Oaxaca bounds (lat 15.6–18.7, lng -98.6 to -93.8) when touching map features.
 - Assets: use optimized AVIF/WebP in `/public` (prefer `ResponsiveImage`), no large raw uploads.
 - Secrets/config live in Lovable Cloud; never commit credentials.
 
@@ -38,7 +38,7 @@
 ## Coding Guardrails
 - Components/hooks naming: `PascalCase.tsx` / `camelCase.ts`.
 - Routing: ensure auth/role guards remain intact (admin → `/admin`, agent → `/agent/dashboard`, user → `/cuenta`).
-- Map UX: stay on React Leaflet 4.x; clustering optional; keep client-side filtering.
+- Map UX: React Leaflet allowed; clustering optional; keep client-side filtering.
 - Performance: prefer lazy imports for admin/map-heavy screens; avoid unnecessary re-renders; debounce networky actions.
 - Accessibility: semantic HTML, focus management for dialogs/menus, aria labels on inputs/buttons.
 

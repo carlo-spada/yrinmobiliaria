@@ -235,9 +235,9 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           },
         },
         features: {
-          bedrooms: parseInt(formData.bedrooms),
+          bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
           bathrooms: parseFloat(formData.bathrooms),
-          parking: parseInt(formData.parking),
+          parking: formData.parking ? parseInt(formData.parking) : null,
           constructionArea: formData.constructionArea ? parseFloat(formData.constructionArea) : null,
           landArea: formData.landArea ? parseFloat(formData.landArea) : null,
         },

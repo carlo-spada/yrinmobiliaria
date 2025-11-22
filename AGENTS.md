@@ -47,14 +47,13 @@
 
 **❌ DO NOT:**
 - Create `supabase/migrations/` or `supabase/functions/` (Lovable Cloud manages these)
-- Use react-leaflet v5.x (requires React 19; use 4.x)
 - Commit secrets or environment variables
 
 ## Project Structure & Modules
 - Frontend: `src/` (React 19 + TypeScript, Vite 7). Key areas: `components/`, `pages/`, `hooks/`, `utils/`, `integrations/`.
 - Assets: Optimized hero images in `/public` (AVIF/WebP). Generate with `node scripts/generate-hero-images.js`.
 - Styling/config: `tailwind.config.ts`, `postcss.config.js`.
-- Maps: `src/pages/MapView.tsx` uses React Leaflet 4.x + optional clustering.
+- Maps: `src/pages/MapView.tsx` uses React Leaflet + optional clustering.
 - Docs: `CLAUDE.md` (primary), `AGENTS.md`, `README.md`, `PRODUCTION_CHECKLIST.md`.
 
 ## Build, Test, and Development
@@ -84,7 +83,6 @@
 ## Architecture Notes (Agents)
 - **Backend**: Managed via Lovable Cloud. Do NOT add migrations or edge functions—request through Lovable prompts.
 - **Map page**:
-  - Use react-leaflet 4.x (NOT 5.x which requires React 19)
   - Client-side filtering only (do NOT add server-side bounds filtering)
   - Clustering optional for small datasets (≤20 properties)
 - **Image pipeline**:

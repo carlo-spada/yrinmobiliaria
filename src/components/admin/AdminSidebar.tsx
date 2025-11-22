@@ -11,7 +11,6 @@ import {
   FileText,
   Settings,
   Activity,
-  Building2
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -66,12 +65,6 @@ export function AdminSidebar() {
       roles: ['superadmin', 'admin']
     },
     {
-      title: "Organizaciones",
-      url: '/admin/organizations',
-      icon: Building2,
-      roles: ['superadmin'] // Only superadmin can manage orgs
-    },
-    {
       title: t.admin.zones,
       url: '/admin/zones',
       icon: MapPin,
@@ -96,7 +89,7 @@ export function AdminSidebar() {
       roles: ['superadmin', 'admin']
     },
     {
-      title: "Mi Perfil",
+      title: t.admin.profile,
       url: '/admin/profile',
       icon: UserCircle,
       roles: ['agent'] // Agents see profile instead of settings
