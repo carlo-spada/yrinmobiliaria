@@ -35,6 +35,7 @@ type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] &
 
 type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const propertyFormSchema = z.object({
   title_es: z.string().min(1, 'Título en español es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
   title_en: z.string().min(1, 'Título en inglés es requerido').max(200, 'Título debe tener máximo 200 caracteres'),

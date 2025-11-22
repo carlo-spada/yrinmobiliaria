@@ -3,26 +3,21 @@ import { FAVORITES_STORAGE_KEY, getLocalFavorites, persistLocalFavorites } from 
 
 describe("favoritesStorage", () => {
   beforeEach(() => {
-    if (!("localStorage" in globalThis) || typeof localStorage.clear !== "function") {
-      const store: Record<string, string> = {};
-      vi.stubGlobal("localStorage", {
-        getItem: (key: string) => store[key] ?? null,
-        setItem: (key: string, value: string) => {
-          store[key] = value;
-        },
-        removeItem: (key: string) => delete store[key],
-        clear: () => Object.keys(store).forEach((k) => delete store[k]),
-        key: () => null,
-        length: 0,
-      });
-    } else {
-      localStorage.clear();
-    }
-    vi.restoreAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
+    const store: Record<string, string> = {};
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store[key] ?? null,
+      setItem: (key: string, value: string) => {
+        store[key] = value;
+      },
+      removeItem: (key: string) => delete store[key],
+      clear: () => Object.keys(store).forEach((k) => delete store[k]),
+      key: () => null,
+      length: 0,
+    });
+    vi.stubGlobal("window", {
+      dispatchEvent: vi.fn(),
+      localStorage: globalThis.localStorage,
+    } as unknown as Window);
   });
 
   it("returns an empty array when localStorage is empty or invalid", () => {
