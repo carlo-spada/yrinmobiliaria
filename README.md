@@ -10,15 +10,15 @@ A modern, bilingual (Spanish/English) real estate website built with React, Type
 
 **Overall Completion:** ~80% ⚠️ (Features 99%, Code Quality ~80%, Tests early)
 **Current Phase:** Technical Debt Cleanup (Quality First)
-**Last Updated:** November 21, 2025 (tests added; bundle trimmed)
+**Last Updated:** November 22, 2025 (router + leaflet upgrades; bundle trimmed)
 
 ### The Reality Check
 After the current audit:
 - ✅ **Features**: Multi-agent platform 99% functionally complete
 - ⚠️ **Code Quality**: `npm run lint` now clean after typing admin sidebar & map popup refs
-- ⚠️ **Test Coverage**: Vitest + RTL routing smokes + utilities (map coords, favorites storage/hook, price slider); coverage still minimal
+- ⚠️ **Test Coverage**: Vitest + RTL routing smokes + utilities (map coords/filtering, favorites storage/hook signed-in, price slider); coverage still minimal
 - ✅ **Security**: `npm audit --audit-level=high` reports 0 vulnerabilities
-- ⚠️ **Dependencies**: React 19 / Vite 7 / Tailwind 4; keep them patched
+- ⚠️ **Dependencies**: React 19 / Vite 7 / Tailwind 4; React Leaflet 5.x; React Router 7.x; keep them patched
 - ⚠️ **Bundle Size**: Main chunk ~631 KB (warning threshold 600); MapView chunk ~199 KB (map-vendor chunk) — further shaving optional
 
 **Lighthouse Scores (last measured Nov 20, 2025):**
@@ -95,7 +95,7 @@ After the current audit:
 
 ### 🎯 Current Priorities (Quality First)
 
-- [ ] Add more automated coverage beyond current smokes/utilities (auth flows, map filtering interactions)
+- [ ] Add more automated coverage beyond current smokes/utilities (auth flows deeper, map filtering edge cases, Supabase sync paths)
 - [ ] Bundle is now below the warning threshold (main ~432 KB); keep an eye on heavy routes.
 - [ ] Keep bilingual strings through `LanguageContext`; avoid new `any` types
 

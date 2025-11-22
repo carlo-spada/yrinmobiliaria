@@ -2,7 +2,7 @@
 
 > Build with intent; keep the repo lean; ship only after quality gates pass.
 
-**Last Updated:** November 21, 2025
+**Last Updated:** November 22, 2025
 
 ---
 
@@ -16,16 +16,16 @@
 - Assets: use optimized AVIF/WebP in `/public` (prefer `ResponsiveImage`), no large raw uploads.
 - Secrets/config live in Lovable Cloud; never commit credentials.
 
-## Current Audit — November 21, 2025
+## Current Audit — November 22, 2025
 - `npm run lint` **clean**.
-- `npm run build` **passes** (Vite 7.2.4, React 19). Main chunk ~631 KB (warning threshold 600); map-vendor chunk ~199 KB; form-vendor ~76 KB.
+- `npm run build` **passes** (Vite 7.2.4, React 19, React Router 7, React Leaflet 5). Main chunk ~439 KB; map-vendor ~189 KB; auth-vendor ~198 KB; form-vendor ~76 KB.
 - `npm audit --audit-level=high` returns **0 vulnerabilities**.
-- Tests: Vitest + RTL routing smokes plus utility coverage (map coords, favorites storage, favorites hook). Coverage remains minimal.
+- Tests: Vitest + RTL routing smokes plus coverage for map coords/filtering (bounds/operation), favorites storage/hook (guest & signed-in with Supabase mocks), auth sign-in/up errors, price slider, and admin components.
 - Repo status: no untracked migrations; keep Lovable-owned migrations untouched if they appear.
 
 ## Immediate Priorities
-1. Expand tests to cover auth flows, favorites end-to-end, and map interactions.
-2. Trim main bundle below 600 KB if feasible; map chunk already isolated.
+1. Add deeper auth/map/favorites integration tests as needed.
+2. Keep bundle lean; monitor heavy routes after new features.
 3. Keep docs synchronized: touch only necessary files, stay under size limits.
 
 ## Workflow

@@ -15,6 +15,11 @@ if (!window.matchMedia) {
   }));
 }
 
+// Silence scrollTo warnings in jsdom
+if (!window.scrollTo) {
+  window.scrollTo = vi.fn();
+}
+
 // Basic localStorage mock for Supabase auth client in tests
 const localStorageMock = {
   getItem: vi.fn(),
