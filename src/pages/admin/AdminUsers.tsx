@@ -70,10 +70,13 @@ export default function AdminUsers() {
         return [];
       }
 
+      // Type for display roles (includes 'agent' which is not a database role)
+      type DisplayRole = 'admin' | 'superadmin' | 'user' | 'agent';
+      
       const result = profiles.map((profile) => {
-        const roles =
+        const roles: Array<{ role: DisplayRole; granted_at: string }> =
           profile.role_assignments?.map((r) => ({
-            role: r.role,
+            role: r.role as DisplayRole,
             granted_at: r.granted_at || r.created_at,
           })) || [];
 
@@ -82,10 +85,10 @@ export default function AdminUsers() {
 
         // Add pseudo roles for agent/user for display purposes
         if (isAgent && !roles.some((r) => r.role === 'agent')) {
-          roles.push({ role: 'agent', granted_at: profile.updated_at || new Date().toISOString() });
+          roles.push({ role: 'agent' as DisplayRole, granted_at: profile.updated_at || new Date().toISOString() });
         }
         if (!hasAdmin && !isAgent && roles.length === 0) {
-          roles.push({ role: 'user', granted_at: profile.updated_at || new Date().toISOString() });
+          roles.push({ role: 'user' as DisplayRole, granted_at: profile.updated_at || new Date().toISOString() });
         }
 
         const latest_granted_at = roles.reduce((latest, r) => {
