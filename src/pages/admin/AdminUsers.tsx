@@ -37,71 +37,82 @@ export default function AdminUsers() {
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
     queryFn: async () => {
-      // Fetch role assignments with profiles using JOIN (now possible with foreign key)
-      const { data: roleAssignments, error } = await supabase
-        .from('role_assignments')
+      const { data: profiles, error } = await supabase
+        .from('profiles')
         .select(`
-          *,
-          profiles!fk_role_assignments_profiles (
-            user_id,
-            display_name,
-            email,
-            photo_url,
-            agent_level,
+          user_id,
+          display_name,
+          email,
+          photo_url,
+          agent_level,
+          organization_id,
+          updated_at,
+          role_assignments (
+            role,
+            granted_at,
+            created_at,
             organization_id
+          ),
+          organization:organizations (
+            name,
+            slug
           )
         `)
-        .order('granted_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching role assignments:', error);
+        console.error('Error fetching users with roles:', error);
         throw error;
       }
 
-      if (!roleAssignments || roleAssignments.length === 0) {
-        console.log('No role assignments found');
+      if (!profiles || profiles.length === 0) {
+        console.log('No profiles found');
         return [];
       }
 
-      // Group role assignments by user_id
-      const userMap = new Map();
-      roleAssignments.forEach((roleAssignment) => {
-        const userId = roleAssignment.user_id;
-        const profile = roleAssignment.profiles;
+      const result = profiles.map((profile) => {
+        const roles =
+          profile.role_assignments?.map((r) => ({
+            role: r.role,
+            granted_at: r.granted_at || r.created_at,
+          })) || [];
 
-        if (!userMap.has(userId)) {
-          userMap.set(userId, {
-            user_id: userId,
-            display_name: profile?.display_name || 'Sin nombre',
-            email: profile?.email || 'Sin email',
-            photo_url: profile?.photo_url || null,
-            agent_level: profile?.agent_level || null,
-            organization_id: profile?.organization_id || null,
-            roles: [],
-            latest_granted_at: roleAssignment.granted_at || roleAssignment.created_at,
-          });
+        const isAgent = !!profile.agent_level;
+        const hasAdmin = roles.some((r) => r.role === 'admin' || r.role === 'superadmin');
+
+        // Add pseudo roles for agent/user for display purposes
+        if (isAgent && !roles.some((r) => r.role === 'agent')) {
+          roles.push({ role: 'agent', granted_at: profile.updated_at || new Date().toISOString() });
+        }
+        if (!hasAdmin && !isAgent && roles.length === 0) {
+          roles.push({ role: 'user', granted_at: profile.updated_at || new Date().toISOString() });
         }
 
-        const user = userMap.get(userId);
-        user.roles.push({
-          role: roleAssignment.role,
-          granted_at: roleAssignment.granted_at || roleAssignment.created_at,
-        });
+        const latest_granted_at = roles.reduce((latest, r) => {
+          const d = new Date(r.granted_at || new Date());
+          return d > latest ? d : latest;
+        }, new Date(profile.updated_at || Date.now()));
 
-        // Update latest_granted_at if this role is newer
-        const roleDate = new Date(roleAssignment.granted_at || roleAssignment.created_at);
-        const currentDate = new Date(user.latest_granted_at);
-        if (roleDate > currentDate) {
-          user.latest_granted_at = roleAssignment.granted_at || roleAssignment.created_at;
-        }
+        return {
+          user_id: profile.user_id,
+          display_name: profile.display_name || 'Sin nombre',
+          email: profile.email || 'Sin email',
+          photo_url: profile.photo_url || null,
+          agent_level: profile.agent_level || null,
+          organization_id: profile.organization_id || null,
+          organization_name: profile.organization?.name || 'Sin organización',
+          organization_slug: profile.organization?.slug || null,
+          roles,
+          latest_granted_at,
+        };
       });
 
-      const result = Array.from(userMap.values()).sort((a, b) =>
-        new Date(b.latest_granted_at).getTime() - new Date(a.latest_granted_at).getTime()
+      const sorted = result.sort(
+        (a, b) => b.latest_granted_at.getTime() - a.latest_granted_at.getTime()
       );
 
-      console.log('Processed users:', result.length, result);
-      return result;
+      console.log('Processed users:', sorted.length, sorted);
+      return sorted;
     },
   });
 
@@ -205,6 +216,7 @@ export default function AdminUsers() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Organización</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Última Actualización</TableHead>
@@ -213,7 +225,7 @@ export default function AdminUsers() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                  <TableCell colSpan={6} className="text-center py-8">
                     Cargando usuarios...
                   </TableCell>
                 </TableRow>
@@ -242,6 +254,9 @@ export default function AdminUsers() {
                       </div>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {user.organization_name}
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((roleInfo, idx) => (
@@ -276,7 +291,7 @@ export default function AdminUsers() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No hay usuarios registrados
                   </TableCell>
                 </TableRow>
