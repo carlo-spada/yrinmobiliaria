@@ -65,8 +65,9 @@ export const useUserRole = (): UserRoleData => {
             role: 'superadmin',
             isStaff: true,
             isSuperadmin: true,
-            isAdmin: false,
-            isAgent: false,
+            // Superadmins inherit admin/agent privileges client-side
+            isAdmin: true,
+            isAgent: true,
             organizationId: null,
             loading: false,
           });
@@ -88,7 +89,8 @@ export const useUserRole = (): UserRoleData => {
             isStaff: true,
             isSuperadmin: false,
             isAdmin: true,
-            isAgent: false,
+            // Admins inherit agent-level visibility client-side
+            isAgent: true,
             organizationId: adminRole.organization_id,
             loading: false,
           });
