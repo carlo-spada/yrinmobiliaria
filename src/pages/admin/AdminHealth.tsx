@@ -122,79 +122,31 @@ export default function AdminHealth() {
         });
       }
 
-      // 4. Storage Bucket Access
+      // 4. Storage Bucket Access (direct check on property-images)
       const storageStart = Date.now();
       try {
-        const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+        const { data: bucketList, error: bucketError } = await supabase.storage
+          .from('property-images')
+          .list('', { limit: 1 });
         const storageTime = Date.now() - storageStart;
-        
+
         if (bucketError) {
           checks.push({
             name: 'Storage Service',
             status: 'unhealthy',
-            message: `Storage check failed: ${bucketError.message}`,
+            message: `property-images inaccesible: ${bucketError.message}`,
             responseTime: storageTime,
           });
         } else {
-          const propertyImagesBucket = buckets?.find(b => b.name === 'property-images');
           checks.push({
             name: 'Storage Service',
-            status: propertyImagesBucket ? 'healthy' : 'unhealthy',
-            message: propertyImagesBucket 
-              ? `Storage operational. Found ${buckets?.length || 0} buckets.`
-              : 'property-images bucket no encontrado. Crea o revisa políticas en Supabase.',
+            status: 'healthy',
+            message: bucketList && bucketList.length > 0
+              ? `Bucket accesible • ${bucketList.length} item(s) visibles`
+              : 'Bucket accesible',
             responseTime: storageTime,
-            details: { bucketCount: buckets?.length },
+            details: { visibleItems: bucketList?.length ?? 0 },
           });
-
-          // 5. Storage RLS Upload/Delete (tiny object) only if bucket exists
-          if (propertyImagesBucket) {
-            const storageRlsStart = Date.now();
-            try {
-              const testPath = `health-check/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
-              const testBlob = new Blob([new Uint8Array([0x52, 0x49, 0x46, 0x46])], { type: 'image/webp' });
-
-              const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('property-images')
-                .upload(testPath, testBlob, { cacheControl: '0', upsert: false, contentType: 'image/webp' });
-
-              const uploadTime = Date.now() - storageRlsStart;
-
-              if (uploadError || !uploadData?.path) {
-                checks.push({
-                  name: 'Storage Upload (RLS)',
-                  status: 'unhealthy',
-                  message: uploadError?.message 
-                    ? `Upload blocked: ${uploadError.message}`
-                    : 'Upload blocked: no path returned',
-                  responseTime: uploadTime,
-                });
-              } else {
-                // Attempt cleanup; do not fail the check if delete fails, just mark degraded
-                const { error: deleteError } = await supabase.storage
-                  .from('property-images')
-                  .remove([uploadData.path]);
-
-                checks.push({
-                  name: 'Storage Upload (RLS)',
-                  status: deleteError ? 'degraded' : 'healthy',
-                  message: deleteError
-                    ? `Uploaded test file pero cleanup falló: ${deleteError.message}`
-                    : 'Upload & delete permitidos (RLS ok)',
-                  responseTime: uploadTime,
-                  details: { path: uploadData.path },
-                });
-              }
-            } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              checks.push({
-                name: 'Storage Upload (RLS)',
-                status: 'unhealthy',
-                message: `Upload test failed: ${errorMessage}`,
-                responseTime: Date.now() - storageRlsStart,
-              });
-            }
-          }
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -203,6 +155,53 @@ export default function AdminHealth() {
           status: 'unhealthy',
           message: `Storage check failed: ${errorMessage}`,
           responseTime: Date.now() - storageStart,
+        });
+      }
+
+      // 5. Storage RLS Upload/Delete (tiny object) always attempt to surface precise error
+      const storageRlsStart = Date.now();
+      try {
+        const testPath = `health-check/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
+        const testBlob = new Blob([new Uint8Array([0x52, 0x49, 0x46, 0x46])], { type: 'image/webp' });
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('property-images')
+          .upload(testPath, testBlob, { cacheControl: '0', upsert: false, contentType: 'image/webp' });
+
+        const uploadTime = Date.now() - storageRlsStart;
+
+        if (uploadError || !uploadData?.path) {
+          checks.push({
+            name: 'Storage Upload (RLS)',
+            status: 'unhealthy',
+            message: uploadError?.message 
+              ? `Upload blocked: ${uploadError.message}`
+              : 'Upload blocked: no path returned',
+            responseTime: uploadTime,
+          });
+        } else {
+          // Attempt cleanup; do not fail the check if delete fails, just mark degraded
+          const { error: deleteError } = await supabase.storage
+            .from('property-images')
+            .remove([uploadData.path]);
+
+          checks.push({
+            name: 'Storage Upload (RLS)',
+            status: deleteError ? 'degraded' : 'healthy',
+            message: deleteError
+              ? `Uploaded test file pero cleanup falló: ${deleteError.message}`
+              : 'Upload & delete permitidos (RLS ok)',
+            responseTime: uploadTime,
+            details: { path: uploadData.path },
+          });
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        checks.push({
+          name: 'Storage Upload (RLS)',
+          status: 'unhealthy',
+          message: `Upload test failed: ${errorMessage}`,
+          responseTime: Date.now() - storageRlsStart,
         });
       }
 
