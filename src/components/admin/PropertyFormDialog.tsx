@@ -35,7 +35,7 @@ type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] &
 
 type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
-const propertyFormSchema = z.object({
+export const propertyFormSchema = z.object({
   title_es: z.string().min(1, 'Título en español es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
   title_en: z.string().min(1, 'Título en inglés es requerido').max(200, 'Título debe tener máximo 200 caracteres'),
   description_es: z.string().max(2000, 'Descripción debe tener máximo 2000 caracteres').optional(),

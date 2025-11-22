@@ -14,3 +14,16 @@ if (!window.matchMedia) {
     dispatchEvent: vi.fn(),
   }));
 }
+
+// Basic localStorage mock for Supabase auth client in tests
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+
+Object.defineProperty(globalThis, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});

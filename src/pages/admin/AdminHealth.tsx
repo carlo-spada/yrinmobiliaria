@@ -157,7 +157,54 @@ export default function AdminHealth() {
         });
       }
 
-      // 5. Realtime Connection
+      // 5. Storage RLS Upload/Delete (tiny object)
+      const storageRlsStart = Date.now();
+      try {
+        const testPath = `health-check/${Date.now()}-${Math.random().toString(36).slice(2)}.txt`;
+        const testBlob = new Blob(['ok'], { type: 'text/plain' });
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('property-images')
+          .upload(testPath, testBlob, { cacheControl: '0', upsert: false });
+
+        const uploadTime = Date.now() - storageRlsStart;
+
+        if (uploadError || !uploadData?.path) {
+          checks.push({
+            name: 'Storage Upload (RLS)',
+            status: 'unhealthy',
+            message: uploadError?.message 
+              ? `Upload blocked: ${uploadError.message}`
+              : 'Upload blocked: no path returned',
+            responseTime: uploadTime,
+          });
+        } else {
+          // Attempt cleanup; do not fail the check if delete fails, just mark degraded
+          const { error: deleteError } = await supabase.storage
+            .from('property-images')
+            .remove([uploadData.path]);
+
+          checks.push({
+            name: 'Storage Upload (RLS)',
+            status: deleteError ? 'degraded' : 'healthy',
+            message: deleteError
+              ? `Uploaded test file but cleanup failed: ${deleteError.message}`
+              : 'Upload & delete permitted (RLS ok)',
+            responseTime: uploadTime,
+            details: { path: uploadData.path },
+          });
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        checks.push({
+          name: 'Storage Upload (RLS)',
+          status: 'unhealthy',
+          message: `Upload test failed: ${errorMessage}`,
+          responseTime: Date.now() - storageRlsStart,
+        });
+      }
+
+      // 6. Realtime Connection
       const realtimeStart = Date.now();
       try {
         const channel = supabase.channel('health-check');

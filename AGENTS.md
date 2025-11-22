@@ -60,9 +60,9 @@
 ## Build, Test, and Development
 - Install deps: `npm install`.
 - Dev server: `npm run dev` (Vite).
-- Build: `npm run build`.
+- Build: `npm run build`. Main chunk ~400 KB after recent trims; map-vendor chunk remains ~199 KB.
 - Lint: `npm run lint`.
-- Tests: `npm test` (Vitest + RTL). Current coverage is minimal routing smokes.
+- Tests: `npm test` (Vitest + RTL). Coverage now includes routing smokes, map filter helpers, auth flows, favorites hook/storage.
 
 ## Coding Style & Naming
 - TypeScript strict; avoid `any`.
@@ -91,7 +91,13 @@
   - Use `ResponsiveImage` with `imageVariants` when available
   - Supabase transform API as fallback
   - Hero uses `<picture>` with AVIF-first srcset
-- **Current phase**: Technical debt cleanup (lint + bundle). Oaxaca bounds: lat 15.6-18.7, lng -98.6 to -93.8
+- **Current phase**: Post-upload outage. Oaxaca bounds: lat 15.6-18.7, lng -98.6 to -93.8
+
+## Immediate Focus (Sprint)
+- Keep `property-images` storage policies aligned to `role_assignments` + agent profile check; escalate via Lovable if drift.
+- Add `/admin` storage self-check (tiny upload/delete) and ensure upload toasts/errors persist ≥10s for readability.
+- Harden ImageUploadZone UX/tests: success + permission failure paths; retry-friendly messaging.
+- Add guardrails for org-scoped queries/roles and enforce bilingual + Oaxaca-bound validations in lint/tests.
 
 ## Security & Configuration
 - Do not commit secrets. Environment/config is managed in Lovable Cloud.

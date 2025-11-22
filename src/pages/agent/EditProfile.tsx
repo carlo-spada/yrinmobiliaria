@@ -117,7 +117,7 @@ function EditProfileContent() {
       toast.success("Foto subida exitosamente");
     } catch (error) {
       console.error("Error uploading photo:", error);
-      toast.error("Error al subir la foto");
+      toast.error("Error al subir la foto", { duration: 10000 });
     }
   };
 

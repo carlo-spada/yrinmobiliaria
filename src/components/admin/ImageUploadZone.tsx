@@ -61,7 +61,10 @@ export const ImageUploadZone = ({
           const result = await uploadImage(file, propertyId);
           uploadedImages.push(result);
         } catch (error) {
-          toast.error(`Error al subir ${file.name}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+          toast.error(
+            `Error al subir ${file.name}: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+            { duration: 10000 }
+          );
         }
       }
 
@@ -116,7 +119,7 @@ export const ImageUploadZone = ({
       onImagesChange(newImages);
       toast.success('Imagen eliminada');
     } catch (error) {
-      toast.error('Error al eliminar la imagen');
+      toast.error('Error al eliminar la imagen', { duration: 10000 });
       console.error(error);
     }
   };

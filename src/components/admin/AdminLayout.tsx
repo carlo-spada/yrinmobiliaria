@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -37,11 +38,12 @@ const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
 };
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, profile } = useAuth();
   const { isStaff, role, loading: roleLoading } = useUserRole();
   const location = useLocation();
 
   const loading = authLoading || roleLoading;
+  const showOrgWarning = !!profile && !profile.organization_id;
 
   if (loading) {
     return (
@@ -99,7 +101,19 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <ProfileCompletionGuard>
       <SidebarProvider defaultOpen={true}>
-        <AdminLayoutContent>{children}</AdminLayoutContent>
+        <AdminLayoutContent>
+          {showOrgWarning && (
+            <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Falta organización</AlertTitle>
+              <AlertDescription>
+                No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
+                Contacta a un administrador para asignarte a una organización.
+              </AlertDescription>
+            </Alert>
+          )}
+          {children}
+        </AdminLayoutContent>
       </SidebarProvider>
     </ProfileCompletionGuard>
   );
