@@ -11,8 +11,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://ewsltpqbhbohuaonwflp.supabase.co">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://ewsltpqbhbohuaonwflp.supabase.co">
 
-    <!-- Hero images now preloaded dynamically by HeroSection component (home page only) -->
+    <!-- Critical hero imagery preloaded for LCP -->
+    <link rel="preload" as="image" href="/hero-mobile-480.avif" imagesrcset="/hero-mobile-480.avif 480w, /hero-mobile-640.avif 640w" imagesizes="100vw" media="(max-width: 640px)" fetchpriority="high" type="image/avif">
+    <link rel="preload" as="image" href="/hero-tablet-768.avif" imagesrcset="/hero-tablet-768.avif 768w, /hero-tablet-1024.avif 1024w" imagesizes="100vw" media="(max-width: 1024px)" fetchpriority="high" type="image/avif">
+    <link rel="preload" as="image" href="/hero-desktop-1280.avif" imagesrcset="/hero-desktop-1280.avif 1280w, /hero-desktop-1920.avif 1920w" imagesizes="100vw" fetchpriority="high" type="image/avif">
 
     <!-- Load fonts asynchronously to prevent render blocking -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
