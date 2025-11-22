@@ -92,7 +92,7 @@ export function AdminSidebar() {
       title: t.admin.profile,
       url: '/admin/profile',
       icon: UserCircle,
-      roles: ['agent'] // Agents see profile instead of settings
+      roles: ['superadmin', 'admin', 'agent'] // Everyone can reach profile
     },
     {
       title: t.admin.auditLogs,

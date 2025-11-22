@@ -112,4 +112,38 @@ describe("mapUtils", () => {
     const filtered = filterPropertiesByMap(properties, filters, bounds);
     expect(filtered).toHaveLength(0);
   });
+
+  it("filters by bounds edge inclusively", () => {
+    const properties: Property[] = [
+      {
+        id: "edge",
+        title: { es: "Casa", en: "House" },
+        description: { es: "", en: "" },
+        type: "casa",
+        operation: "venta",
+        price: 2000000,
+        location: {
+          zone: "centro",
+          neighborhood: "n1",
+          address: "a1",
+          coordinates: { lat: 10, lng: -20 },
+        },
+        features: { bathrooms: 1, constructionArea: 50 },
+        amenities: [],
+        images: [],
+        status: "disponible",
+        featured: false,
+        publishedDate: "",
+      },
+    ];
+    const filters: MapFilters = { type: "all", zone: "all", priceRange: [0, 5000000], operation: "all" };
+    const bounds = {
+      getSouth: () => 10,
+      getNorth: () => 11,
+      getWest: () => -21,
+      getEast: () => -20,
+    };
+    const filtered = filterPropertiesByMap(properties, filters, bounds);
+    expect(filtered.map((p) => p.id)).toEqual(["edge"]);
+  });
 });

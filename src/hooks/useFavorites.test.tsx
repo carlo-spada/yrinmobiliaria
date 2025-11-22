@@ -67,18 +67,21 @@ describe("useFavorites (guest/local mode)", () => {
 
   it("loads and mutates favorites for signed-in users", async () => {
     authState.user = { id: "user-1" };
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ data: [{ property_id: "existing" }], error: null }),
+    });
+    const mockInsert = vi.fn().mockResolvedValue({ error: null });
+    const mockDelete = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      }),
+    });
     supabaseMock.from.mockImplementation((table: string) => {
       if (table === "user_favorites") {
         return {
-          select: () => ({
-            eq: () => Promise.resolve({ data: [{ property_id: "existing" }], error: null }),
-          }),
-          insert: vi.fn().mockResolvedValue({ error: null }),
-          delete: () => ({
-            eq: () => ({
-              eq: () => Promise.resolve({ error: null }),
-            }),
-          }),
+          select: () => mockSelect(),
+          insert: mockInsert,
+          delete: mockDelete,
         };
       }
       return {};
@@ -94,10 +97,15 @@ describe("useFavorites (guest/local mode)", () => {
       await result.current.addFavorite("new-prop");
     });
     expect(result.current.favorites).toContain("new-prop");
+    expect(mockInsert).toHaveBeenCalled();
 
     await act(async () => {
       await result.current.removeFavorite("existing");
     });
     expect(result.current.favorites).not.toContain("existing");
+    expect(mockDelete).toHaveBeenCalled();
+
+    // ensure local storage is untouched for signed-in flow
+    expect(window.localStorage.getItem(FAVORITES_STORAGE_KEY)).toBeNull();
   });
 });
