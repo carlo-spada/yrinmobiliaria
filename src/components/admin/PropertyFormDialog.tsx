@@ -535,22 +535,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                disabled={mutation.isPending}
-                onClick={() => {
-                  if (images.length === 0) {
-                    toast.error('Debes subir al menos una imagen');
-                    return;
-                  }
-                  if (Object.keys(errors).length > 0) {
-                    toast.error('Por favor revisa los campos marcados en rojo');
-                    // Find first error and scroll to it
-                    const firstError = document.querySelector('.text-destructive');
-                    firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }
-                }}
-              >
+              <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending ? 'Guardando...' : property ? 'Actualizar' : 'Crear'}
               </Button>
             </div>
