@@ -92,8 +92,8 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     resolver: zodResolver(propertyFormSchema),
   });
 
-  const [images, setImages] = useState<Array<{ 
-    url: string; 
+  const [images, setImages] = useState<Array<{
+    url: string;
     path?: string;
     variants?: {
       avif: Record<number, string>;
@@ -124,7 +124,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     if (property) {
       const location = property.location as { zone?: string; neighborhood?: string; address?: string; coordinates?: { lat: number; lng: number } } | null;
       const features = property.features as { bedrooms?: number; bathrooms?: number; parking?: number; constructionArea?: number; landArea?: number } | null;
-      
+
       reset({
         title_es: property.title_es,
         title_en: property.title_en,
@@ -146,7 +146,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         constructionArea: features?.constructionArea,
         landArea: features?.landArea,
       });
-      
+
       // Load existing images
       if (property.property_images && Array.isArray(property.property_images)) {
         setImages(property.property_images.map((img) => ({ url: img.image_url })));
@@ -171,15 +171,15 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         .eq('name_es', formData.zone)
         .eq('active', true)
         .maybeSingle();
-      
+
       if (zoneError) {
         throw new Error('Error al validar la zona');
       }
-      
+
       if (!zoneExists) {
         throw new Error('La zona seleccionada no existe o no está activa. Por favor actualiza la página.');
       }
-      
+
       // Validate that we have at least one image
       if (images.length === 0) {
         throw new Error('Debes subir al menos una imagen');
@@ -191,24 +191,24 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         .select('id')
         .eq('slug', 'yr-inmobiliaria')
         .single();
-      
+
       if (!yrOrg) {
         throw new Error('Organization not found');
       }
 
       // Get current user's profile to auto-assign as agent (only for new properties)
       let agentId = null;
-      
+
       if (!property) {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
             .select('id')
             .eq('user_id', user.id)
             .single();
-          
+
           agentId = profile?.id || null;
         }
       }
@@ -516,13 +516,44 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             />
           </div>
 
-          <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Guardando...' : property ? 'Actualizar' : 'Crear'}
-            </Button>
+          <div className="flex flex-col gap-4">
+            {Object.keys(errors).length > 0 && (
+              <div className="p-4 border border-destructive/50 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <p className="font-medium mb-1">Por favor corrige los siguientes errores:</p>
+                <ul className="list-disc list-inside">
+                  {Object.entries(errors).map(([key, error]) => (
+                    <li key={key}>
+                      {key === 'images' ? 'Imágenes: ' : ''}
+                      {error?.message as string}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending}
+                onClick={() => {
+                  if (images.length === 0) {
+                    toast.error('Debes subir al menos una imagen');
+                    return;
+                  }
+                  if (Object.keys(errors).length > 0) {
+                    toast.error('Por favor revisa los campos marcados en rojo');
+                    // Find first error and scroll to it
+                    const firstError = document.querySelector('.text-destructive');
+                    firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+              >
+                {mutation.isPending ? 'Guardando...' : property ? 'Actualizar' : 'Crear'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
