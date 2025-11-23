@@ -211,6 +211,71 @@ export type Database = {
           },
         ]
       }
+      entity_definitions: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      field_definitions: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          entity_id: string | null
+          field_type: string
+          id: string
+          label: string
+          name: string
+          options: Json | null
+          validation: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          entity_id?: string | null
+          field_type: string
+          id?: string
+          label: string
+          name: string
+          options?: Json | null
+          validation?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          entity_id?: string | null
+          field_type?: string
+          id?: string
+          label?: string
+          name?: string
+          options?: Json | null
+          validation?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_definitions_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           billing_status: string | null
@@ -299,7 +364,7 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           professional_email: string | null
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["user_role"]
           service_zones: string[] | null
           show_in_directory: boolean | null
           social_links: Json | null
@@ -337,7 +402,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           professional_email?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["user_role"]
           service_zones?: string[] | null
           show_in_directory?: boolean | null
           social_links?: Json | null
@@ -375,7 +440,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           professional_email?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["user_role"]
           service_zones?: string[] | null
           show_in_directory?: boolean | null
           social_links?: Json | null
@@ -524,54 +589,6 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      role_assignments: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          granted_at: string | null
-          granted_by: string | null
-          id: string
-          organization_id: string | null
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          granted_at?: string | null
-          granted_by?: string | null
-          id?: string
-          organization_id?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          granted_at?: string | null
-          granted_by?: string | null
-          id?: string
-          organization_id?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_role_assignments_profiles"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "role_assignments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -785,6 +802,7 @@ export type Database = {
       property_operation: "venta" | "renta"
       property_status: "disponible" | "vendida" | "rentada" | "pendiente"
       property_type: "casa" | "departamento" | "local" | "oficina" | "terrenos"
+      user_role: "superadmin" | "admin" | "agent" | "client" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -917,6 +935,7 @@ export const Constants = {
       property_operation: ["venta", "renta"],
       property_status: ["disponible", "vendida", "rentada", "pendiente"],
       property_type: ["casa", "departamento", "local", "oficina", "terrenos"],
+      user_role: ["superadmin", "admin", "agent", "client", "user"],
     },
   },
 } as const

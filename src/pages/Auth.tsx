@@ -41,25 +41,12 @@ const Auth = () => {
         // Check for redirect parameter
         const redirectTo = searchParams.get('redirect');
 
-        // Check user's role from role_assignments table
-        // Check for admin/superadmin roles first (priority redirect)
-        const { data: adminRoleData } = await supabase
-          .from('role_assignments')
-          .select('role')
+        // Check user's role from profiles table (single role system)
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role, agent_level, organization_id')
           .eq('user_id', user.id)
-          .in('role', ['admin', 'superadmin'])
-          .limit(1);
-
-        // If not admin, check if user has any other role
-        const { data: anyRoleData } = await supabase
-          .from('role_assignments')
-          .select('role')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        const roleData = adminRoleData && adminRoleData.length > 0
-          ? adminRoleData[0]
-          : (anyRoleData && anyRoleData.length > 0 ? anyRoleData[0] : null);
+          .maybeSingle();
 
         // Mark as redirected before navigating
         hasRedirected.current = true;
@@ -75,24 +62,14 @@ const Auth = () => {
         // - Admin → /admin (org-scoped access)
         // - Agent → /admin (agent-scoped access)
         // - Regular user → /cuenta
-        if (roleData?.role === 'superadmin' || roleData?.role === 'admin') {
-          // Superadmins and Admins go to admin panel
+        const role = profileData?.role;
+        
+        if (role === 'superadmin' || role === 'admin' || role === 'agent') {
+          // Superadmins, Admins, and Agents go to admin panel
           navigate('/admin', { replace: true });
         } else {
-          // Check if user has agent profile (agent without explicit role_assignment)
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('agent_level, organization_id')
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-          if (profileData?.agent_level && profileData?.organization_id) {
-            // Agents go to admin panel with agent-specific views
-            navigate('/admin', { replace: true });
-          } else {
-            // Regular users go to user dashboard
-            navigate('/cuenta', { replace: true });
-          }
+          // Regular users go to user dashboard
+          navigate('/cuenta', { replace: true });
         }
       } catch (error) {
         console.error('Error checking user role:', error);
