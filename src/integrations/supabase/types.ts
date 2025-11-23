@@ -97,6 +97,50 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_pages: {
+        Row: {
+          content: Json | null
+          created_at: string
+          id: string
+          is_published: boolean | null
+          last_agent_interaction: string | null
+          organization_id: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          last_agent_interaction?: string | null
+          organization_id: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          last_agent_interaction?: string | null
+          organization_id?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_pages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_inquiries: {
         Row: {
           assigned_at: string | null
@@ -230,12 +274,14 @@ export type Database = {
           agent_license_number: string | null
           agent_specialty: string[] | null
           agent_years_experience: number | null
+          bio: string | null
           bio_en: string | null
           bio_es: string | null
           completed_at: string | null
           created_at: string | null
           display_name: string
           email: string
+          email_preference: string | null
           email_verified: boolean | null
           email_verified_at: string | null
           facebook_url: string | null
@@ -246,13 +292,16 @@ export type Database = {
           is_active: boolean | null
           is_complete: boolean | null
           is_featured: boolean | null
+          job_title: string | null
           languages: string[] | null
           linkedin_url: string | null
           organization_id: string | null
           phone: string | null
           photo_url: string | null
+          professional_email: string | null
           service_zones: string[] | null
           show_in_directory: boolean | null
+          social_links: Json | null
           updated_at: string | null
           user_id: string
           whatsapp_number: string | null
@@ -262,12 +311,14 @@ export type Database = {
           agent_license_number?: string | null
           agent_specialty?: string[] | null
           agent_years_experience?: number | null
+          bio?: string | null
           bio_en?: string | null
           bio_es?: string | null
           completed_at?: string | null
           created_at?: string | null
           display_name: string
           email: string
+          email_preference?: string | null
           email_verified?: boolean | null
           email_verified_at?: string | null
           facebook_url?: string | null
@@ -278,13 +329,16 @@ export type Database = {
           is_active?: boolean | null
           is_complete?: boolean | null
           is_featured?: boolean | null
+          job_title?: string | null
           languages?: string[] | null
           linkedin_url?: string | null
           organization_id?: string | null
           phone?: string | null
           photo_url?: string | null
+          professional_email?: string | null
           service_zones?: string[] | null
           show_in_directory?: boolean | null
+          social_links?: Json | null
           updated_at?: string | null
           user_id: string
           whatsapp_number?: string | null
@@ -294,12 +348,14 @@ export type Database = {
           agent_license_number?: string | null
           agent_specialty?: string[] | null
           agent_years_experience?: number | null
+          bio?: string | null
           bio_en?: string | null
           bio_es?: string | null
           completed_at?: string | null
           created_at?: string | null
           display_name?: string
           email?: string
+          email_preference?: string | null
           email_verified?: boolean | null
           email_verified_at?: string | null
           facebook_url?: string | null
@@ -310,13 +366,16 @@ export type Database = {
           is_active?: boolean | null
           is_complete?: boolean | null
           is_featured?: boolean | null
+          job_title?: string | null
           languages?: string[] | null
           linkedin_url?: string | null
           organization_id?: string | null
           phone?: string | null
           photo_url?: string | null
+          professional_email?: string | null
           service_zones?: string[] | null
           show_in_directory?: boolean | null
+          social_links?: Json | null
           updated_at?: string | null
           user_id?: string
           whatsapp_number?: string | null
