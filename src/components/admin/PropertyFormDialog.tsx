@@ -189,7 +189,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       const { data: yrOrg } = await supabase
         .from('organizations')
         .select('id')
-        .eq('slug', 'yr-inmobiliaria')
+        .eq('slug', 'yrinmobiliaria')
         .single();
 
       if (!yrOrg) {

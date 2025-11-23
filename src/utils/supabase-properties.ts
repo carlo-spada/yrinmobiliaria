@@ -16,9 +16,9 @@ export const seedProperties = async (properties: Property[]) => {
     const { data: yrOrg } = await supabase
       .from('organizations')
       .select('id')
-      .eq('slug', 'yr-inmobiliaria')
+      .eq('slug', 'yrinmobiliaria')
       .single();
-    
+
     if (!yrOrg) {
       throw new Error('YR Inmobiliaria organization not found');
     }
