@@ -106,12 +106,14 @@ export function AdminSidebar() {
       icon: Activity,
       roles: ['superadmin', 'admin']
     },
+    /*
     {
       title: "CMS",
       url: '/admin/cms',
       icon: FileText,
       roles: ['superadmin', 'admin']
     },
+    */
     {
       title: t.admin.settings,
       url: '/admin/settings',
