@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -22,17 +23,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Pencil, Shield, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function AdminUsers() {
   const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [userId, setUserId] = useState('');
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
+  const [promoteUserId, setPromoteUserId] = useState('');
+
+  // Form state for editing
+  const [formData, setFormData] = useState({
+    bio: '',
+    job_title: '',
+    languages: '',
+    professional_email: '',
+    email_preference: 'forward_to_personal'
+  });
 
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
@@ -47,6 +66,11 @@ export default function AdminUsers() {
           agent_level,
           organization_id,
           updated_at,
+          languages,
+          professional_email,
+          email_preference,
+          bio,
+          job_title,
           role_assignments (
             role,
             granted_at,
@@ -60,27 +84,18 @@ export default function AdminUsers() {
         `)
         .order('updated_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching users with roles:', error);
-        throw error;
-      }
+      if (error) throw error;
+      if (!profiles) return [];
 
-      if (!profiles || profiles.length === 0) {
-        console.log('No profiles found');
-        return [];
-      }
-
-      const result = profiles.map((profile) => {
-        const roles =
-          profile.role_assignments?.map((r) => ({
-            role: r.role,
-            granted_at: r.granted_at || r.created_at,
-          })) || [];
+      return profiles.map((profile) => {
+        const roles = profile.role_assignments?.map((r) => ({
+          role: r.role,
+          granted_at: r.granted_at || r.created_at,
+        })) || [];
 
         const isAgent = !!profile.agent_level;
         const hasAdmin = roles.some((r) => r.role === 'admin' || r.role === 'superadmin');
 
-        // Add pseudo roles for agent/user for display purposes
         if (isAgent && !roles.some((r) => r.role === 'agent')) {
           roles.push({ role: 'agent', granted_at: profile.updated_at || new Date().toISOString() });
         }
@@ -94,26 +109,37 @@ export default function AdminUsers() {
         }, new Date(profile.updated_at || Date.now()));
 
         return {
-          user_id: profile.user_id,
-          display_name: profile.display_name || 'Sin nombre',
-          email: profile.email || 'Sin email',
-          photo_url: profile.photo_url || null,
-          agent_level: profile.agent_level || null,
-          organization_id: profile.organization_id || null,
-          organization_name: profile.organization?.name || 'Sin organización',
-          organization_slug: profile.organization?.slug || null,
+          ...profile,
           roles,
           latest_granted_at,
         };
-      });
-
-      const sorted = result.sort(
-        (a, b) => b.latest_granted_at.getTime() - a.latest_granted_at.getTime()
-      );
-
-      console.log('Processed users:', sorted.length, sorted);
-      return sorted;
+      }).sort((a, b) => b.latest_granted_at.getTime() - a.latest_granted_at.getTime());
     },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          bio: data.bio,
+          job_title: data.job_title,
+          languages: data.languages.split(',').map((l: string) => l.trim()).filter(Boolean),
+          professional_email: data.professional_email,
+          email_preference: data.email_preference
+        })
+        .eq('user_id', selectedUser.user_id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Perfil actualizado correctamente');
+      queryClient.invalidateQueries({ queryKey: ['role-assignments'] });
+      setIsEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error('Error al actualizar perfil: ' + error.message);
+    }
   });
 
   const promoteUserMutation = useMutation({
@@ -126,32 +152,24 @@ export default function AdminUsers() {
     onSuccess: () => {
       toast.success('Usuario promovido a administrador exitosamente');
       queryClient.invalidateQueries({ queryKey: ['role-assignments'] });
-      setIsDialogOpen(false);
-      setUserId('');
-      setUserEmail(null);
+      setIsPromoteDialogOpen(false);
+      setPromoteUserId('');
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Error al promover usuario';
-      toast.error('Error al promover usuario: ' + errorMessage);
+      toast.error('Error al promover usuario: ' + error.message);
     },
   });
 
-  const handlePromoteUser = () => {
-    const trimmedId = userId.trim();
-    
-    if (!trimmedId) {
-      toast.error('Por favor ingresa un ID de usuario válido');
-      return;
-    }
-    
-    // Validate UUID format
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!UUID_REGEX.test(trimmedId)) {
-      toast.error('El formato del ID no es válido. Debe ser un UUID (ej: 123e4567-e89b-12d3-a456-426614174000)');
-      return;
-    }
-    
-    promoteUserMutation.mutate(trimmedId);
+  const handleEditClick = (user: any) => {
+    setSelectedUser(user);
+    setFormData({
+      bio: user.bio || '',
+      job_title: user.job_title || '',
+      languages: user.languages?.join(', ') || '',
+      professional_email: user.professional_email || '',
+      email_preference: user.email_preference || 'forward_to_personal'
+    });
+    setIsEditDialogOpen(true);
   };
 
   return (
@@ -159,11 +177,11 @@ export default function AdminUsers() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Usuarios y Roles</h2>
-            <p className="text-muted-foreground">Gestiona los roles de usuario del sistema</p>
+            <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
+            <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
           </div>
-          
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+
+          <Dialog open={isPromoteDialogOpen} onOpenChange={setIsPromoteDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -175,7 +193,6 @@ export default function AdminUsers() {
                 <DialogTitle>Promover Usuario a Administrador</DialogTitle>
                 <DialogDescription>
                   Ingresa el ID del usuario que deseas promover a administrador.
-                  Puedes encontrar el ID en la tabla de abajo.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -184,23 +201,15 @@ export default function AdminUsers() {
                   <Input
                     id="userId"
                     placeholder="ej: 123e4567-e89b-12d3-a456-426614174000"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
+                    value={promoteUserId}
+                    onChange={(e) => setPromoteUserId(e.target.value)}
                   />
                 </div>
               </div>
               <DialogFooter>
+                <Button variant="outline" onClick={() => setIsPromoteDialogOpen(false)}>Cancelar</Button>
                 <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    setUserId('');
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handlePromoteUser}
+                  onClick={() => promoteUserMutation.mutate(promoteUserId)}
                   disabled={promoteUserMutation.isPending}
                 >
                   {promoteUserMutation.isPending ? 'Promoviendo...' : 'Promover'}
@@ -210,101 +219,189 @@ export default function AdminUsers() {
           </Dialog>
         </div>
 
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar Perfil de Usuario</DialogTitle>
+              <DialogDescription>
+                Modifica la información profesional y permisos de {selectedUser?.display_name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="profile">Perfil Profesional</TabsTrigger>
+                <TabsTrigger value="account">Cuenta y Roles</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="profile" className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Título / Cargo</Label>
+                    <Input
+                      value={formData.job_title}
+                      onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
+                      placeholder="Ej: Agente Senior"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Idiomas (separados por coma)</Label>
+                    <Input
+                      value={formData.languages}
+                      onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
+                      placeholder="Español, Inglés, Francés"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Biografía Profesional</Label>
+                  <Textarea
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    placeholder="Breve descripción de la experiencia y especialidades..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                  <div className="space-y-2">
+                    <Label>Email Profesional (@yrinmobiliaria.com)</Label>
+                    <Input
+                      value={formData.professional_email}
+                      onChange={(e) => setFormData({ ...formData, professional_email: e.target.value })}
+                      placeholder="nombre@yrinmobiliaria.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Preferencia de Email</Label>
+                    <Select
+                      value={formData.email_preference}
+                      onValueChange={(val) => setFormData({ ...formData, email_preference: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="forward_to_personal">Reenviar a Personal</SelectItem>
+                        <SelectItem value="dedicated_inbox">Bandeja Dedicada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="account" className="space-y-4 py-4">
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted rounded-lg space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">ID de Usuario</span>
+                      <span className="text-sm font-mono text-muted-foreground">{selectedUser?.user_id}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Email Personal</span>
+                      <span className="text-sm text-muted-foreground">{selectedUser?.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Organización</span>
+                      <span className="text-sm text-muted-foreground">{selectedUser?.organization_name}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Roles Actuales</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedUser?.roles.map((r: any, idx: number) => (
+                        <Badge key={idx} variant="secondary">{r.role}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={() => updateProfileMutation.mutate(formData)}>Guardar Cambios</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Organización</TableHead>
-                <TableHead>Roles</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Última Actualización</TableHead>
+                <TableHead>Usuario</TableHead>
+                <TableHead>Rol & Cargo</TableHead>
+                <TableHead>Contacto</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    Cargando usuarios...
-                  </TableCell>
+                  <TableCell colSpan={5} className="text-center py-8">Cargando equipo...</TableCell>
                 </TableRow>
-              ) : userRoles && userRoles.length > 0 ? (
-                userRoles.map((user) => (
-                  <TableRow key={user.user_id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {user.photo_url ? (
-                          <img
-                            src={user.photo_url}
-                            alt={user.display_name}
-                            className="h-8 w-8 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <span className="text-sm font-medium text-primary">
-                              {user.display_name?.charAt(0).toUpperCase() || '?'}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium">{user.display_name || 'Sin nombre'}</p>
-                          <p className="text-xs text-muted-foreground font-mono">{user.user_id.slice(0, 8)}...</p>
+              ) : userRoles?.map((user) => (
+                <TableRow key={user.user_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleEditClick(user)}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {user.photo_url ? (
+                        <img src={user.photo_url} alt={user.display_name} className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-primary" />
                         </div>
+                      )}
+                      <div>
+                        <p className="font-medium">{user.display_name || 'Sin nombre'}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {user.organization_name}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {user.roles.map((roleInfo, idx) => (
-                          <Badge
-                            key={idx}
-                            variant={
-                              roleInfo.role === 'superadmin'
-                                ? 'default'
-                                : roleInfo.role === 'admin'
-                                ? 'secondary'
-                                : 'outline'
-                            }
-                          >
-                            {roleInfo.role}
-                          </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex gap-1">
+                        {user.roles.map((r: any, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs">{r.role}</Badge>
                         ))}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {user.agent_level ? (
-                        <Badge variant="outline">Agente</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">
-                          Usuario
-                        </Badge>
+                      {user.job_title && <p className="text-xs text-muted-foreground">{user.job_title}</p>}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1 text-sm">
+                      {user.professional_email && (
+                        <div className="flex items-center gap-1 text-primary">
+                          <Mail className="h-3 w-3" />
+                          {user.professional_email}
+                        </div>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(user.latest_granted_at), 'dd/MM/yyyy HH:mm', { locale: es })}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No hay usuarios registrados
+                      <div className="text-xs text-muted-foreground">
+                        {user.languages?.length > 0 ? user.languages.join(', ') : 'Sin idiomas'}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {user.organization_id ? (
+                      <Badge variant="default" className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-0">
+                        Activo
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive">Sin Org</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>
-
-        {userRoles && userRoles.length > 0 && (
-          <div className="text-sm text-muted-foreground">
-            Total: {userRoles.length} {userRoles.length === 1 ? 'usuario' : 'usuarios'}
-          </div>
-        )}
       </div>
     </AdminLayout>
   );

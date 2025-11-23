@@ -150,7 +150,11 @@ npm run dev
 
 ## 🌐 Deploy
 
-**Lovable (Recommended):** Click "Publish" button
+**Lovable Cloud (Primary):**
+- Deployments are managed via Lovable Cloud.
+- Click "Publish" in the Lovable interface.
+- Environment variables and secrets are managed in Lovable Cloud Settings.
+
 **Other platforms:** See [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 📚 Documentation
@@ -163,18 +167,19 @@ Access admin panel at `/admin` (requires admin role)
 
 **Admin Routes:**
 - `/admin` - Dashboard
+- `/admin/cms` - ✨ **NEW!** Agentic CMS (About, Terms, Privacy)
 - `/admin/properties` - Property management
-- `/admin/agents` - ✨ **NEW!** Agent management (invite, view, search)
+- `/admin/agents` - Agent management (invite, view, search)
 - `/admin/inquiries` - Contact inquiries (from database)
 - `/admin/visits` - Scheduled visits (from database)
-- `/admin/users` - User roles
+- `/admin/users` - User roles & profiles
 - `/admin/zones` - Zone management
 - `/admin/audit-logs` - Activity logs
 - `/admin/settings` - Configuration
-- `/admin/health` - ✨ Health check (5 service monitors)
+- `/admin/health` - Health check (5 service monitors)
 - `/admin/seed` - Database seed (🔒 Protected)
 
-**Agent Routes:** ← **NEW!**
+**Agent Routes:**
 - `/agent/dashboard` - Agent dashboard (protected by ProfileCompletionGuard)
 - `/agent/profile/edit` - Edit agent profile
 - `/onboarding/complete-profile` - 5-step onboarding wizard
@@ -190,7 +195,7 @@ Access admin panel at `/admin` (requires admin role)
 
 **Frontend (.env):**
 ```env
-# Supabase (✅ Configured)
+# Supabase (✅ Configured via Lovable)
 VITE_SUPABASE_PROJECT_ID=your_project_id
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
@@ -207,6 +212,11 @@ VITE_WHATSAPP_NUMBER=5219511234567
 # Resend Email (✅ Configured - Nov 20, 2025)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 ```
+
+### Database & Migrations
+- **Platform:** Lovable Cloud (manages Supabase instance)
+- **Migrations:** SQL files in `supabase/migrations/` should be applied via the Lovable Cloud interface (or Supabase dashboard if directly accessible).
+- **CMS Content:** Seed content via `20251123112500_seed_cms_content.sql`.
 
 ### Email Setup (Resend)
 
@@ -253,7 +263,7 @@ The platform uses **Resend** for transactional emails with beautiful bilingual t
 - Leaflet
 
 **Backend:**
-- Supabase (PostgreSQL + Auth + Storage)
+- Supabase (PostgreSQL + Auth + Storage) - Managed via Lovable
 - Resend (transactional email service)
 - Google Analytics 4
 

@@ -107,6 +107,12 @@ export function AdminSidebar() {
       roles: ['superadmin', 'admin']
     },
     {
+      title: "CMS",
+      url: '/admin/cms',
+      icon: FileText,
+      roles: ['superadmin', 'admin']
+    },
+    {
       title: t.admin.settings,
       url: '/admin/settings',
       icon: Settings,
@@ -129,14 +135,14 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
-                const isActive = item.exactMatch 
-                  ? currentPath === item.url 
+                const isActive = item.exactMatch
+                  ? currentPath === item.url
                   : currentPath.startsWith(item.url);
-                
+
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink 
+                      <NavLink
                         to={item.url}
                         className="hover:bg-accent"
                         activeClassName="bg-accent text-accent-foreground font-medium"

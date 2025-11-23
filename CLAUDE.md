@@ -8,8 +8,8 @@
 
 ## Non‑Negotiables
 - Documentation discipline: cap at five docs, each <500 lines. Update the “Last Updated” stamp on every edit.
-- Direct coding first. Lovable is only for UI/visual polish or backend/schema changes—and treat it as a single, high-quality prompt when used.
-- No Supabase migrations or edge functions in-repo. Untracked files exist under `supabase/migrations/`; leave them untouched unless Carlo confirms.
+- Direct coding first. Lovable is the primary platform for UI/visual polish and backend/schema management.
+- No Supabase migrations or edge functions in-repo. Untracked files exist under `supabase/migrations/`; apply them via Lovable Cloud or Supabase dashboard.
 - Bilingual always: route all UI strings through `LanguageContext`; never hardcode ES/EN.
 - TypeScript stays strict: avoid `any`, respect React hook rules, keep props typed.
 - Maps: use React Leaflet with client-side filtering only. Validate Oaxaca bounds (lat 15.6–18.7, lng -98.6 to -93.8) when touching map features.

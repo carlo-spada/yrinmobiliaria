@@ -41,6 +41,7 @@ const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminHealth = lazy(() => import("./pages/admin/AdminHealth"));
+const AdminCMS = lazy(() => import("./pages/admin/AdminCMS"));
 const DatabaseSeed = lazy(() => import("./pages/admin/DatabaseSeed"));
 
 const queryClient = new QueryClient();
@@ -51,19 +52,19 @@ NProgress.configure({ showSpinner: false, trickleSpeed: 200 });
 // Route progress tracker component
 function RouteProgressTracker() {
   const location = useLocation();
-  
+
   useEffect(() => {
     NProgress.start();
     const timer = setTimeout(() => {
       NProgress.done();
     }, 200);
-    
+
     return () => {
       clearTimeout(timer);
       NProgress.done();
     };
   }, [location.pathname]);
-  
+
   return null;
 }
 
@@ -116,6 +117,7 @@ const App = () => (
               <Route path="/admin/audit-logs" element={<Suspense fallback={<PageLoader />}><AdminAuditLogs /></Suspense>} />
               <Route path="/admin/settings" element={<Suspense fallback={<PageLoader />}><AdminSettings /></Suspense>} />
               <Route path="/admin/health" element={<Suspense fallback={<PageLoader />}><AdminHealth /></Suspense>} />
+              <Route path="/admin/cms" element={<Suspense fallback={<PageLoader />}><AdminCMS /></Suspense>} />
               <Route path="/admin/seed" element={<Suspense fallback={<PageLoader />}><DatabaseSeed /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>

@@ -16,10 +16,27 @@ import {
   Building,
   Mail,
   Calendar,
+  Loader2
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function About() {
   const { t, language } = useLanguage();
+
+  const { data: cmsContent, isLoading } = useQuery({
+    queryKey: ['cms-about'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('cms_pages' as any)
+        .select('content')
+        .eq('slug', 'about')
+        .maybeSingle() as any;
+
+      if (error) throw error;
+      return data?.content;
+    }
+  });
 
   const values = [
     {
@@ -130,6 +147,41 @@ export default function About() {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Use CMS content if available, otherwise fallback to hardcoded
+  const heroContent = cmsContent?.hero?.[language] || {
+    title: language === 'es'
+      ? 'Más que una inmobiliaria, tu aliado en Oaxaca'
+      : 'More than a real estate agency, your ally in Oaxaca',
+    subtitle: language === 'es'
+      ? 'Comprometidos con hacer realidad tu sueño de encontrar el hogar perfecto en la tierra que amamos.'
+      : 'Committed to making your dream of finding the perfect home in the land we love come true.'
+  };
+
+  const storyContent = cmsContent?.story?.[language] || {
+    title: language === 'es' ? 'Nuestra Historia' : 'Our Story',
+    p1: language === 'es'
+      ? 'YR Inmobiliaria nació en diciembre de 2025, fundada por Yas Ruiz Vásquez y Carlo Spada Tello. Tras años colaborando con asesores, desarrolladores y familias en los Valles Centrales de Oaxaca, vimos una brecha: muchas personas buscando vender o comprar, pero pocas inmobiliarias usando datos y automatización para hacerlo más claro y confiable.'
+      : 'YR Inmobiliaria was founded in December 2025 by Yas Ruiz Vásquez and Carlo Spada Tello. After years working with advisors, developers, and families in Oaxaca’s Central Valleys, we saw a gap: many people buying or selling, but few agencies using data and automation to make it clearer and more trustworthy.',
+    p2: language === 'es'
+      ? 'Así surge YR: una firma que combina cercanía humana con enfoque tecnológico, para transacciones transparentes y decisiones mejor fundamentadas.'
+      : 'YR was born to blend human closeness with a tech-forward approach, delivering transparent transactions and better-grounded decisions.',
+    p3: language === 'es'
+      ? 'Antes del lanzamiento oficial, el equipo ya había acompañado a decenas de familias y cientos de clientes en operaciones en los Valles Centrales. Hoy queremos consolidarnos en todo Oaxaca y, con el tiempo, llegar a más regiones de México.'
+      : 'Even before launch, the team had guided dozens of families and hundreds of clients in the Central Valleys. Now we aim to serve all of Oaxaca and, over time, more regions of Mexico.',
+    mission_title: language === 'es' ? 'Nuestra misión' : 'Our mission',
+    mission_text: language === 'es'
+      ? 'Ayudar a familias e inversionistas a tomar decisiones inmobiliarias seguras en Oaxaca, combinando confianza y transparencia con el uso inteligente de tecnología e inteligencia artificial.'
+      : 'Help families and investors make safe real estate decisions in Oaxaca, combining trust and transparency with smart use of technology and AI.'
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -141,21 +193,17 @@ export default function About() {
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200')] bg-cover bg-center" />
           </div>
-          
+
           <div className="container mx-auto px-4 relative">
             <div className="max-w-4xl mx-auto text-center space-y-6">
               <Badge variant="outline" className="mb-4">
                 {language === 'es' ? 'Sobre Nosotros' : 'About Us'}
               </Badge>
               <h1 className="text-4xl md:text-6xl font-bold text-foreground">
-                {language === 'es'
-                  ? 'Más que una inmobiliaria, tu aliado en Oaxaca'
-                  : 'More than a real estate agency, your ally in Oaxaca'}
+                {heroContent.title}
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                {language === 'es'
-                  ? 'Comprometidos con hacer realidad tu sueño de encontrar el hogar perfecto en la tierra que amamos.'
-                  : 'Committed to making your dream of finding the perfect home in the land we love come true.'}
+                {heroContent.subtitle}
               </p>
             </div>
           </div>
@@ -168,35 +216,19 @@ export default function About() {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                    {language === 'es' ? 'Nuestra Historia' : 'Our Story'}
+                    {storyContent.title}
                   </h2>
                   <div className="h-1 w-20 bg-primary rounded" />
                 </div>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    {language === 'es'
-                      ? 'YR Inmobiliaria nació en diciembre de 2025, fundada por Yas Ruiz Vásquez y Carlo Spada Tello. Tras años colaborando con asesores, desarrolladores y familias en los Valles Centrales de Oaxaca, vimos una brecha: muchas personas buscando vender o comprar, pero pocas inmobiliarias usando datos y automatización para hacerlo más claro y confiable.'
-                      : 'YR Inmobiliaria was founded in December 2025 by Yas Ruiz Vásquez and Carlo Spada Tello. After years working with advisors, developers, and families in Oaxaca’s Central Valleys, we saw a gap: many people buying or selling, but few agencies using data and automation to make it clearer and more trustworthy.'}
-                  </p>
-                  <p>
-                    {language === 'es'
-                      ? 'Así surge YR: una firma que combina cercanía humana con enfoque tecnológico, para transacciones transparentes y decisiones mejor fundamentadas.'
-                      : 'YR was born to blend human closeness with a tech-forward approach, delivering transparent transactions and better-grounded decisions.'}
-                  </p>
-                  <p>
-                    {language === 'es'
-                      ? 'Antes del lanzamiento oficial, el equipo ya había acompañado a decenas de familias y cientos de clientes en operaciones en los Valles Centrales. Hoy queremos consolidarnos en todo Oaxaca y, con el tiempo, llegar a más regiones de México.'
-                      : 'Even before launch, the team had guided dozens of families and hundreds of clients in the Central Valleys. Now we aim to serve all of Oaxaca and, over time, more regions of Mexico.'}
-                  </p>
+                  <p>{storyContent.p1}</p>
+                  <p>{storyContent.p2}</p>
+                  <p>{storyContent.p3}</p>
                   <div className="rounded-xl border border-border bg-card/60 p-4">
                     <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {language === 'es' ? 'Nuestra misión' : 'Our mission'}
+                      {storyContent.mission_title}
                     </h3>
-                    <p>
-                      {language === 'es'
-                        ? 'Ayudar a familias e inversionistas a tomar decisiones inmobiliarias seguras en Oaxaca, combinando confianza y transparencia con el uso inteligente de tecnología e inteligencia artificial.'
-                        : 'Help families and investors make safe real estate decisions in Oaxaca, combining trust and transparency with smart use of technology and AI.'}
-                    </p>
+                    <p>{storyContent.mission_text}</p>
                   </div>
                 </div>
               </div>
