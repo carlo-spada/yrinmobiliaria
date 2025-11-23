@@ -33,7 +33,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserPlus, Pencil, Shield, Mail, User } from 'lucide-react';
+import { Pencil, Shield, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -41,8 +41,6 @@ export default function AdminUsers() {
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
-  const [promoteUserId, setPromoteUserId] = useState('');
 
   // Form state for editing
   const [formData, setFormData] = useState({
@@ -52,6 +50,7 @@ export default function AdminUsers() {
     professional_email: '',
     email_preference: 'forward_to_personal'
   });
+  const [selectedRole, setSelectedRole] = useState<string>('');
 
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['role-assignments'],
@@ -96,30 +95,31 @@ export default function AdminUsers() {
       type DisplayRole = 'admin' | 'superadmin' | 'user' | 'agent';
 
       return profiles.map((profile) => {
-        const roles: Array<{ role: DisplayRole; granted_at: string }> =
+        const dbRoles: Array<{ role: string; granted_at: string }> =
           profile.role_assignments?.map((r) => ({
-            role: r.role as DisplayRole,
+            role: r.role,
             granted_at: r.granted_at || r.created_at,
           })) || [];
 
-        const isAgent = !!profile.agent_level;
-        const hasAdmin = roles.some((r) => r.role === 'admin' || r.role === 'superadmin');
-
-        if (isAgent && !roles.some((r) => r.role === 'agent')) {
-          roles.push({ role: 'agent' as DisplayRole, granted_at: profile.updated_at || new Date().toISOString() });
+        // Determine PRIMARY role (highest priority)
+        let primaryRole: DisplayRole = 'user';
+        if (dbRoles.some((r) => r.role === 'superadmin')) {
+          primaryRole = 'superadmin';
+        } else if (dbRoles.some((r) => r.role === 'admin')) {
+          primaryRole = 'admin';
+        } else if (profile.agent_level) {
+          primaryRole = 'agent';
         }
-        if (!hasAdmin && !isAgent && roles.length === 0) {
-          roles.push({ role: 'user' as DisplayRole, granted_at: profile.updated_at || new Date().toISOString() });
-        }
 
-        const latest_granted_at = roles.reduce((latest, r) => {
+        const latest_granted_at = dbRoles.reduce((latest, r) => {
           const d = new Date(r.granted_at || new Date());
           return d > latest ? d : latest;
         }, new Date(profile.updated_at || Date.now()));
 
         return {
           ...profile,
-          roles,
+          primaryRole,
+          dbRoles,
           latest_granted_at,
         };
       }).sort((a, b) => b.latest_granted_at.getTime() - a.latest_granted_at.getTime());
@@ -151,26 +151,50 @@ export default function AdminUsers() {
     }
   });
 
-  const promoteUserMutation = useMutation({
-    mutationFn: async (targetUserId: string) => {
-      const { error } = await supabase.rpc('promote_user_to_admin', {
-        target_user_id: targetUserId,
-      });
-      if (error) throw error;
+  const changeRoleMutation = useMutation({
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+      // First, remove all existing admin/superadmin roles
+      await supabase
+        .from('role_assignments')
+        .delete()
+        .eq('user_id', userId)
+        .in('role', ['admin', 'superadmin']);
+
+      // Add the new role if it's admin or superadmin
+      if (newRole === 'admin' || newRole === 'superadmin') {
+        const orgId = newRole === 'admin' ? selectedUser?.organization_id : null;
+        const { error: insertError } = await supabase
+          .from('role_assignments')
+          .insert({
+            user_id: userId,
+            role: newRole,
+            organization_id: orgId,
+          });
+        if (insertError) throw insertError;
+      }
+
+      // Update agent_level based on role
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          agent_level: newRole === 'agent' ? 'associate' : null,
+        })
+        .eq('user_id', userId);
+      
+      if (updateError) throw updateError;
     },
     onSuccess: () => {
-      toast.success('Usuario promovido a administrador exitosamente');
+      toast.success('Rol actualizado correctamente');
       queryClient.invalidateQueries({ queryKey: ['role-assignments'] });
-      setIsPromoteDialogOpen(false);
-      setPromoteUserId('');
     },
     onError: (error) => {
-      toast.error('Error al promover usuario: ' + error.message);
+      toast.error('Error al cambiar rol: ' + error.message);
     },
   });
 
   const handleEditClick = (user: any) => {
     setSelectedUser(user);
+    setSelectedRole(user.primaryRole);
     setFormData({
       bio: user.bio || '',
       job_title: user.job_title || '',
@@ -181,6 +205,24 @@ export default function AdminUsers() {
     setIsEditDialogOpen(true);
   };
 
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case 'superadmin': return 'bg-red-500 text-white';
+      case 'admin': return 'bg-purple-500 text-white';
+      case 'agent': return 'bg-blue-500 text-white';
+      default: return 'bg-gray-500 text-white';
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'superadmin': return 'Superadministrador';
+      case 'admin': return 'Administrador';
+      case 'agent': return 'Agente';
+      default: return 'Usuario';
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -189,43 +231,6 @@ export default function AdminUsers() {
             <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
             <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
           </div>
-
-          <Dialog open={isPromoteDialogOpen} onOpenChange={setIsPromoteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Promover a Admin
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Promover Usuario a Administrador</DialogTitle>
-                <DialogDescription>
-                  Ingresa el ID del usuario que deseas promover a administrador.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="userId">ID de Usuario</Label>
-                  <Input
-                    id="userId"
-                    placeholder="ej: 123e4567-e89b-12d3-a456-426614174000"
-                    value={promoteUserId}
-                    onChange={(e) => setPromoteUserId(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsPromoteDialogOpen(false)}>Cancelar</Button>
-                <Button
-                  onClick={() => promoteUserMutation.mutate(promoteUserId)}
-                  disabled={promoteUserMutation.isPending}
-                >
-                  {promoteUserMutation.isPending ? 'Promoviendo...' : 'Promover'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -313,17 +318,34 @@ export default function AdminUsers() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Organización</span>
-                      <span className="text-sm text-muted-foreground">{selectedUser?.organization_name}</span>
+                      <span className="text-sm text-muted-foreground">{selectedUser?.organization?.name}</span>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Roles Actuales</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedUser?.roles.map((r: any, idx: number) => (
-                        <Badge key={idx} variant="secondary">{r.role}</Badge>
+                  <div className="space-y-3 border-t pt-4">
+                    <Label className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Cambiar Rol del Usuario
+                    </Label>
+                    <div className="flex gap-2">
+                      {['superadmin', 'admin', 'agent', 'user'].map((role) => (
+                        <Button
+                          key={role}
+                          variant={selectedRole === role ? 'default' : 'outline'}
+                          className={selectedRole === role ? getRoleBadgeVariant(role) : ''}
+                          onClick={() => {
+                            setSelectedRole(role);
+                            changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: role });
+                          }}
+                          disabled={changeRoleMutation.isPending}
+                        >
+                          {getRoleLabel(role)}
+                        </Button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.primaryRole)}>{getRoleLabel(selectedUser?.primaryRole)}</Badge>
+                    </p>
                   </div>
                 </div>
               </TabsContent>
@@ -371,11 +393,9 @@ export default function AdminUsers() {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="flex gap-1">
-                        {user.roles.map((r: any, idx: number) => (
-                          <Badge key={idx} variant="outline" className="text-xs">{r.role}</Badge>
-                        ))}
-                      </div>
+                      <Badge className={`text-xs ${getRoleBadgeVariant(user.primaryRole)}`}>
+                        {getRoleLabel(user.primaryRole)}
+                      </Badge>
                       {user.job_title && <p className="text-xs text-muted-foreground">{user.job_title}</p>}
                     </div>
                   </TableCell>
