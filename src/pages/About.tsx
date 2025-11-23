@@ -71,14 +71,6 @@ export default function About() {
           ? 'Usamos tecnología e IA para decisiones basadas en datos y procesos más claros.'
           : 'We use technology and AI for data-driven decisions and clearer processes.',
     },
-    {
-      icon: Heart,
-      title: language === 'es' ? 'Calidez' : 'Warmth',
-      description:
-        language === 'es'
-          ? 'Cada operación es un momento de vida. Cuidamos el trato cercano y humano.'
-          : 'Every transaction is a life moment. We keep the experience personal and human.',
-    },
   ];
 
   const team = [
@@ -136,14 +128,6 @@ export default function About() {
         language === 'es'
           ? 'Nacimos en los Valles Centrales y queremos consolidarnos en todo Oaxaca y más allá.'
           : 'Born in the Central Valleys, aiming to serve all of Oaxaca and beyond.',
-    },
-    {
-      icon: Languages,
-      title: language === 'es' ? 'Tecnología e IA a tu favor' : 'Tech & AI on your side',
-      description:
-        language === 'es'
-          ? 'Búsqueda y análisis basados en datos e IA para opciones más acertadas.'
-          : 'Search and analysis powered by data and AI to surface better options.',
     },
   ];
 
@@ -266,7 +250,7 @@ export default function About() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {values.map((value, index) => {
                   const Icon = value.icon;
                   return (
