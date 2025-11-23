@@ -299,6 +299,7 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           professional_email: string | null
+          role: Database["public"]["Enums"]["app_role"]
           service_zones: string[] | null
           show_in_directory: boolean | null
           social_links: Json | null
@@ -336,6 +337,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           professional_email?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           service_zones?: string[] | null
           show_in_directory?: boolean | null
           social_links?: Json | null
@@ -373,6 +375,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           professional_email?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           service_zones?: string[] | null
           show_in_directory?: boolean | null
           social_links?: Json | null
@@ -757,6 +760,7 @@ export type Database = {
       has_role:
         | {
             Args: {
+              _org_id?: string
               _role: Database["public"]["Enums"]["app_role"]
               _user_id: string
             }
@@ -764,7 +768,6 @@ export type Database = {
           }
         | {
             Args: {
-              _org_id?: string
               _role: Database["public"]["Enums"]["app_role"]
               _user_id: string
             }

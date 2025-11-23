@@ -23,7 +23,7 @@ export interface UserRoleData {
  * - agent: Limited access to own properties/inquiries/visits
  * - user: Regular customer, no admin access
  */
-export const useUserRole = (): UserRoleData => {
+export function useUserRole() {
   const { user } = useAuth();
   const [roleData, setRoleData] = useState<UserRoleData>({
     role: 'user',
@@ -36,7 +36,7 @@ export const useUserRole = (): UserRoleData => {
   });
 
   useEffect(() => {
-    const checkUserRole = async () => {
+    async function checkRole() {
       if (!user) {
         setRoleData({
           role: 'user',
@@ -51,80 +51,39 @@ export const useUserRole = (): UserRoleData => {
       }
 
       try {
-        // Check for superadmin role (global, no org)
-        const { data: superadminRole } = await supabase
-          .from('role_assignments')
-          .select('role, organization_id')
+        // Fetch user profile with role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, organization_id, agent_level')
           .eq('user_id', user.id)
-          .eq('role', 'superadmin')
-          .is('organization_id', null)
           .maybeSingle();
 
-        if (superadminRole) {
+        if (!profile) {
           setRoleData({
-            role: 'superadmin',
-            isStaff: true,
-            isSuperadmin: true,
-            // Superadmins inherit admin/agent privileges client-side
-            isAdmin: true,
-            isAgent: true,
+            role: 'user',
+            isStaff: false,
+            isSuperadmin: false,
+            isAdmin: false,
+            isAgent: false,
             organizationId: null,
             loading: false,
           });
           return;
         }
 
-        // Check for admin role (org-scoped)
-        const { data: adminRole } = await supabase
-          .from('role_assignments')
-          .select('role, organization_id')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .not('organization_id', 'is', null)
-          .maybeSingle();
+        const role = profile.role as UserRole;
+        const isSuperadmin = role === 'superadmin';
+        const isAdmin = role === 'admin' || isSuperadmin; // Hierarchical inheritance
+        const isAgent = !!profile.agent_level;
+        const isStaff = isSuperadmin || isAdmin;
 
-        if (adminRole) {
-          setRoleData({
-            role: 'admin',
-            isStaff: true,
-            isSuperadmin: false,
-            isAdmin: true,
-            // Admins inherit agent-level visibility client-side
-            isAgent: true,
-            organizationId: adminRole.organization_id,
-            loading: false,
-          });
-          return;
-        }
-
-        // Check if user has agent profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('agent_level, organization_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (profile?.agent_level && profile?.organization_id) {
-          setRoleData({
-            role: 'agent',
-            isStaff: true,
-            isSuperadmin: false,
-            isAdmin: false,
-            isAgent: true,
-            organizationId: profile.organization_id,
-            loading: false,
-          });
-          return;
-        }
-
-        // Default to regular user
         setRoleData({
-          role: 'user',
-          isStaff: false,
-          isSuperadmin: false,
-          isAdmin: false,
-          isAgent: false,
-          organizationId: null,
+          role,
+          isStaff,
+          isSuperadmin,
+          isAdmin,
+          isAgent,
+          organizationId: profile.organization_id,
           loading: false,
         });
       } catch (error) {
@@ -139,10 +98,10 @@ export const useUserRole = (): UserRoleData => {
           loading: false,
         });
       }
-    };
+    }
 
-    checkUserRole();
+    checkRole();
   }, [user]);
 
   return roleData;
-};
+}
