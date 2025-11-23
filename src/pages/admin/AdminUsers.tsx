@@ -87,20 +87,29 @@ export default function AdminUsers() {
       if (error) throw error;
       if (!profiles) return [];
 
+      if (!profiles || profiles.length === 0) {
+        console.log('No profiles found');
+        return [];
+      }
+
+      // Type for display roles (includes 'agent' which is not a database role)
+      type DisplayRole = 'admin' | 'superadmin' | 'user' | 'agent';
+
       return profiles.map((profile) => {
-        const roles = profile.role_assignments?.map((r) => ({
-          role: r.role,
-          granted_at: r.granted_at || r.created_at,
-        })) || [];
+        const roles: Array<{ role: DisplayRole; granted_at: string }> =
+          profile.role_assignments?.map((r) => ({
+            role: r.role as DisplayRole,
+            granted_at: r.granted_at || r.created_at,
+          })) || [];
 
         const isAgent = !!profile.agent_level;
         const hasAdmin = roles.some((r) => r.role === 'admin' || r.role === 'superadmin');
 
         if (isAgent && !roles.some((r) => r.role === 'agent')) {
-          roles.push({ role: 'agent', granted_at: profile.updated_at || new Date().toISOString() });
+          roles.push({ role: 'agent' as DisplayRole, granted_at: profile.updated_at || new Date().toISOString() });
         }
         if (!hasAdmin && !isAgent && roles.length === 0) {
-          roles.push({ role: 'user', granted_at: profile.updated_at || new Date().toISOString() });
+          roles.push({ role: 'user' as DisplayRole, granted_at: profile.updated_at || new Date().toISOString() });
         }
 
         const latest_granted_at = roles.reduce((latest, r) => {
