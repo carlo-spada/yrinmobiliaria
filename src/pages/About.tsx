@@ -285,7 +285,7 @@ export default function About() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid md:grid-cols-2 gap-6 justify-items-center max-w-3xl mx-auto">
                 {team.map((member, index) => (
                   <Card key={index} className="overflow-hidden hover:shadow-xl transition-shadow">
                     <CardContent className="p-0">
