@@ -95,7 +95,7 @@ export default function AcceptInvitation() {
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error("No user created");
 
-      // Create profile
+      // Create profile with agent role
       const { error: profileError } = await supabase
         .from("profiles")
         .insert({
@@ -105,23 +105,13 @@ export default function AcceptInvitation() {
           email: invitation.email,
           phone: invitation.phone,
           service_zones: invitation.service_zones,
+          role: "agent",
           is_complete: false,
           invited_by: invitation.invited_by,
           invited_at: invitation.invited_at,
         });
 
       if (profileError) throw profileError;
-
-      // Assign agent role
-      const { error: roleError } = await supabase
-        .from("role_assignments")
-        .insert({
-          user_id: authData.user.id,
-          organization_id: invitation.organization_id,
-          role: "user",
-        });
-
-      if (roleError) throw roleError;
 
       // Mark invitation as accepted
       const { error: updateError } = await supabase
