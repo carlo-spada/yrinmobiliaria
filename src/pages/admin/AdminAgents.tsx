@@ -34,10 +34,32 @@ export default function AdminAgents() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+
+      // Fetch roles for each agent
+      const agentsWithRoles = await Promise.all(
+        (data || []).map(async (agent) => {
+          const { data: roles } = await supabase
+            .from('role_assignments')
+            .select('role')
+            .eq('user_id', agent.user_id);
+          
+          return {
+            ...agent,
+            roles: roles?.map(r => r.role) || []
+          };
+        })
+      );
+
+      return agentsWithRoles;
     },
     enabled: !!profile?.organization_id,
   });
+
+  const getRoleDisplay = (roles: string[]) => {
+    if (roles.includes('superadmin')) return { label: 'Superadministrador', color: 'bg-red-500' };
+    if (roles.includes('admin')) return { label: 'Administrador', color: 'bg-purple-500' };
+    return null;
+  };
 
   const filteredAgents = agents?.filter(agent =>
     agent.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -113,9 +135,9 @@ export default function AdminAgents() {
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                       )}
                     </div>
-                    {agent.agent_level && (
-                      <Badge className={`${getLevelBadgeColor(agent.agent_level)} text-white text-xs mb-2`}>
-                        {agent.agent_level}
+                    {getRoleDisplay(agent.roles) && (
+                      <Badge className={`${getRoleDisplay(agent.roles)?.color} text-white text-xs mb-2`}>
+                        {getRoleDisplay(agent.roles)?.label}
                       </Badge>
                     )}
                     <div className="flex flex-col gap-1 text-sm text-muted-foreground">
