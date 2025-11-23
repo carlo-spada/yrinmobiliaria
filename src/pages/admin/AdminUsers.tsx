@@ -50,10 +50,10 @@ export default function AdminUsers() {
     professional_email: '',
     email_preference: 'forward_to_personal'
   });
-  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<'superadmin' | 'admin' | 'user'>('user');
 
   const { data: userRoles, isLoading } = useQuery({
-    queryKey: ['role-assignments'],
+    queryKey: ['users-with-roles'],
     queryFn: async () => {
       const { data: profiles, error } = await supabase
         .from('profiles')
@@ -62,6 +62,7 @@ export default function AdminUsers() {
           display_name,
           email,
           photo_url,
+          role,
           agent_level,
           organization_id,
           updated_at,
@@ -70,12 +71,6 @@ export default function AdminUsers() {
           email_preference,
           bio,
           job_title,
-          role_assignments (
-            role,
-            granted_at,
-            created_at,
-            organization_id
-          ),
           organization:organizations (
             name,
             slug
@@ -84,45 +79,7 @@ export default function AdminUsers() {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      if (!profiles) return [];
-
-      if (!profiles || profiles.length === 0) {
-        console.log('No profiles found');
-        return [];
-      }
-
-      // Type for display roles (includes 'agent' which is not a database role)
-      type DisplayRole = 'admin' | 'superadmin' | 'user' | 'agent';
-
-      return profiles.map((profile) => {
-        const dbRoles: Array<{ role: string; granted_at: string }> =
-          profile.role_assignments?.map((r) => ({
-            role: r.role,
-            granted_at: r.granted_at || r.created_at,
-          })) || [];
-
-        // Determine PRIMARY role (highest priority)
-        let primaryRole: DisplayRole = 'user';
-        if (dbRoles.some((r) => r.role === 'superadmin')) {
-          primaryRole = 'superadmin';
-        } else if (dbRoles.some((r) => r.role === 'admin')) {
-          primaryRole = 'admin';
-        } else if (profile.agent_level) {
-          primaryRole = 'agent';
-        }
-
-        const latest_granted_at = dbRoles.reduce((latest, r) => {
-          const d = new Date(r.granted_at || new Date());
-          return d > latest ? d : latest;
-        }, new Date(profile.updated_at || Date.now()));
-
-        return {
-          ...profile,
-          primaryRole,
-          dbRoles,
-          latest_granted_at,
-        };
-      }).sort((a, b) => b.latest_granted_at.getTime() - a.latest_granted_at.getTime());
+      return profiles || [];
     },
   });
 
@@ -152,40 +109,18 @@ export default function AdminUsers() {
   });
 
   const changeRoleMutation = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
-      // First, remove all existing admin/superadmin roles
-      await supabase
-        .from('role_assignments')
-        .delete()
-        .eq('user_id', userId)
-        .in('role', ['admin', 'superadmin']);
-
-      // Add the new role if it's admin or superadmin
-      if (newRole === 'admin' || newRole === 'superadmin') {
-        const orgId = newRole === 'admin' ? selectedUser?.organization_id : null;
-        const { error: insertError } = await supabase
-          .from('role_assignments')
-          .insert({
-            user_id: userId,
-            role: newRole,
-            organization_id: orgId,
-          });
-        if (insertError) throw insertError;
-      }
-
-      // Update agent_level based on role
-      const { error: updateError } = await supabase
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'superadmin' | 'admin' | 'user' }) => {
+      const { error } = await supabase
         .from('profiles')
-        .update({
-          agent_level: newRole === 'agent' ? 'associate' : null,
-        })
+        .update({ role: newRole })
         .eq('user_id', userId);
       
-      if (updateError) throw updateError;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Rol actualizado correctamente');
-      queryClient.invalidateQueries({ queryKey: ['role-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      setIsEditDialogOpen(false);
     },
     onError: (error) => {
       toast.error('Error al cambiar rol: ' + error.message);
@@ -194,7 +129,7 @@ export default function AdminUsers() {
 
   const handleEditClick = (user: any) => {
     setSelectedUser(user);
-    setSelectedRole(user.primaryRole);
+    setSelectedRole(user.role as 'superadmin' | 'admin' | 'user');
     setFormData({
       bio: user.bio || '',
       job_title: user.job_title || '',
@@ -209,7 +144,6 @@ export default function AdminUsers() {
     switch (role) {
       case 'superadmin': return 'bg-red-500 text-white';
       case 'admin': return 'bg-purple-500 text-white';
-      case 'agent': return 'bg-blue-500 text-white';
       default: return 'bg-gray-500 text-white';
     }
   };
@@ -218,7 +152,6 @@ export default function AdminUsers() {
     switch (role) {
       case 'superadmin': return 'Superadministrador';
       case 'admin': return 'Administrador';
-      case 'agent': return 'Agente';
       default: return 'Usuario';
     }
   };
@@ -328,14 +261,15 @@ export default function AdminUsers() {
                       Cambiar Rol del Usuario
                     </Label>
                     <div className="flex gap-2">
-                      {['superadmin', 'admin', 'agent', 'user'].map((role) => (
+                      {['superadmin', 'admin', 'user'].map((role) => (
                         <Button
                           key={role}
                           variant={selectedRole === role ? 'default' : 'outline'}
                           className={selectedRole === role ? getRoleBadgeVariant(role) : ''}
                           onClick={() => {
-                            setSelectedRole(role);
-                            changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: role });
+                            const typedRole = role as 'superadmin' | 'admin' | 'user';
+                            setSelectedRole(typedRole);
+                            changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: typedRole });
                           }}
                           disabled={changeRoleMutation.isPending}
                         >
@@ -344,7 +278,7 @@ export default function AdminUsers() {
                       ))}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.primaryRole)}>{getRoleLabel(selectedUser?.primaryRole)}</Badge>
+                      Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.role)}>{getRoleLabel(selectedUser?.role)}</Badge>
                     </p>
                   </div>
                 </div>
@@ -393,8 +327,8 @@ export default function AdminUsers() {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <Badge className={`text-xs ${getRoleBadgeVariant(user.primaryRole)}`}>
-                        {getRoleLabel(user.primaryRole)}
+                      <Badge className={`text-xs ${getRoleBadgeVariant(user.role)}`}>
+                        {getRoleLabel(user.role)}
                       </Badge>
                       {user.job_title && <p className="text-xs text-muted-foreground">{user.job_title}</p>}
                     </div>
