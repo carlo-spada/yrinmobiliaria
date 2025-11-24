@@ -805,6 +805,10 @@ export type Database = {
     }
     Functions: {
       cleanup_temp_storage_images: { Args: never; Returns: undefined }
+      get_my_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
       has_role:
         | {
