@@ -51,11 +51,11 @@ export function useUserRole() {
       }
 
       try {
-        // Fetch user data from profiles (contains role and org info)
+        // Fetch user data from users table (contains role and org info)
         const { data: userData, error } = await supabase
-          .from('profiles')
+          .from('users')
           .select('role, organization_id')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
 
         if (error || !userData) {

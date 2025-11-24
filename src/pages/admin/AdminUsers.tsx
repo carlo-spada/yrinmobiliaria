@@ -55,47 +55,65 @@ export default function AdminUsers() {
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['users-list'],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
+      const { data: users, error } = await supabase
+        .from('users')
         .select(`
           id,
-          user_id,
           email,
           role,
           organization_id,
+          created_at
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (!users) return [];
+
+      // Get profiles for all users
+      const userIds = users.map(u => u.id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select(`
+          user_id,
           display_name,
           photo_url,
           languages,
           professional_email,
           email_preference,
           bio,
-          job_title,
-          created_at,
-          organization:organizations (
-            name,
-            slug
-          )
+          job_title
         `)
-        .order('created_at', { ascending: false });
+        .in('user_id', userIds);
 
-      if (error) throw error;
-      if (!profiles) return [];
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      return profiles.map((profile) => ({
-        user_id: profile.user_id,
-        email: profile.email,
-        role: profile.role,
-        organization_id: profile.organization_id,
-        display_name: profile.display_name || profile.email,
-        photo_url: profile.photo_url,
-        bio: profile.bio,
-        job_title: profile.job_title,
-        languages: profile.languages,
-        professional_email: profile.professional_email,
-        email_preference: profile.email_preference,
-        organization: profile.organization,
-        roles: [{ role: profile.role, granted_at: profile.created_at }]
-      }));
+      // Get organizations
+      const { data: orgs } = await supabase
+        .from('organizations')
+        .select('id, name, slug');
+
+      const orgMap = new Map(orgs?.map(o => [o.id, o]) || []);
+
+      return users.map((user) => {
+        const profile = profileMap.get(user.id);
+        const org = user.organization_id ? orgMap.get(user.organization_id) : null;
+        
+        return {
+          user_id: user.id,
+          email: user.email,
+          role: user.role,
+          organization_id: user.organization_id,
+          display_name: profile?.display_name || user.email,
+          photo_url: profile?.photo_url,
+          bio: profile?.bio,
+          job_title: profile?.job_title,
+          languages: profile?.languages,
+          professional_email: profile?.professional_email,
+          email_preference: profile?.email_preference,
+          organization: org,
+          roles: [{ role: user.role, granted_at: user.created_at }]
+        };
+      });
     },
   });
 
@@ -127,9 +145,9 @@ export default function AdminUsers() {
   const changeRoleMutation = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'superadmin' | 'admin' | 'user' }) => {
       const { error } = await supabase
-        .from('profiles')
+        .from('users')
         .update({ role: newRole })
-        .eq('user_id', userId);
+        .eq('id', userId);
 
       if (error) throw error;
     },
