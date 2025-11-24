@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type UserRole = 'superadmin' | 'admin' | 'agent' | 'user';
+export type UserRole = 'superadmin' | 'admin' | 'agent' | 'user' | 'client';
 
 export interface UserRoleData {
   role: UserRole;
@@ -51,31 +51,24 @@ export function useUserRole() {
       }
 
       try {
-        // Fetch user profile with role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role, organization_id, agent_level')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        // Fetch user system data
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('role, organization_id')
+          .eq('id', user.id)
+          .single();
 
-        if (!profile) {
-          setRoleData({
-            role: 'user',
-            isStaff: false,
-            isSuperadmin: false,
-            isAdmin: false,
-            isAgent: false,
-            organizationId: null,
-            loading: false,
-          });
+        if (error || !userData) {
+          console.error('Error fetching user data:', error);
+          setRoleData(prev => ({ ...prev, loading: false }));
           return;
         }
 
-        const role = profile.role as UserRole;
+        const role = userData.role as UserRole;
         const isSuperadmin = role === 'superadmin';
-        const isAdmin = role === 'admin' || isSuperadmin; // Hierarchical inheritance
-        const isAgent = !!profile.agent_level;
-        const isStaff = isSuperadmin || isAdmin;
+        const isAdmin = role === 'admin' || isSuperadmin;
+        const isAgent = role === 'agent' || isAdmin;
+        const isStaff = isAgent; // All agents and above are staff
 
         setRoleData({
           role,
@@ -83,20 +76,13 @@ export function useUserRole() {
           isSuperadmin,
           isAdmin,
           isAgent,
-          organizationId: profile.organization_id,
+          organizationId: userData.organization_id,
           loading: false,
         });
+
       } catch (error) {
         console.error('Error checking user role:', error);
-        setRoleData({
-          role: 'user',
-          isStaff: false,
-          isSuperadmin: false,
-          isAdmin: false,
-          isAgent: false,
-          organizationId: null,
-          loading: false,
-        });
+        setRoleData(prev => ({ ...prev, loading: false }));
       }
     }
 

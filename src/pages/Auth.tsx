@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,58 +28,44 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { role, loading: roleLoading } = useUserRole();
   const hasRedirected = useRef(false);
 
   useEffect(() => {
     // Prevent infinite redirect loop
-    if (!user || hasRedirected.current || authLoading) {
+    if (!user || hasRedirected.current || authLoading || roleLoading) {
       return;
     }
 
-    const checkUserRole = async () => {
-      try {
-        // Check for redirect parameter
-        const redirectTo = searchParams.get('redirect');
+    const handleRedirect = () => {
+      // Check for redirect parameter
+      const redirectTo = searchParams.get('redirect');
 
-        // Check user's role from profiles table (single role system)
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role, agent_level, organization_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
+      // Mark as redirected before navigating
+      hasRedirected.current = true;
 
-        // Mark as redirected before navigating
-        hasRedirected.current = true;
+      // If there's a redirect parameter, use it (for admin/protected routes)
+      if (redirectTo && redirectTo.startsWith('/')) {
+        navigate(redirectTo, { replace: true });
+        return;
+      }
 
-        // If there's a redirect parameter, use it (for admin/protected routes)
-        if (redirectTo && redirectTo.startsWith('/')) {
-          navigate(redirectTo, { replace: true });
-          return;
-        }
-
-        // Redirect based on role hierarchy:
-        // - Superadmin → /admin (full system access)
-        // - Admin → /admin (org-scoped access)
-        // - Agent → /admin (agent-scoped access)
-        // - Regular user → /cuenta
-        const role = profileData?.role;
-        
-        if (role === 'superadmin' || role === 'admin' || role === 'agent') {
-          // Superadmins, Admins, and Agents go to admin panel
-          navigate('/admin', { replace: true });
-        } else {
-          // Regular users go to user dashboard
-          navigate('/cuenta', { replace: true });
-        }
-      } catch (error) {
-        console.error('Error checking user role:', error);
-        hasRedirected.current = false; // Reset on error
+      // Redirect based on role hierarchy:
+      // - Superadmin → /admin (full system access)
+      // - Admin → /admin (org-scoped access)
+      // - Agent → /admin (agent-scoped access)
+      // - Regular user → /cuenta
+      if (role === 'superadmin' || role === 'admin' || role === 'agent') {
+        // Superadmins, Admins and Agents go to admin panel
+        navigate('/admin', { replace: true });
+      } else {
+        // Regular users go to user dashboard
+        navigate('/cuenta', { replace: true });
       }
     };
 
-    checkUserRole();
-  }, [user, authLoading, navigate, searchParams]);
+    handleRedirect();
+  }, [user, authLoading, roleLoading, role, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

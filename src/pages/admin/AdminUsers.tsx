@@ -53,33 +53,51 @@ export default function AdminUsers() {
   const [selectedRole, setSelectedRole] = useState<'superadmin' | 'admin' | 'user'>('user');
 
   const { data: userRoles, isLoading } = useQuery({
-    queryKey: ['users-with-roles'],
+    queryKey: ['users-list'],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
+      const { data: users, error } = await supabase
+        .from('users')
         .select(`
-          user_id,
-          display_name,
+          id,
           email,
-          photo_url,
           role,
-          agent_level,
           organization_id,
-          updated_at,
-          languages,
-          professional_email,
-          email_preference,
-          bio,
-          job_title,
+          created_at,
           organization:organizations (
             name,
             slug
+          ),
+          profile:profiles (
+            display_name,
+            photo_url,
+            languages,
+            professional_email,
+            email_preference,
+            bio,
+            job_title
           )
         `)
-        .order('updated_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return profiles || [];
+      if (!users) return [];
+
+      return users.map((user) => ({
+        user_id: user.id,
+        email: user.email,
+        role: user.role,
+        organization_id: user.organization_id,
+        // Flatten profile data for UI compatibility
+        display_name: user.profile?.[0]?.display_name || user.email,
+        photo_url: user.profile?.[0]?.photo_url,
+        bio: user.profile?.[0]?.bio,
+        job_title: user.profile?.[0]?.job_title,
+        languages: user.profile?.[0]?.languages,
+        professional_email: user.profile?.[0]?.professional_email,
+        email_preference: user.profile?.[0]?.email_preference,
+        // Helper for UI
+        roles: [{ role: user.role, granted_at: user.created_at }]
+      }));
     },
   });
 
@@ -100,7 +118,7 @@ export default function AdminUsers() {
     },
     onSuccess: () => {
       toast.success('Perfil actualizado correctamente');
-      queryClient.invalidateQueries({ queryKey: ['role-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['users-list'] });
       setIsEditDialogOpen(false);
     },
     onError: (error) => {
@@ -111,15 +129,15 @@ export default function AdminUsers() {
   const changeRoleMutation = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'superadmin' | 'admin' | 'user' }) => {
       const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('user_id', userId);
-      
+        .from('users')
+        .update({ role: newRole } as any)
+        .eq('id', userId);
+
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Rol actualizado correctamente');
-      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['users-list'] });
       setIsEditDialogOpen(false);
     },
     onError: (error) => {

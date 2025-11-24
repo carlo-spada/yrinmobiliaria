@@ -33,7 +33,7 @@ interface MenuItem {
   url: string;
   icon: LucideIcon;
   exactMatch?: boolean;
-  roles: ('superadmin' | 'admin' | 'agent')[];
+  roles: ('superadmin' | 'admin' | 'agent' | 'user' | 'client')[];
 }
 
 export function AdminSidebar() {
@@ -45,13 +45,14 @@ export function AdminSidebar() {
 
   // Define all menu items with role-based access
   const allMenuItems: MenuItem[] = [
+    // Common for everyone
     {
-      title: t.admin.dashboard,
-      url: '/admin',
-      icon: LayoutDashboard,
-      exactMatch: true,
-      roles: ['superadmin', 'admin', 'agent']
+      title: t.admin.profile,
+      url: '/admin/profile',
+      icon: UserCircle,
+      roles: ['superadmin', 'admin', 'agent', 'user', 'client']
     },
+    // Agent & Up
     {
       title: t.admin.properties,
       url: '/admin/properties',
@@ -59,9 +60,16 @@ export function AdminSidebar() {
       roles: ['superadmin', 'admin', 'agent']
     },
     {
-      title: "Agentes",
-      url: '/admin/agents',
-      icon: UserPlus,
+      title: "Calendario", // Was Visits
+      url: '/admin/visits',
+      icon: Calendar,
+      roles: ['superadmin', 'admin', 'agent']
+    },
+    // Admin & Up
+    {
+      title: t.admin.users,
+      url: '/admin/users',
+      icon: Users,
       roles: ['superadmin', 'admin']
     },
     {
@@ -71,60 +79,35 @@ export function AdminSidebar() {
       roles: ['superadmin', 'admin']
     },
     {
-      title: t.admin.inquiries,
-      url: '/admin/inquiries',
-      icon: MessageSquare,
-      roles: ['superadmin', 'admin', 'agent']
-    },
-    {
-      title: t.admin.visits,
-      url: '/admin/visits',
-      icon: Calendar,
-      roles: ['superadmin', 'admin', 'agent']
-    },
-    {
-      title: t.admin.users,
-      url: '/admin/users',
-      icon: Users,
-      roles: ['superadmin', 'admin']
-    },
-    {
-      title: t.admin.profile,
-      url: '/admin/profile',
-      icon: UserCircle,
-      roles: ['superadmin', 'admin', 'agent'] // Everyone can reach profile
-    },
-    {
-      title: t.admin.auditLogs,
-      url: '/admin/audit-logs',
-      icon: FileText,
-      roles: ['superadmin', 'admin']
-    },
-    {
-      title: t.admin.health,
-      url: '/admin/health',
-      icon: Activity,
-      roles: ['superadmin', 'admin']
-    },
-    /*
-    {
-      title: "CMS",
-      url: '/admin/cms',
-      icon: FileText,
-      roles: ['superadmin', 'admin']
-    },
-    */
-    {
-      title: t.admin.settings,
+      title: "Organización", // Was Settings
       url: '/admin/settings',
       icon: Settings,
       roles: ['superadmin', 'admin']
+    },
+    {
+      title: "Actividad", // Was Audit Logs
+      url: '/admin/audit-logs',
+      icon: Activity,
+      roles: ['superadmin', 'admin']
+    },
+    // Superadmin Only
+    {
+      title: "Sistema", // Was Health
+      url: '/admin/health',
+      icon: Activity,
+      roles: ['superadmin']
+    },
+    {
+      title: "Schema Builder",
+      url: '/admin/schema-builder',
+      icon: FileText,
+      roles: ['superadmin']
     },
   ];
 
   // Filter menu items based on user role
   const menuItems = allMenuItems.filter(item =>
-    item.roles.includes(role as 'superadmin' | 'admin' | 'agent')
+    item.roles.includes(role as 'superadmin' | 'admin' | 'agent' | 'user' | 'client')
   );
 
   return (

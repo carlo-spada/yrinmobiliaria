@@ -43,6 +43,7 @@ const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminHealth = lazy(() => import("./pages/admin/AdminHealth"));
 const AdminCMS = lazy(() => import("./pages/admin/AdminCMS"));
 const DatabaseSeed = lazy(() => import("./pages/admin/DatabaseSeed"));
+const SchemaBuilder = lazy(() => import("./pages/admin/SchemaBuilder"));
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,7 @@ const App = () => (
               <Route path="/admin/health" element={<Suspense fallback={<PageLoader />}><AdminHealth /></Suspense>} />
               <Route path="/admin/cms" element={<Suspense fallback={<PageLoader />}><AdminCMS /></Suspense>} />
               <Route path="/admin/seed" element={<Suspense fallback={<PageLoader />}><DatabaseSeed /></Suspense>} />
+              <Route path="/admin/schema-builder" element={<Suspense fallback={<PageLoader />}><SchemaBuilder /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
           </PageTransition>
