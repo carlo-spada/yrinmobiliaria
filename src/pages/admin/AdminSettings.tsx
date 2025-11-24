@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { RoleGuard } from '@/components/admin/RoleGuard';
+import { PermissionsMatrix } from '@/components/admin/PermissionsMatrix';
 
 interface SettingEditorProps {
   settingKey: string;
@@ -295,11 +296,12 @@ export default function AdminSettings() {
         </div>
 
         <Tabs defaultValue="contact" className="space-y-4">
-          <TabsList className={`grid w-full ${isSuperadmin ? 'grid-cols-4' : 'grid-cols-3'} lg:w-[500px]`}>
+          <TabsList className={`grid w-full ${isSuperadmin ? 'grid-cols-5' : 'grid-cols-4'} lg:w-[600px]`}>
             <TabsTrigger value="contact">Contacto</TabsTrigger>
             <TabsTrigger value="business">Negocio</TabsTrigger>
             <TabsTrigger value="social">Redes Sociales</TabsTrigger>
             {isSuperadmin && <TabsTrigger value="organizations">Organizaciones</TabsTrigger>}
+            <TabsTrigger value="permissions">Permisos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="contact" className="space-y-4">
@@ -448,6 +450,10 @@ export default function AdminSettings() {
               )}
             </TabsContent>
           )}
+
+          <TabsContent value="permissions" className="space-y-4">
+            <PermissionsMatrix />
+          </TabsContent>
         </Tabs>
 
         {/* Organization Dialog */}
