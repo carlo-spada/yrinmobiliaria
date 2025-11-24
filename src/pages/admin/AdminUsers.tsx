@@ -60,7 +60,6 @@ export default function AdminUsers() {
         .select(`
           id,
           email,
-          role,
           organization_id,
           created_at
         `)
@@ -87,6 +86,20 @@ export default function AdminUsers() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
+      // Get roles from role_assignments
+      const { data: roleAssignments } = await supabase
+        .from('role_assignments')
+        .select('user_id, role, granted_at')
+        .in('user_id', userIds);
+
+      const roleMap = new Map<string, { role: string, granted_at: string }>();
+      roleAssignments?.forEach(ra => {
+        const existing = roleMap.get(ra.user_id);
+        if (!existing || ra.role === 'superadmin' || (ra.role === 'admin' && existing.role !== 'superadmin')) {
+          roleMap.set(ra.user_id, { role: ra.role, granted_at: ra.granted_at });
+        }
+      });
+
       // Get organizations
       const { data: orgs } = await supabase
         .from('organizations')
@@ -97,11 +110,12 @@ export default function AdminUsers() {
       return users.map((user) => {
         const profile = profileMap.get(user.id);
         const org = user.organization_id ? orgMap.get(user.organization_id) : null;
+        const roleInfo = roleMap.get(user.id) || { role: 'user', granted_at: user.created_at };
         
         return {
           user_id: user.id,
           email: user.email,
-          role: user.role,
+          role: roleInfo.role,
           organization_id: user.organization_id,
           display_name: profile?.display_name || user.email,
           photo_url: profile?.photo_url,
@@ -111,7 +125,7 @@ export default function AdminUsers() {
           professional_email: profile?.professional_email,
           email_preference: profile?.email_preference,
           organization: org,
-          roles: [{ role: user.role, granted_at: user.created_at }]
+          roles: [{ role: roleInfo.role, granted_at: roleInfo.granted_at }]
         };
       });
     },
@@ -144,12 +158,31 @@ export default function AdminUsers() {
 
   const changeRoleMutation = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'superadmin' | 'admin' | 'user' }) => {
-      const { error } = await supabase
-        .from('users')
-        .update({ role: newRole })
-        .eq('id', userId);
+      // Delete existing role assignments for this user
+      const { error: deleteError } = await supabase
+        .from('role_assignments')
+        .delete()
+        .eq('user_id', userId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
+
+      // Get user's organization
+      const { data: userData } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single();
+
+      // Insert new role
+      const { error: insertError } = await supabase
+        .from('role_assignments')
+        .insert({
+          user_id: userId,
+          role: newRole,
+          organization_id: userData?.organization_id
+        });
+
+      if (insertError) throw insertError;
     },
     onSuccess: () => {
       toast.success('Rol actualizado correctamente');

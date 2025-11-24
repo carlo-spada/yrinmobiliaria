@@ -51,20 +51,34 @@ export function useUserRole() {
       }
 
       try {
-        // Fetch user data from users table (contains role and org info)
-        const { data: userData, error } = await supabase
+        // Get organization from users table
+        const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('role, organization_id')
+          .select('organization_id')
           .eq('id', user.id)
           .single();
 
-        if (error || !userData) {
-          console.error('Error fetching user data:', error);
+        if (userError || !userData) {
+          console.error('Error fetching user data:', userError);
           setRoleData(prev => ({ ...prev, loading: false }));
           return;
         }
 
-        const role = userData.role as UserRole;
+        // Get highest role from role_assignments table
+        const { data: roleData, error: roleError } = await supabase
+          .from('role_assignments')
+          .select('role')
+          .eq('user_id', user.id)
+          .order('role', { ascending: false })
+          .limit(1);
+
+        if (roleError) {
+          console.error('Error fetching role:', roleError);
+          setRoleData(prev => ({ ...prev, loading: false }));
+          return;
+        }
+
+        const role = (roleData?.[0]?.role || 'user') as UserRole;
         const isSuperadmin = role === 'superadmin';
         const isAdmin = role === 'admin' || isSuperadmin;
         const isAgent = role === 'agent' || isAdmin;

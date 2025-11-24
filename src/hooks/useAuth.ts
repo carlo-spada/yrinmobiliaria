@@ -75,10 +75,11 @@ export const useAuth = () => {
   const checkAdminRole = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('role_assignments')
         .select('role')
-        .eq('id', userId)
-        .maybeSingle();
+        .eq('user_id', userId)
+        .in('role', ['admin', 'superadmin'])
+        .limit(1);
 
       if (error) {
         logger.error('Error checking admin role', error);
@@ -86,8 +87,8 @@ export const useAuth = () => {
         return;
       }
 
-      // Check if user has admin or superadmin role (hierarchical)
-      setIsAdmin(data?.role === 'admin' || data?.role === 'superadmin');
+      // User is admin if they have any admin or superadmin role
+      setIsAdmin(data && data.length > 0);
     } catch (error) {
       logger.error('Error checking admin role', error);
       setIsAdmin(false);
