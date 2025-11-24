@@ -28,6 +28,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { role, loading: roleLoading } = useUserRole();
   const hasRedirected = useRef(false);
 
