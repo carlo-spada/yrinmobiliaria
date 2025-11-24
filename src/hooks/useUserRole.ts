@@ -51,10 +51,10 @@ export function useUserRole() {
       }
 
       try {
-        // Get organization from users table
+        // Get organization and base role from users table
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('organization_id')
+          .select('organization_id, role')
           .eq('id', user.id)
           .single();
 
@@ -86,6 +86,11 @@ export function useUserRole() {
           } else if (roles.includes('admin')) {
             role = 'admin';
           }
+        }
+
+        // Fallback to users.role if no assignment found (or RLS trimmed results)
+        if (role === 'user' && (userData.role === 'admin' || userData.role === 'superadmin')) {
+          role = userData.role as UserRole;
         }
         
         // Check if user is an agent by looking at profile data

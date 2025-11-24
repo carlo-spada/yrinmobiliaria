@@ -30,6 +30,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const profileSchema = z.object({
   display_name: z.string().min(1, 'Name is required').max(100),
@@ -40,6 +41,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function UserDashboard() {
   const { user, signOut, profile, loading } = useAuth();
+  const { isStaff, loading: roleLoading } = useUserRole();
   const { favorites: favoriteIds } = useFavorites();
   const { data: allProperties = [] } = useProperties();
   const { language } = useLanguage();
@@ -62,7 +64,7 @@ export default function UserDashboard() {
     },
   });
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground">
         Cargando tu cuenta...
@@ -73,6 +75,11 @@ export default function UserDashboard() {
   // Redirect if not authenticated once loading is complete
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Staff (admin/agent) should go to admin panel, not user dashboard
+  if (isStaff) {
+    return <Navigate to="/admin" replace />;
   }
 
   const favoriteProperties = allProperties.filter((p) => favoriteIds.includes(p.id));
