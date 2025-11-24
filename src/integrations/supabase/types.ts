@@ -590,6 +590,38 @@ export type Database = {
           },
         ]
       }
+      role_assignments: {
+        Row: {
+          granted_at: string | null
+          id: string
+          organization_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          id?: string
+          organization_id?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          id?: string
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_visits: {
         Row: {
           agent_id: string | null
@@ -805,27 +837,14 @@ export type Database = {
     }
     Functions: {
       cleanup_temp_storage_images: { Args: never; Returns: undefined }
-      get_my_role: {
-        Args: never
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
-      has_role:
-        | {
-            Args: {
-              _org_id?: string
-              _role: Database["public"]["Enums"]["app_role"]
-              _user_id: string
-            }
-            Returns: boolean
-          }
-        | {
-            Args: {
-              _role: Database["public"]["Enums"]["app_role"]
-              _user_id: string
-            }
-            Returns: boolean
-          }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       promote_user_to_admin: {
         Args: { target_user_id: string }

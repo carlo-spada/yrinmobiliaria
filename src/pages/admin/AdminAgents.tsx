@@ -37,14 +37,20 @@ export default function AdminAgents() {
       if (profilesError) throw profilesError;
       if (!profiles) return [];
 
-      // Get roles from users table
+      // Get roles from role_assignments table
       const userIds = profiles.map(p => p.user_id);
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, role')
-        .in('id', userIds);
+      const { data: roleAssignments } = await supabase
+        .from('role_assignments')
+        .select('user_id, role')
+        .in('user_id', userIds);
 
-      const roleMap = new Map(users?.map(u => [u.id, u.role]) || []);
+      const roleMap = new Map<string, string>();
+      roleAssignments?.forEach(ra => {
+        const existing = roleMap.get(ra.user_id);
+        if (!existing || ra.role === 'superadmin' || (ra.role === 'admin' && existing !== 'superadmin')) {
+          roleMap.set(ra.user_id, ra.role);
+        }
+      });
 
       // Merge role data
       return profiles.map(profile => ({
