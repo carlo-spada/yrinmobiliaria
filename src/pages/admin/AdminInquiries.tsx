@@ -19,18 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Eye, Trash2 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
+import { useAdminOrg } from '@/components/admin/AdminOrgContext';
+import { useUserRole } from '@/hooks/useUserRole';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 
 type ContactInquiry = Database['public']['Tables']['contact_inquiries']['Row'] & {
   properties?: { title_es: string } | null;
@@ -39,17 +36,39 @@ type ContactInquiry = Database['public']['Tables']['contact_inquiries']['Row'] &
 export default function AdminInquiries() {
   const [selectedInquiry, setSelectedInquiry] = useState<ContactInquiry | null>(null);
   const queryClient = useQueryClient();
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
+  const { isSuperadmin } = useUserRole();
+  const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+
+  if (!isSuperadmin && !scopedOrg) {
+    return (
+      <AdminLayout>
+        <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+          <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+            Asigna una organización a tu perfil para ver consultas.
+          </div>
+        </RoleGuard>
+      </AdminLayout>
+    );
+  }
 
   const { data: inquiries, isLoading } = useQuery({
-    queryKey: ['contact-inquiries'],
+    queryKey: ['contact-inquiries', scopedOrg],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('contact_inquiries')
         .select('*, properties(title_es)')
         .order('created_at', { ascending: false });
+
+      if (scopedOrg) {
+        query = query.eq('organization_id', scopedOrg);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    enabled: isSuperadmin || !!scopedOrg,
   });
 
   const updateStatusMutation = useMutation({
@@ -93,18 +112,9 @@ export default function AdminInquiries() {
     },
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-blue-100 text-blue-700';
-      case 'contacted': return 'bg-yellow-100 text-yellow-700';
-      case 'resolved': return 'bg-green-100 text-green-700';
-      case 'archived': return 'bg-gray-100 text-gray-700';
-      default: return '';
-    }
-  };
-
   return (
     <AdminLayout>
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Consultas de Contacto</h2>
@@ -220,6 +230,7 @@ export default function AdminInquiries() {
           </DialogContent>
         </Dialog>
       </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }

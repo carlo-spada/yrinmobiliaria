@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 
 interface SettingEditorProps {
   settingKey: string;
@@ -284,6 +285,7 @@ export default function AdminSettings() {
 
   return (
     <AdminLayout>
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Configuración del Sitio</h2>
@@ -541,6 +543,7 @@ export default function AdminSettings() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }

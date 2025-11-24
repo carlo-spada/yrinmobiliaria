@@ -28,6 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 
 type ServiceZone = Database['public']['Tables']['service_zones']['Row'];
 
@@ -157,6 +158,7 @@ export default function AdminZones() {
 
   return (
     <AdminLayout>
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -290,6 +292,7 @@ export default function AdminZones() {
           </DialogContent>
         </Dialog>
       </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }

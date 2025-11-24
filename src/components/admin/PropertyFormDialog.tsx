@@ -27,6 +27,8 @@ import { logAuditEvent } from '@/utils/auditLog';
 import { ImageUploadZone } from './ImageUploadZone';
 import { useState } from 'react';
 import { Database } from '@/integrations/supabase/types';
+import { useAdminOrg } from './AdminOrgContext';
+import { useUserRole } from '@/hooks/useUserRole';
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
   property_images?: Array<{ image_url: string; display_order: number }>;
@@ -91,6 +93,8 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(propertyFormSchema),
   });
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
+  const { isSuperadmin } = useUserRole();
 
   const [images, setImages] = useState<Array<{
     url: string;
@@ -164,6 +168,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
   const mutation = useMutation({
     mutationFn: async (formData: PropertyFormData) => {
+      const scopedOrgId = property?.organization_id || (isSuperadmin && isAllOrganizations ? null : effectiveOrgId);
+
+      if (!scopedOrgId) {
+        throw new Error('Selecciona una organización antes de crear la propiedad');
+      }
+
       // Validate that zone exists in service_zones table
       const { data: zoneExists, error: zoneError } = await supabase
         .from('service_zones')
@@ -183,17 +193,6 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       // Validate that we have at least one image
       if (images.length === 0) {
         throw new Error('Debes subir al menos una imagen');
-      }
-
-      // Get YR organization ID
-      const { data: yrOrg } = await supabase
-        .from('organizations')
-        .select('id')
-        .eq('slug', 'yr-inmobiliaria')
-        .single();
-
-      if (!yrOrg) {
-        throw new Error('Organization not found');
       }
 
       // Get current user's profile to auto-assign as agent (only for new properties)
@@ -223,7 +222,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         price: parseFloat(formData.price),
         status: formData.status,
         featured: formData.featured,
-        organization_id: yrOrg.id,
+        organization_id: scopedOrgId,
         ...(agentId && { agent_id: agentId }),
         location: {
           zone: formData.zone,

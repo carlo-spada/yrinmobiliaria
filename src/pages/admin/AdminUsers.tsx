@@ -14,15 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -31,16 +23,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { Pencil, Shield, Mail, User, Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
+import { RoleGuard } from '@/components/admin/RoleGuard';
+import { useAdminOrg } from '@/components/admin/AdminOrgContext';
 
 export default function AdminUsers() {
   const queryClient = useQueryClient();
-  const { isSuperadmin } = useUserRole();
+  const { isSuperadmin, organizationId } = useUserRole();
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
+  const scopedOrgId = isSuperadmin && isAllOrganizations ? null : (effectiveOrgId ?? organizationId);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -54,6 +48,18 @@ export default function AdminUsers() {
   });
   const [selectedRole, setSelectedRole] = useState<'superadmin' | 'admin' | 'user'>('user');
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+
+  if (!isSuperadmin && !scopedOrgId) {
+    return (
+      <AdminLayout>
+        <RoleGuard allowedRoles={['admin', 'superadmin']}>
+          <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+            Asigna una organización a tu perfil para gestionar usuarios.
+          </div>
+        </RoleGuard>
+      </AdminLayout>
+    );
+  }
 
   // Fetch organizations for superadmin
   const { data: organizations } = useQuery({
@@ -70,9 +76,9 @@ export default function AdminUsers() {
   });
 
   const { data: userRoles, isLoading } = useQuery({
-    queryKey: ['users-list'],
+    queryKey: ['users-list', scopedOrgId],
     queryFn: async () => {
-      const { data: users, error } = await supabase
+      let usersQuery = supabase
         .from('users')
         .select(`
           id,
@@ -81,6 +87,12 @@ export default function AdminUsers() {
           created_at
         `)
         .order('created_at', { ascending: false });
+
+      if (scopedOrgId) {
+        usersQuery = usersQuery.eq('organization_id', scopedOrgId);
+      }
+
+      const { data: users, error } = await usersQuery;
 
       if (error) throw error;
       if (!users) return [];
@@ -175,6 +187,9 @@ export default function AdminUsers() {
 
   const changeRoleMutation = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'superadmin' | 'admin' | 'user' }) => {
+      if (!isSuperadmin) {
+        throw new Error('Solo los superadministradores pueden cambiar roles');
+      }
       // Delete existing role assignments for this user
       const { error: deleteError } = await supabase
         .from('role_assignments')
@@ -213,6 +228,9 @@ export default function AdminUsers() {
 
   const changeOrganizationMutation = useMutation({
     mutationFn: async ({ userId, orgId }: { userId: string; orgId: string | null }) => {
+      if (!isSuperadmin) {
+        throw new Error('Solo los superadministradores pueden asignar organizaciones');
+      }
       // Update user's organization in users table
       const { error: userError } = await supabase
         .from('users')
@@ -278,12 +296,13 @@ export default function AdminUsers() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
-            <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
-          </div>
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
+              <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
+            </div>
         </div>
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -391,7 +410,7 @@ export default function AdminUsers() {
                             setSelectedRole(typedRole);
                             changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: typedRole });
                           }}
-                          disabled={changeRoleMutation.isPending}
+                          disabled={changeRoleMutation.isPending || !isSuperadmin}
                         >
                           {getRoleLabel(role)}
                         </Button>
@@ -431,7 +450,7 @@ export default function AdminUsers() {
                               userId: selectedUser.user_id,
                               orgId: selectedOrgId
                             })}
-                            disabled={changeOrganizationMutation.isPending || selectedOrgId === selectedUser.organization_id}
+                            disabled={!isSuperadmin || changeOrganizationMutation.isPending || selectedOrgId === selectedUser.organization_id}
                           >
                             <Building2 className="h-4 w-4 mr-2" />
                             Asignar
@@ -531,7 +550,8 @@ export default function AdminUsers() {
             </TableBody>
           </Table>
         </div>
-      </div>
+        </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }

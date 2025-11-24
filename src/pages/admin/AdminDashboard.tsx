@@ -3,15 +3,41 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, MessageSquare, Calendar, FileText } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { useAdminOrg } from '@/components/admin/AdminOrgContext';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function AdminDashboard() {
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
+  const { isSuperadmin } = useUserRole();
+  const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+
+  if (!isSuperadmin && !scopedOrg) {
+    return (
+      <AdminLayout>
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          Asigna una organización a tu perfil para ver el dashboard.
+        </div>
+      </AdminLayout>
+    );
+  }
+
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
+      const propertyQuery = supabase.from('properties').select('id', { count: 'exact', head: true });
+      const inquiriesQuery = supabase.from('contact_inquiries').select('id', { count: 'exact', head: true });
+      const visitsQuery = supabase.from('scheduled_visits').select('id', { count: 'exact', head: true });
+
+      if (scopedOrg) {
+        propertyQuery.eq('organization_id', scopedOrg);
+        inquiriesQuery.eq('organization_id', scopedOrg);
+        visitsQuery.eq('organization_id', scopedOrg);
+      }
+
       const [properties, inquiries, visits, logs] = await Promise.all([
-        supabase.from('properties').select('id', { count: 'exact', head: true }),
-        supabase.from('contact_inquiries').select('id', { count: 'exact', head: true }),
-        supabase.from('scheduled_visits').select('id', { count: 'exact', head: true }),
+        propertyQuery,
+        inquiriesQuery,
+        visitsQuery,
         supabase.from('audit_logs').select('id', { count: 'exact', head: true }),
       ]);
 
@@ -25,28 +51,42 @@ export default function AdminDashboard() {
   });
 
   const { data: recentInquiries } = useQuery({
-    queryKey: ['recent-inquiries'],
+    queryKey: ['recent-inquiries', scopedOrg],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('contact_inquiries')
         .select('*, properties(title_es)')
         .order('created_at', { ascending: false })
         .limit(5);
+
+      if (scopedOrg) {
+        query = query.eq('organization_id', scopedOrg);
+      }
+
+      const { data } = await query;
       return data || [];
     },
+    enabled: isSuperadmin || !!scopedOrg,
   });
 
   const { data: upcomingVisits } = useQuery({
-    queryKey: ['upcoming-visits'],
+    queryKey: ['upcoming-visits', scopedOrg],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('scheduled_visits')
         .select('*, properties(title_es)')
         .gte('preferred_date', new Date().toISOString().split('T')[0])
         .order('preferred_date', { ascending: true })
         .limit(5);
+
+      if (scopedOrg) {
+        query = query.eq('organization_id', scopedOrg);
+      }
+
+      const { data } = await query;
       return data || [];
     },
+    enabled: isSuperadmin || !!scopedOrg,
   });
 
   return (

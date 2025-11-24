@@ -30,6 +30,9 @@ import {
 } from '@/components/ui/dialog';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
+import { useAdminOrg } from '@/components/admin/AdminOrgContext';
+import { useUserRole } from '@/hooks/useUserRole';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 
 type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & {
   properties?: { title_es: string } | null;
@@ -38,17 +41,39 @@ type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & 
 export default function AdminVisits() {
   const [selectedVisit, setSelectedVisit] = useState<ScheduledVisit | null>(null);
   const queryClient = useQueryClient();
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
+  const { isSuperadmin } = useUserRole();
+  const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+
+  if (!isSuperadmin && !scopedOrg) {
+    return (
+      <AdminLayout>
+        <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+          <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+            Asigna una organización a tu perfil para ver visitas.
+          </div>
+        </RoleGuard>
+      </AdminLayout>
+    );
+  }
 
   const { data: visits, isLoading } = useQuery({
-    queryKey: ['scheduled-visits'],
+    queryKey: ['scheduled-visits', scopedOrg],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('scheduled_visits')
         .select('*, properties(title_es)')
         .order('preferred_date', { ascending: false });
+
+      if (scopedOrg) {
+        query = query.eq('organization_id', scopedOrg);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    enabled: isSuperadmin || !!scopedOrg,
   });
 
   const updateStatusMutation = useMutation({
@@ -94,6 +119,7 @@ export default function AdminVisits() {
 
   return (
     <AdminLayout>
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Visitas Agendadas</h2>
@@ -215,6 +241,7 @@ export default function AdminVisits() {
           </DialogContent>
         </Dialog>
       </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }

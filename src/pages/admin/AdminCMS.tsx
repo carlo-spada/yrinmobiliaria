@@ -7,6 +7,7 @@ import { AgenticContentWizard } from '@/components/admin/cms/AgenticContentWizar
 import { FileText, Wand2, Eye, Save } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 
 export default function AdminCMS() {
     const [activeTab, setActiveTab] = useState('about');
@@ -33,6 +34,7 @@ export default function AdminCMS() {
 
     return (
         <AdminLayout>
+            <RoleGuard allowedRoles={['admin', 'superadmin']}>
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -103,6 +105,7 @@ export default function AdminCMS() {
                     </Tabs>
                 )}
             </div>
+            </RoleGuard>
         </AdminLayout>
     );
 }

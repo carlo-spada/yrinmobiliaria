@@ -12,6 +12,7 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 
 export default function AdminAuditLogs() {
   const { data: logs, isLoading } = useQuery({
@@ -36,6 +37,7 @@ export default function AdminAuditLogs() {
 
   return (
     <AdminLayout>
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Registro de Actividad</h2>
@@ -86,6 +88,7 @@ export default function AdminAuditLogs() {
           Mostrando los últimos 100 registros de actividad
         </p>
       </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }

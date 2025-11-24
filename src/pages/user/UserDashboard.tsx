@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
@@ -39,7 +39,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function UserDashboard() {
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, loading } = useAuth();
   const { favorites: favoriteIds } = useFavorites();
   const { data: allProperties = [] } = useProperties();
   const { language } = useLanguage();
@@ -62,10 +62,17 @@ export default function UserDashboard() {
     },
   });
 
-  // Redirect if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Cargando tu cuenta...
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated once loading is complete
   if (!user) {
-    navigate('/auth');
-    return null;
+    return <Navigate to="/auth" replace />;
   }
 
   const favoriteProperties = allProperties.filter((p) => favoriteIds.includes(p.id));

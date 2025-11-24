@@ -14,13 +14,15 @@ import {
 } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAdminOrg } from './AdminOrgContext';
 
 export const AdminHeader = () => {
   const { user, signOut } = useAuth();
   const { isSuperadmin, organizationId } = useUserRole();
+  const { selectedOrgId, setSelectedOrgId, canViewAll } = useAdminOrg();
   const navigate = useNavigate();
-  const [selectedOrg, setSelectedOrg] = useState<string>(organizationId || 'all');
+  const [selectedOrg, setSelectedOrg] = useState<string>(selectedOrgId ?? 'all');
 
   const { data: organizations } = useQuery({
     queryKey: ['organizations'],
@@ -47,10 +49,13 @@ export const AdminHeader = () => {
 
   const handleOrgChange = (value: string) => {
     setSelectedOrg(value);
-    // In a real implementation, this would update a global context
-    // that all data fetching hooks subscribe to.
+    setSelectedOrgId(value);
     toast.info(`Cambiando contexto a: ${organizations?.find(o => o.id === value)?.name || 'Todas'}`);
   };
+
+  useEffect(() => {
+    setSelectedOrg(selectedOrgId ?? 'all');
+  }, [selectedOrgId]);
 
   return (
     <header className="h-16 border-b flex items-center justify-between px-6 bg-card">
@@ -60,7 +65,7 @@ export const AdminHeader = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        {isSuperadmin && (
+        {isSuperadmin && canViewAll && (
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-muted-foreground" />
             <Select value={selectedOrg} onValueChange={handleOrgChange}>

@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import {
   Table,
   TableBody,
@@ -27,6 +26,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
+import { useAdminOrg } from './AdminOrgContext';
+import { useUserRole } from '@/hooks/useUserRole';
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
   property_images?: Array<{ image_url: string; display_order: number }>;
@@ -38,12 +39,23 @@ export const PropertiesTable = () => {
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
   const [reassigningProperty, setReassigningProperty] = useState<PropertyWithRelations | null>(null);
   const queryClient = useQueryClient();
-  const auth = useAuth();
+  const { isAdmin, isSuperadmin } = useUserRole();
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
+
+  const scopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+
+  if (!isSuperadmin && !scopedOrgId) {
+    return (
+      <div className="text-sm text-muted-foreground border rounded-lg p-4">
+        Asigna una organización a tu perfil para gestionar propiedades.
+      </div>
+    );
+  }
 
   const { data: properties, isLoading } = useQuery({
-    queryKey: ['admin-properties'],
+    queryKey: ['admin-properties', scopedOrgId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('properties')
         .select(`
           *,
@@ -52,12 +64,17 @@ export const PropertiesTable = () => {
         `)
         .order('created_at', { ascending: false });
 
+      if (scopedOrgId) {
+        query = query.eq('organization_id', scopedOrgId);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
       return data;
     },
+    enabled: isSuperadmin || !!scopedOrgId,
   });
-
-  const isAdmin = useMemo(() => auth.isAdmin || false, [auth.isAdmin]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {

@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InviteAgentDialog } from "@/components/admin/InviteAgentDialog";
 import { useLanguage } from "@/utils/LanguageContext";
-import { UserPlus, Search, Star, MapPin, Home, MessageSquare, Calendar, Mail, Phone } from "lucide-react";
+import { UserPlus, Search, Star, Home, MessageSquare, Calendar, Mail, Phone } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RoleGuard } from "@/components/admin/RoleGuard";
 
 export default function AdminAgents() {
   const { profile } = useAuth();
@@ -84,6 +85,7 @@ export default function AdminAgents() {
 
   return (
     <AdminLayout>
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -217,6 +219,7 @@ export default function AdminAgents() {
       </div>
 
       <InviteAgentDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
+      </RoleGuard>
     </AdminLayout>
   );
 }

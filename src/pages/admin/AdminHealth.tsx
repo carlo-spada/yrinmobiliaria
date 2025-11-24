@@ -18,6 +18,8 @@ import {
   Zap
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { RoleGuard } from '@/components/admin/RoleGuard';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface HealthCheck {
   name: string;
@@ -29,8 +31,9 @@ interface HealthCheck {
 
 export default function AdminHealth() {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { isSuperadmin } = useUserRole();
 
-  const { data: healthChecks, refetch, isLoading } = useQuery({
+  const { data: healthChecks, refetch, isFetching } = useQuery({
     queryKey: ['admin-health'],
     queryFn: async () => {
       const checks: HealthCheck[] = [];
@@ -232,10 +235,11 @@ export default function AdminHealth() {
 
       return checks;
     },
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    enabled: false,
   });
 
   const handleRefresh = async () => {
+    if (!isSuperadmin) return;
     setIsRefreshing(true);
     await refetch();
     setTimeout(() => setIsRefreshing(false), 500);
@@ -275,30 +279,35 @@ export default function AdminHealth() {
     return Activity;
   };
 
-  const overallStatus = healthChecks?.every(c => c.status === 'healthy') 
-    ? 'healthy' 
-    : healthChecks?.some(c => c.status === 'unhealthy')
-    ? 'unhealthy'
+  const overallStatus = healthChecks
+    ? healthChecks.every(c => c.status === 'healthy')
+      ? 'healthy'
+      : healthChecks.some(c => c.status === 'unhealthy')
+        ? 'unhealthy'
+        : 'degraded'
     : 'degraded';
 
-  const avgResponseTime = healthChecks?.reduce((sum, check) => sum + (check.responseTime || 0), 0) / (healthChecks?.length || 1);
+  const avgResponseTime = healthChecks && healthChecks.length > 0
+    ? healthChecks.reduce((sum, check) => sum + (check.responseTime || 0), 0) / healthChecks.length
+    : 0;
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <RoleGuard allowedRoles={['superadmin']}>
+        <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">System Health</h2>
             <p className="text-muted-foreground">Monitor Supabase connectivity and service status</p>
           </div>
-          <Button 
-            onClick={handleRefresh} 
-            disabled={isRefreshing || isLoading}
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing || isFetching}
             variant="outline"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing || isFetching ? 'animate-spin' : ''}`} />
+            Ejecutar chequeo
           </Button>
         </div>
 
@@ -334,13 +343,19 @@ export default function AdminHealth() {
 
         {/* Individual Service Checks */}
         <div className="grid gap-4">
-          {isLoading ? (
+          {isFetching ? (
             <Card>
               <CardContent className="py-8">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground">
                   <RefreshCw className="h-4 w-4 animate-spin" />
                   <span>Running health checks...</span>
                 </div>
+              </CardContent>
+            </Card>
+          ) : !healthChecks ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Ejecuta el chequeo para ver el estado actual.
               </CardContent>
             </Card>
           ) : (
@@ -406,7 +421,8 @@ export default function AdminHealth() {
             </AlertDescription>
           </Alert>
         )}
-      </div>
+        </div>
+      </RoleGuard>
     </AdminLayout>
   );
 }
