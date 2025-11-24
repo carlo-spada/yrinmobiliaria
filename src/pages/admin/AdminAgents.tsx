@@ -22,7 +22,8 @@ export default function AdminAgents() {
   const { data: agents, isLoading } = useQuery({
     queryKey: ['agents', profile?.organization_id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get profiles for this organization
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           *,
@@ -33,8 +34,23 @@ export default function AdminAgents() {
         .eq('organization_id', profile?.organization_id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (profilesError) throw profilesError;
+      if (!profiles) return [];
+
+      // Get roles from users table
+      const userIds = profiles.map(p => p.user_id);
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, role')
+        .in('id', userIds);
+
+      const roleMap = new Map(users?.map(u => [u.id, u.role]) || []);
+
+      // Merge role data
+      return profiles.map(profile => ({
+        ...profile,
+        role: roleMap.get(profile.user_id) || 'user'
+      }));
     },
     enabled: !!profile?.organization_id,
   });

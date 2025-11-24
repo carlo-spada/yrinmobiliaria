@@ -364,7 +364,6 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           professional_email: string | null
-          role: Database["public"]["Enums"]["user_role"]
           service_zones: string[] | null
           show_in_directory: boolean | null
           social_links: Json | null
@@ -402,7 +401,6 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           professional_email?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
           service_zones?: string[] | null
           show_in_directory?: boolean | null
           social_links?: Json | null
@@ -440,7 +438,6 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           professional_email?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
           service_zones?: string[] | null
           show_in_directory?: boolean | null
           social_links?: Json | null
