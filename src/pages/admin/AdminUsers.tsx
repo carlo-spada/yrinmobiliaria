@@ -33,12 +33,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Pencil, Shield, Mail, User } from 'lucide-react';
+import { Pencil, Shield, Mail, User, Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function AdminUsers() {
   const queryClient = useQueryClient();
+  const { isSuperadmin } = useUserRole();
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -51,6 +53,21 @@ export default function AdminUsers() {
     email_preference: 'forward_to_personal'
   });
   const [selectedRole, setSelectedRole] = useState<'superadmin' | 'admin' | 'user'>('user');
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+
+  // Fetch organizations for superadmin
+  const { data: organizations } = useQuery({
+    queryKey: ['organizations-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('id, name, slug')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['users-list'],
@@ -194,9 +211,45 @@ export default function AdminUsers() {
     },
   });
 
+  const changeOrganizationMutation = useMutation({
+    mutationFn: async ({ userId, orgId }: { userId: string; orgId: string | null }) => {
+      // Update user's organization in users table
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ organization_id: orgId })
+        .eq('id', userId);
+
+      if (userError) throw userError;
+
+      // Update profile's organization
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ organization_id: orgId })
+        .eq('user_id', userId);
+
+      if (profileError) throw profileError;
+
+      // Update role_assignments organization
+      const { error: roleError } = await supabase
+        .from('role_assignments')
+        .update({ organization_id: orgId })
+        .eq('user_id', userId);
+
+      if (roleError) throw roleError;
+    },
+    onSuccess: () => {
+      toast.success('Organización actualizada correctamente');
+      queryClient.invalidateQueries({ queryKey: ['users-list'] });
+    },
+    onError: (error) => {
+      toast.error('Error al cambiar organización: ' + error.message);
+    },
+  });
+
   const handleEditClick = (user: any) => {
     setSelectedUser(user);
     setSelectedRole(user.role as 'superadmin' | 'admin' | 'user');
+    setSelectedOrgId(user.organization_id);
     setFormData({
       bio: user.bio || '',
       job_title: user.job_title || '',
@@ -318,7 +371,7 @@ export default function AdminUsers() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Organización</span>
-                      <span className="text-sm text-muted-foreground">{selectedUser?.organization?.name}</span>
+                      <span className="text-sm text-muted-foreground">{selectedUser?.organization?.name || 'Sin organización'}</span>
                     </div>
                   </div>
 
@@ -347,6 +400,52 @@ export default function AdminUsers() {
                     <p className="text-xs text-muted-foreground">
                       Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.role)}>{getRoleLabel(selectedUser?.role)}</Badge>
                     </p>
+                  </div>
+
+                  <div className="space-y-3 border-t pt-4">
+                    <Label>Asignar Organización (Solo Superadmin)</Label>
+                    {isSuperadmin ? (
+                      <>
+                        <div className="flex gap-2">
+                          <Select
+                            value={selectedOrgId || 'none'}
+                            onValueChange={(val) => {
+                              const orgId = val === 'none' ? null : val;
+                              setSelectedOrgId(orgId);
+                            }}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue placeholder="Seleccionar organización" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sin organización</SelectItem>
+                              {organizations?.map((org) => (
+                                <SelectItem key={org.id} value={org.id}>
+                                  {org.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            onClick={() => changeOrganizationMutation.mutate({
+                              userId: selectedUser.user_id,
+                              orgId: selectedOrgId
+                            })}
+                            disabled={changeOrganizationMutation.isPending || selectedOrgId === selectedUser.organization_id}
+                          >
+                            <Building2 className="h-4 w-4 mr-2" />
+                            Asignar
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Organización actual: {selectedUser?.organization?.name || 'Ninguna'}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Solo los superadministradores pueden asignar organizaciones.
+                      </p>
+                    )}
                   </div>
                 </div>
               </TabsContent>
