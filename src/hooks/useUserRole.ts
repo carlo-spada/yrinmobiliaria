@@ -51,36 +51,35 @@ export function useUserRole() {
       }
 
       try {
-        // Get organization and base role from users table
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('organization_id, role')
-          .eq('id', user.id)
+        // Get organization and agent info from profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('organization_id, agent_level')
+          .eq('user_id', user.id)
           .single();
 
-        if (userError || !userData) {
-          console.error('Error fetching user data:', userError);
+        if (profileError) {
+          console.error('Error fetching profile data:', profileError);
           setRoleData(prev => ({ ...prev, loading: false }));
           return;
         }
 
         // Get all roles from role_assignments table
-        const { data: roleData, error: roleError } = await supabase
+        const { data: roleAssignments, error: roleError } = await supabase
           .from('role_assignments')
           .select('role')
           .eq('user_id', user.id);
 
         if (roleError) {
-          console.error('Error fetching role:', roleError);
+          console.error('Error fetching roles:', roleError);
           setRoleData(prev => ({ ...prev, loading: false }));
           return;
         }
 
-        // Determine highest role based on hierarchy (not alphabetical)
-        // Note: role_assignments only has 'superadmin', 'admin', 'user' (app_role enum)
+        // Determine highest role based on hierarchy
         let role: UserRole = 'user';
-        if (roleData && roleData.length > 0) {
-          const roles = roleData.map(r => r.role);
+        if (roleAssignments && roleAssignments.length > 0) {
+          const roles = roleAssignments.map(r => r.role);
           if (roles.includes('superadmin')) {
             role = 'superadmin';
           } else if (roles.includes('admin')) {
@@ -88,22 +87,11 @@ export function useUserRole() {
           }
         }
 
-        // Fallback to users.role if no assignment found (or RLS trimmed results)
-        if (role === 'user' && (userData.role === 'admin' || userData.role === 'superadmin')) {
-          role = userData.role as UserRole;
-        }
-        
-        // Check if user is an agent by looking at profile data
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('agent_level')
-          .eq('user_id', user.id)
-          .single();
-        
         // If no admin role but has agent_level, consider them an agent
         if (role === 'user' && profileData?.agent_level) {
           role = 'agent';
         }
+
         const isSuperadmin = role === 'superadmin';
         const isAdmin = role === 'admin' || isSuperadmin;
         const isAgent = role === 'agent' || isAdmin;
@@ -115,7 +103,7 @@ export function useUserRole() {
           isSuperadmin,
           isAdmin,
           isAgent,
-          organizationId: userData.organization_id,
+          organizationId: profileData?.organization_id ?? null,
           loading: false,
         });
 

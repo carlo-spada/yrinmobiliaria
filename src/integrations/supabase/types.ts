@@ -339,7 +339,6 @@ export type Database = {
           agent_license_number: string | null
           agent_specialty: string[] | null
           agent_years_experience: number | null
-          bio: string | null
           bio_en: string | null
           bio_es: string | null
           completed_at: string | null
@@ -376,7 +375,6 @@ export type Database = {
           agent_license_number?: string | null
           agent_specialty?: string[] | null
           agent_years_experience?: number | null
-          bio?: string | null
           bio_en?: string | null
           bio_es?: string | null
           completed_at?: string | null
@@ -413,7 +411,6 @@ export type Database = {
           agent_license_number?: string | null
           agent_specialty?: string[] | null
           agent_years_experience?: number | null
-          bio?: string | null
           bio_en?: string | null
           bio_es?: string | null
           completed_at?: string | null
@@ -796,41 +793,6 @@ export type Database = {
           },
         ]
       }
-      users: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: string
-          organization_id: string | null
-          role: Database["public"]["Enums"]["user_role"]
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id: string
-          organization_id?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: string
-          organization_id?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "users_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -838,11 +800,17 @@ export type Database = {
     Functions: {
       cleanup_temp_storage_images: { Args: never; Returns: undefined }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
+      get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
       is_superadmin: { Args: { _user_id: string }; Returns: boolean }
@@ -857,7 +825,6 @@ export type Database = {
       property_operation: "venta" | "renta"
       property_status: "disponible" | "vendida" | "rentada" | "pendiente"
       property_type: "casa" | "departamento" | "local" | "oficina" | "terrenos"
-      user_role: "superadmin" | "admin" | "agent" | "client" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -990,7 +957,6 @@ export const Constants = {
       property_operation: ["venta", "renta"],
       property_status: ["disponible", "vendida", "rentada", "pendiente"],
       property_type: ["casa", "departamento", "local", "oficina", "terrenos"],
-      user_role: ["superadmin", "admin", "agent", "client", "user"],
     },
   },
 } as const

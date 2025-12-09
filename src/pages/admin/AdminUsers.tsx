@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { TableSkeleton, UserRowSkeleton } from '@/components/admin/TableSkeleton';
+import { UserRowSkeleton } from '@/components/admin/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,7 @@ function UsersContent() {
 
   // Form state for editing
   const [formData, setFormData] = useState({
-    bio: '',
+    bio_es: '',
     job_title: '',
     languages: '',
     professional_email: '',
@@ -66,47 +66,40 @@ function UsersContent() {
     },
   });
 
-  const { data: userRoles, isLoading } = useQuery({
+  const { data: userProfiles, isLoading } = useQuery({
     queryKey: ['users-list', scopedOrgId],
     queryFn: async () => {
-      let usersQuery = supabase
-        .from('users')
+      // Query profiles directly (users table no longer exists)
+      let profilesQuery = supabase
+        .from('profiles')
         .select(`
           id,
+          user_id,
           email,
+          display_name,
+          photo_url,
           organization_id,
+          languages,
+          professional_email,
+          email_preference,
+          bio_es,
+          bio_en,
+          job_title,
           created_at
         `)
         .order('created_at', { ascending: false });
 
       if (scopedOrgId) {
-        usersQuery = usersQuery.eq('organization_id', scopedOrgId);
+        profilesQuery = profilesQuery.eq('organization_id', scopedOrgId);
       }
 
-      const { data: users, error } = await usersQuery;
+      const { data: profiles, error } = await profilesQuery;
 
       if (error) throw error;
-      if (!users) return [];
-
-      // Get profiles for all users
-      const userIds = users.map(u => u.id);
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          photo_url,
-          languages,
-          professional_email,
-          email_preference,
-          bio,
-          job_title
-        `)
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      if (!profiles) return [];
 
       // Get roles from role_assignments
+      const userIds = profiles.map(p => p.user_id);
       const { data: roleAssignments } = await supabase
         .from('role_assignments')
         .select('user_id, role, granted_at')
@@ -127,23 +120,24 @@ function UsersContent() {
 
       const orgMap = new Map(orgs?.map(o => [o.id, o]) || []);
 
-      return users.map((user) => {
-        const profile = profileMap.get(user.id);
-        const org = user.organization_id ? orgMap.get(user.organization_id) : null;
-        const roleInfo = roleMap.get(user.id) || { role: 'user', granted_at: user.created_at };
+      return profiles.map((profile) => {
+        const org = profile.organization_id ? orgMap.get(profile.organization_id) : null;
+        const roleInfo = roleMap.get(profile.user_id) || { role: 'user', granted_at: profile.created_at };
         
         return {
-          user_id: user.id,
-          email: user.email,
+          user_id: profile.user_id,
+          profile_id: profile.id,
+          email: profile.email,
           role: roleInfo.role,
-          organization_id: user.organization_id,
-          display_name: profile?.display_name || user.email,
-          photo_url: profile?.photo_url,
-          bio: profile?.bio,
-          job_title: profile?.job_title,
-          languages: profile?.languages,
-          professional_email: profile?.professional_email,
-          email_preference: profile?.email_preference,
+          organization_id: profile.organization_id,
+          display_name: profile.display_name || profile.email,
+          photo_url: profile.photo_url,
+          bio_es: profile.bio_es,
+          bio_en: profile.bio_en,
+          job_title: profile.job_title,
+          languages: profile.languages,
+          professional_email: profile.professional_email,
+          email_preference: profile.email_preference,
           organization: org,
           roles: [{ role: roleInfo.role, granted_at: roleInfo.granted_at }]
         };
@@ -157,7 +151,7 @@ function UsersContent() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          bio: data.bio,
+          bio_es: data.bio_es,
           job_title: data.job_title,
           languages: data.languages.split(',').map((l: string) => l.trim()).filter(Boolean),
           professional_email: data.professional_email,
@@ -190,11 +184,11 @@ function UsersContent() {
 
       if (deleteError) throw deleteError;
 
-      // Get user's organization
-      const { data: userData } = await supabase
-        .from('users')
+      // Get user's organization from profiles
+      const { data: profileData } = await supabase
+        .from('profiles')
         .select('organization_id')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
 
       // Insert new role
@@ -203,7 +197,7 @@ function UsersContent() {
         .insert({
           user_id: userId,
           role: newRole,
-          organization_id: userData?.organization_id
+          organization_id: profileData?.organization_id
         });
 
       if (insertError) throw insertError;
@@ -223,15 +217,8 @@ function UsersContent() {
       if (!isSuperadmin) {
         throw new Error('Solo los superadministradores pueden asignar organizaciones');
       }
-      // Update user's organization in users table
-      const { error: userError } = await supabase
-        .from('users')
-        .update({ organization_id: orgId })
-        .eq('id', userId);
-
-      if (userError) throw userError;
-
-      // Update profile's organization
+      
+      // Update profile's organization (single source of truth now)
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ organization_id: orgId })
@@ -239,7 +226,7 @@ function UsersContent() {
 
       if (profileError) throw profileError;
 
-      // Update role_assignments organization
+      // Update role_assignments organization for consistency
       const { error: roleError } = await supabase
         .from('role_assignments')
         .update({ organization_id: orgId })
@@ -261,7 +248,7 @@ function UsersContent() {
     setSelectedRole(user.role as 'superadmin' | 'admin' | 'user');
     setSelectedOrgId(user.organization_id);
     setFormData({
-      bio: user.bio || '',
+      bio_es: user.bio_es || '',
       job_title: user.job_title || '',
       languages: user.languages?.join(', ') || '',
       professional_email: user.professional_email || '',
@@ -376,10 +363,10 @@ function UsersContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Biografía Profesional</Label>
+                  <Label>Biografía Profesional (Español)</Label>
                   <Textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    value={formData.bio_es}
+                    onChange={(e) => setFormData({ ...formData, bio_es: e.target.value })}
                     placeholder="Breve descripción de la experiencia y especialidades..."
                     rows={4}
                   />
@@ -387,11 +374,11 @@ function UsersContent() {
 
                 <div className="grid grid-cols-2 gap-4 border-t pt-4">
                   <div className="space-y-2">
-                    <Label>Email Profesional (@yrinmobiliaria.com)</Label>
+                    <Label>Email Profesional</Label>
                     <Input
                       value={formData.professional_email}
                       onChange={(e) => setFormData({ ...formData, professional_email: e.target.value })}
-                      placeholder="nombre@yrinmobiliaria.com"
+                      placeholder="nombre@empresa.com"
                     />
                   </div>
                   <div className="space-y-2">
@@ -524,7 +511,7 @@ function UsersContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {userRoles?.map((user) => (
+              {userProfiles?.map((user) => (
                 <TableRow key={user.user_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleEditClick(user)}>
                   <TableCell>
                     <div className="flex items-center gap-3">
