@@ -30,7 +30,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { useAdminOrg } from '@/components/admin/AdminOrgContext';
 
-export default function AdminUsers() {
+function UsersContent() {
   const queryClient = useQueryClient();
   const { isSuperadmin, organizationId } = useUserRole();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
@@ -51,13 +51,11 @@ export default function AdminUsers() {
 
   if (!isSuperadmin && !scopedOrgId) {
     return (
-      <AdminLayout>
-        <RoleGuard allowedRoles={['admin', 'superadmin']}>
-          <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-            Asigna una organización a tu perfil para gestionar usuarios.
-          </div>
-        </RoleGuard>
-      </AdminLayout>
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          Asigna una organización a tu perfil para gestionar usuarios.
+        </div>
+      </RoleGuard>
     );
   }
 
@@ -295,14 +293,13 @@ export default function AdminUsers() {
   };
 
   return (
-    <AdminLayout>
-      <RoleGuard allowedRoles={['admin', 'superadmin']}>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
-              <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
-            </div>
+    <RoleGuard allowedRoles={['admin', 'superadmin']}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
+            <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
+          </div>
         </div>
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -550,8 +547,15 @@ export default function AdminUsers() {
             </TableBody>
           </Table>
         </div>
-        </div>
-      </RoleGuard>
+      </div>
+    </RoleGuard>
+  );
+}
+
+export default function AdminUsers() {
+  return (
+    <AdminLayout>
+      <UsersContent />
     </AdminLayout>
   );
 }

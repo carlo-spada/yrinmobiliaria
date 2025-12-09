@@ -33,7 +33,7 @@ type ContactInquiry = Database['public']['Tables']['contact_inquiries']['Row'] &
   properties?: { title_es: string } | null;
 };
 
-export default function AdminInquiries() {
+function InquiriesContent() {
   const [selectedInquiry, setSelectedInquiry] = useState<ContactInquiry | null>(null);
   const queryClient = useQueryClient();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
@@ -42,13 +42,11 @@ export default function AdminInquiries() {
 
   if (!isSuperadmin && !scopedOrg) {
     return (
-      <AdminLayout>
-        <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
-          <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-            Asigna una organización a tu perfil para ver consultas.
-          </div>
-        </RoleGuard>
-      </AdminLayout>
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          Asigna una organización a tu perfil para ver consultas.
+        </div>
+      </RoleGuard>
     );
   }
 
@@ -113,8 +111,7 @@ export default function AdminInquiries() {
   });
 
   return (
-    <AdminLayout>
-      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+    <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Consultas de Contacto</h2>
@@ -230,7 +227,14 @@ export default function AdminInquiries() {
           </DialogContent>
         </Dialog>
       </div>
-      </RoleGuard>
+    </RoleGuard>
+  );
+}
+
+export default function AdminInquiries() {
+  return (
+    <AdminLayout>
+      <InquiriesContent />
     </AdminLayout>
   );
 }

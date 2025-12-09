@@ -38,7 +38,7 @@ type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & 
   properties?: { title_es: string } | null;
 };
 
-export default function AdminVisits() {
+function VisitsContent() {
   const [selectedVisit, setSelectedVisit] = useState<ScheduledVisit | null>(null);
   const queryClient = useQueryClient();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
@@ -47,13 +47,11 @@ export default function AdminVisits() {
 
   if (!isSuperadmin && !scopedOrg) {
     return (
-      <AdminLayout>
-        <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
-          <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-            Asigna una organización a tu perfil para ver visitas.
-          </div>
-        </RoleGuard>
-      </AdminLayout>
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          Asigna una organización a tu perfil para ver visitas.
+        </div>
+      </RoleGuard>
     );
   }
 
@@ -118,8 +116,7 @@ export default function AdminVisits() {
   });
 
   return (
-    <AdminLayout>
-      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+    <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Visitas Agendadas</h2>
@@ -241,7 +238,14 @@ export default function AdminVisits() {
           </DialogContent>
         </Dialog>
       </div>
-      </RoleGuard>
+    </RoleGuard>
+  );
+}
+
+export default function AdminVisits() {
+  return (
+    <AdminLayout>
+      <VisitsContent />
     </AdminLayout>
   );
 }
