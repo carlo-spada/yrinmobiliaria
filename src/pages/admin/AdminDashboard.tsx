@@ -10,15 +10,9 @@ function DashboardContent() {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin } = useUserRole();
   const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+  const canQuery = isSuperadmin || !!scopedOrg;
 
-  if (!isSuperadmin && !scopedOrg) {
-    return (
-      <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-        Asigna una organización a tu perfil para ver el dashboard.
-      </div>
-    );
-  }
-
+  // All hooks must be called unconditionally at the top
   const { data: stats } = useQuery({
     queryKey: ['admin-stats', scopedOrg],
     queryFn: async () => {
@@ -46,6 +40,7 @@ function DashboardContent() {
         logs: logs.count || 0,
       };
     },
+    enabled: canQuery,
   });
 
   const { data: recentInquiries } = useQuery({
@@ -64,7 +59,7 @@ function DashboardContent() {
       const { data } = await query;
       return data || [];
     },
-    enabled: isSuperadmin || !!scopedOrg,
+    enabled: canQuery,
   });
 
   const { data: upcomingVisits } = useQuery({
@@ -84,8 +79,17 @@ function DashboardContent() {
       const { data } = await query;
       return data || [];
     },
-    enabled: isSuperadmin || !!scopedOrg,
+    enabled: canQuery,
   });
+
+  // Conditional rendering AFTER all hooks
+  if (!canQuery) {
+    return (
+      <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+        Asigna una organización a tu perfil para ver el dashboard.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
