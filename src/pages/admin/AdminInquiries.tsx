@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TableSkeleton } from '@/components/admin/TableSkeleton';
 import {
   Select,
   SelectContent,
@@ -108,6 +109,24 @@ function InquiriesContent() {
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
         <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
           Asigna una organización a tu perfil para ver consultas.
+        </div>
+      </RoleGuard>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Consultas de Contacto</h2>
+            <p className="text-muted-foreground">Gestiona todas las consultas recibidas</p>
+          </div>
+          <TableSkeleton 
+            columns={6} 
+            rows={5}
+            headers={['Fecha', 'Nombre', 'Email', 'Propiedad', 'Estado', 'Acciones']}
+          />
         </div>
       </RoleGuard>
     );

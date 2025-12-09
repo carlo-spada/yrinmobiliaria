@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TableSkeleton } from './TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
@@ -109,7 +110,13 @@ export const PropertiesTable = () => {
   });
 
   if (isLoading) {
-    return <div className="text-center py-8">Cargando propiedades...</div>;
+    return (
+      <TableSkeleton 
+        columns={7} 
+        rows={5}
+        headers={['Título', 'Tipo', 'Operación', 'Precio', 'Estado', 'Agente', 'Acciones']}
+      />
+    );
   }
 
   return (

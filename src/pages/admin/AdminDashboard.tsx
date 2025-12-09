@@ -5,6 +5,7 @@ import { Home, MessageSquare, Calendar, FileText } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { useAdminOrg } from '@/components/admin/AdminOrgContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import { DashboardSkeleton } from '@/components/admin/TableSkeleton';
 
 function DashboardContent() {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
@@ -82,6 +83,9 @@ function DashboardContent() {
     enabled: canQuery,
   });
 
+  // Get loading state
+  const isLoading = !stats && canQuery;
+
   // Conditional rendering AFTER all hooks
   if (!canQuery) {
     return (
@@ -89,6 +93,10 @@ function DashboardContent() {
         Asigna una organización a tu perfil para ver el dashboard.
       </div>
     );
+  }
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
   }
 
   return (
