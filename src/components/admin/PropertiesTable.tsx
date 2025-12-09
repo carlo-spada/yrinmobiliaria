@@ -44,14 +44,7 @@ export const PropertiesTable = () => {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
 
   const scopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
-
-  if (!isSuperadmin && !scopedOrgId) {
-    return (
-      <div className="text-sm text-muted-foreground border rounded-lg p-4">
-        Asigna una organización a tu perfil para gestionar propiedades.
-      </div>
-    );
-  }
+  const shouldFetch = isSuperadmin || !!scopedOrgId;
 
   const { data: properties, isLoading } = useQuery({
     queryKey: ['admin-properties', scopedOrgId],
@@ -74,7 +67,7 @@ export const PropertiesTable = () => {
       if (error) throw error;
       return data;
     },
-    enabled: isSuperadmin || !!scopedOrgId,
+    enabled: shouldFetch,
   });
 
   const deleteMutation = useMutation({
@@ -108,6 +101,15 @@ export const PropertiesTable = () => {
       toast.error('Error al eliminar: ' + errorMessage);
     },
   });
+
+  // Early return for missing org (after all hooks)
+  if (!shouldFetch) {
+    return (
+      <div className="text-sm text-muted-foreground border rounded-lg p-4">
+        Asigna una organización a tu perfil para gestionar propiedades.
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
