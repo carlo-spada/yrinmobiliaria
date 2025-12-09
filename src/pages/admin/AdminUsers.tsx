@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TableSkeleton, UserRowSkeleton } from '@/components/admin/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -296,6 +297,39 @@ function UsersContent() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Usuarios y Equipo</h2>
+              <p className="text-muted-foreground">Gestiona los perfiles, roles y accesos de tu equipo</p>
+            </div>
+          </div>
+          <div className="border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Usuario</TableHead>
+                  <TableHead>Rol & Cargo</TableHead>
+                  <TableHead>Contacto</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <UserRowSkeleton key={i} />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </RoleGuard>
+    );
+  }
+
   return (
     <RoleGuard allowedRoles={['admin', 'superadmin']}>
       <div className="space-y-6">
@@ -490,11 +524,7 @@ function UsersContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">Cargando equipo...</TableCell>
-                </TableRow>
-              ) : userRoles?.map((user) => (
+              {userRoles?.map((user) => (
                 <TableRow key={user.user_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleEditClick(user)}>
                   <TableCell>
                     <div className="flex items-center gap-3">

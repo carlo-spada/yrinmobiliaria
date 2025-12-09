@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TableSkeleton } from '@/components/admin/TableSkeleton';
 import {
   Select,
   SelectContent,
@@ -113,6 +114,24 @@ function VisitsContent() {
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
         <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
           Asigna una organización a tu perfil para ver visitas.
+        </div>
+      </RoleGuard>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Visitas Agendadas</h2>
+            <p className="text-muted-foreground">Gestiona todas las visitas programadas</p>
+          </div>
+          <TableSkeleton 
+            columns={7} 
+            rows={5}
+            headers={['Fecha', 'Hora', 'Nombre', 'Email', 'Propiedad', 'Estado', 'Acciones']}
+          />
         </div>
       </RoleGuard>
     );
