@@ -22,15 +22,15 @@ const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
   const { open } = useSidebar();
 
   return (
-    <div className="min-h-screen flex w-full">
+    <div className="min-h-screen flex w-full overflow-hidden">
       <AdminSidebar />
       {/* Main content - uses padding to account for sidebar */}
       <div className={cn(
-        "flex-1 flex flex-col min-w-0 transition-all duration-200",
+        "flex-1 flex flex-col min-w-0 transition-all duration-200 overflow-hidden",
         open ? "md:pl-64" : "md:pl-14"
       )}>
         <AdminHeader />
-        <main className="flex-1 p-6 bg-background overflow-auto">
+        <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
           {children}
         </main>
       </div>
