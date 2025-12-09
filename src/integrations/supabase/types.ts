@@ -843,6 +843,34 @@ export type Database = {
           whatsapp_number: string
         }[]
       }
+      get_public_organization: {
+        Args: { _org_id: string }
+        Returns: {
+          brand_colors: Json
+          contact_email: string
+          domain: string
+          id: string
+          is_active: boolean
+          logo_url: string
+          name: string
+          phone: string
+          slug: string
+        }[]
+      }
+      get_public_organizations: {
+        Args: never
+        Returns: {
+          brand_colors: Json
+          contact_email: string
+          domain: string
+          id: string
+          is_active: boolean
+          logo_url: string
+          name: string
+          phone: string
+          slug: string
+        }[]
+      }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
