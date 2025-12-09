@@ -79,19 +79,39 @@ function AdminEditProfileContent() {
   }, [profile, setValue]);
 
   const onSubmit = async (data: ProfileFormData) => {
+    console.log("[Profile Update] Starting update for user:", user?.id);
+    console.log("[Profile Update] Data to update:", data);
+    
     try {
-      const { error } = await supabase
+      const { data: result, error } = await supabase
         .from("profiles")
         .update(data)
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id)
+        .select();
 
-      if (error) throw error;
+      console.log("[Profile Update] Supabase response:", { result, error });
 
+      if (error) {
+        console.error("[Profile Update] RLS or DB error:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+        throw error;
+      }
+
+      if (!result || result.length === 0) {
+        console.warn("[Profile Update] No rows updated - possible RLS issue");
+        toast.error("No se pudo actualizar el perfil. Verifica tus permisos.");
+        return;
+      }
+
+      console.log("[Profile Update] Success - updated rows:", result.length);
       toast.success("Perfil actualizado exitosamente");
-      // Stay in admin area
       navigate("/admin");
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("[Profile Update] Exception:", error);
       toast.error("Error al actualizar el perfil");
     }
   };
