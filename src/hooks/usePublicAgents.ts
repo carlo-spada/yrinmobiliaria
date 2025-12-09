@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 // Public agent data - only non-sensitive fields exposed via secure RPC
+// Contact details (email, phone, whatsapp) are intentionally excluded for privacy
 export interface PublicAgent {
   id: string;
   display_name: string;
@@ -16,11 +17,10 @@ export interface PublicAgent {
   service_zones: string[] | null;
   is_featured: boolean;
   organization_id: string | null;
-  // Social links are public by nature
+  // Social links are public by nature (users control what they share)
   instagram_handle: string | null;
   linkedin_url: string | null;
   facebook_url: string | null;
-  whatsapp_number: string | null;
 }
 
 export interface AgentStats {
