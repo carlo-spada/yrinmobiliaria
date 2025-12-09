@@ -39,6 +39,25 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { isStaff, role, loading: roleLoading, isSuperadmin } = useUserRole();
   const location = useLocation();
 
+  // Persist sidebar open state - use useState with initializer
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+      return stored !== null ? stored === 'true' : true; // Default to open
+    } catch {
+      return true;
+    }
+  });
+
+  const handleSidebarChange = (open: boolean) => {
+    setSidebarOpen(open);
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(open));
+    } catch {
+      // localStorage not available
+    }
+  };
+
   const loading = authLoading || roleLoading;
   const showOrgWarning = !!profile && !profile.organization_id;
 
@@ -95,28 +114,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     );
   }
 
-  // Persist sidebar open state
-  const getStoredSidebarState = () => {
-    try {
-      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
-      return stored !== null ? stored === 'true' : true; // Default to open
-    } catch {
-      return true;
-    }
-  };
-
-  const handleSidebarChange = (open: boolean) => {
-    try {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(open));
-    } catch {
-      // localStorage not available
-    }
-  };
-
   return (
     <ProfileCompletionGuard>
       <AdminOrgProvider organizationId={profile?.organization_id ?? null} canViewAll={isSuperadmin}>
-        <SidebarProvider defaultOpen={getStoredSidebarState()} onOpenChange={handleSidebarChange}>
+        <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
           <div className="min-h-screen flex w-full">
             <AdminLayoutContent>
               {showOrgWarning && (
