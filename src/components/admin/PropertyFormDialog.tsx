@@ -168,7 +168,10 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
   const mutation = useMutation({
     mutationFn: async (formData: PropertyFormData) => {
+      console.log("[Property Save] Starting mutation", { isEdit: !!property, formData });
+      
       const scopedOrgId = property?.organization_id || (isSuperadmin && isAllOrganizations ? null : effectiveOrgId);
+      console.log("[Property Save] Scoped org:", { scopedOrgId, isSuperadmin, isAllOrganizations, effectiveOrgId });
 
       if (!scopedOrgId) {
         throw new Error('Selecciona una organización antes de crear la propiedad');
@@ -183,6 +186,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         .maybeSingle();
 
       if (zoneError) {
+        console.error("[Property Save] Zone validation error:", zoneError);
         throw new Error('Error al validar la zona');
       }
 
@@ -200,6 +204,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
       if (!property) {
         const { data: { user } } = await supabase.auth.getUser();
+        console.log("[Property Save] Current user:", user?.id);
 
         if (user) {
           const { data: profile } = await supabase
@@ -209,6 +214,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             .single();
 
           agentId = profile?.id || null;
+          console.log("[Property Save] Agent ID for new property:", agentId);
         }
       }
 
@@ -249,33 +255,67 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         })),
       };
 
+      console.log("[Property Save] Property data to save:", propertyData);
+
       let propertyId = property?.id;
 
       if (property) {
-        const { error } = await supabase
+        console.log("[Property Save] Updating existing property:", property.id);
+        const { data: result, error } = await supabase
           .from('properties')
           .update(propertyData)
-          .eq('id', property.id);
+          .eq('id', property.id)
+          .select();
 
-        if (error) throw error;
+        console.log("[Property Save] Update response:", { result, error });
+
+        if (error) {
+          console.error("[Property Save] Update RLS/DB error:", {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+          });
+          throw error;
+        }
+
+        if (!result || result.length === 0) {
+          console.warn("[Property Save] No rows updated - possible RLS issue");
+          throw new Error('No se pudo actualizar la propiedad. Verifica tus permisos.');
+        }
       } else {
+        console.log("[Property Save] Creating new property");
         const { data, error } = await supabase
           .from('properties')
           .insert([propertyData])
           .select()
           .single();
 
-        if (error) throw error;
+        console.log("[Property Save] Insert response:", { data, error });
+
+        if (error) {
+          console.error("[Property Save] Insert RLS/DB error:", {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+          });
+          throw error;
+        }
         propertyId = data.id;
       }
 
       // Handle images
       // Delete existing images if updating
       if (property) {
-        await supabase
+        const { error: deleteError } = await supabase
           .from('property_images')
           .delete()
           .eq('property_id', property.id);
+        
+        if (deleteError) {
+          console.error("[Property Save] Image delete error:", deleteError);
+        }
       }
 
       // Insert all images
@@ -288,11 +328,15 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           alt_text_en: `${formData.title_en} - Image ${index + 1}`,
         }));
 
+        console.log("[Property Save] Inserting images:", imageRecords);
         const { error } = await supabase
           .from('property_images')
           .insert(imageRecords);
 
-        if (error) throw error;
+        if (error) {
+          console.error("[Property Save] Image insert error:", error);
+          throw error;
+        }
       }
 
       // Log audit event
@@ -307,8 +351,11 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           price: formData.price
         }
       });
+
+      console.log("[Property Save] Mutation completed successfully");
     },
     onSuccess: () => {
+      console.log("[Property Save] onSuccess triggered");
       queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
       toast.success(property ? 'Propiedad actualizada' : 'Propiedad creada correctamente');
       onOpenChange(false);
@@ -316,6 +363,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       setImages([]);
     },
     onError: (error) => {
+      console.error("[Property Save] onError triggered:", error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       toast.error('Error: ' + errorMessage);
     },
