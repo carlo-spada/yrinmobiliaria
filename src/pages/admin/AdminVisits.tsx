@@ -44,17 +44,9 @@ function VisitsContent() {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin } = useUserRole();
   const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+  const canQuery = isSuperadmin || !!scopedOrg;
 
-  if (!isSuperadmin && !scopedOrg) {
-    return (
-      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
-        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-          Asigna una organización a tu perfil para ver visitas.
-        </div>
-      </RoleGuard>
-    );
-  }
-
+  // All hooks must be called unconditionally at the top
   const { data: visits, isLoading } = useQuery({
     queryKey: ['scheduled-visits', scopedOrg],
     queryFn: async () => {
@@ -71,7 +63,7 @@ function VisitsContent() {
       if (error) throw error;
       return data;
     },
-    enabled: isSuperadmin || !!scopedOrg,
+    enabled: canQuery,
   });
 
   const updateStatusMutation = useMutation({
@@ -114,6 +106,17 @@ function VisitsContent() {
       toast.success('Visita eliminada');
     },
   });
+
+  // Conditional rendering AFTER all hooks
+  if (!canQuery) {
+    return (
+      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          Asigna una organización a tu perfil para ver visitas.
+        </div>
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>

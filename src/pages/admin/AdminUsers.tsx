@@ -35,6 +35,8 @@ function UsersContent() {
   const { isSuperadmin, organizationId } = useUserRole();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const scopedOrgId = isSuperadmin && isAllOrganizations ? null : (effectiveOrgId ?? organizationId);
+  const canQuery = isSuperadmin || !!scopedOrgId;
+  
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -49,17 +51,7 @@ function UsersContent() {
   const [selectedRole, setSelectedRole] = useState<'superadmin' | 'admin' | 'user'>('user');
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
-  if (!isSuperadmin && !scopedOrgId) {
-    return (
-      <RoleGuard allowedRoles={['admin', 'superadmin']}>
-        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-          Asigna una organización a tu perfil para gestionar usuarios.
-        </div>
-      </RoleGuard>
-    );
-  }
-
-  // Fetch organizations for superadmin
+  // All hooks must be called unconditionally at the top
   const { data: organizations } = useQuery({
     queryKey: ['organizations-list'],
     queryFn: async () => {
@@ -156,6 +148,7 @@ function UsersContent() {
         };
       });
     },
+    enabled: canQuery,
   });
 
   const updateProfileMutation = useMutation({
@@ -291,6 +284,17 @@ function UsersContent() {
       default: return 'Usuario';
     }
   };
+
+  // Conditional rendering AFTER all hooks
+  if (!canQuery) {
+    return (
+      <RoleGuard allowedRoles={['admin', 'superadmin']}>
+        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
+          Asigna una organización a tu perfil para gestionar usuarios.
+        </div>
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard allowedRoles={['admin', 'superadmin']}>
