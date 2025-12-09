@@ -21,16 +21,16 @@ interface AdminLayoutProps {
 // Inner component that has access to sidebar context
 const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
   return (
-    <>
+    <div className="flex min-h-screen w-full">
       <AdminSidebar />
-      {/* Main content area - no extra padding needed, sidebar handles spacing */}
+      {/* Main content area - flex-1 takes remaining space after sidebar */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminHeader />
         <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
           {children}
         </main>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -119,21 +119,19 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <ProfileCompletionGuard>
       <AdminOrgProvider organizationId={profile?.organization_id ?? null} canViewAll={isSuperadmin}>
         <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
-          <div className="min-h-screen flex w-full">
-            <AdminLayoutContent>
-              {showOrgWarning && (
-                <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Falta organización</AlertTitle>
-                  <AlertDescription>
-                    No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
-                    Contacta a un administrador para asignarte a una organización.
-                  </AlertDescription>
-                </Alert>
-              )}
-              {children}
-            </AdminLayoutContent>
-          </div>
+          <AdminLayoutContent>
+            {showOrgWarning && (
+              <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Falta organización</AlertTitle>
+                <AlertDescription>
+                  No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
+                  Contacta a un administrador para asignarte a una organización.
+                </AlertDescription>
+              </Alert>
+            )}
+            {children}
+          </AdminLayoutContent>
         </SidebarProvider>
       </AdminOrgProvider>
     </ProfileCompletionGuard>
