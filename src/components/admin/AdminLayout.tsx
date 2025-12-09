@@ -1,8 +1,8 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate, useLocation } from 'react-router-dom';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
@@ -18,18 +18,27 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
-// Inner component that has access to sidebar context
+// Inner component that uses explicit CSS margins instead of peer-data-* selectors
+// This avoids Cloudflare CSS minification breaking the layout
 const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
+  const { open, isMobile } = useSidebar();
+  
+  // Calculate margin based on sidebar state - explicit values that won't break with minification
+  const sidebarWidth = open && !isMobile ? '16rem' : '0';
+  
   return (
-    <>
+    <div className="flex min-h-screen w-full">
       <AdminSidebar />
-      <SidebarInset>
+      <div 
+        className="flex-1 flex flex-col min-w-0 transition-[margin] duration-200 ease-linear"
+        style={{ marginLeft: sidebarWidth }}
+      >
         <AdminHeader />
-        <div className="flex-1 p-4 md:p-6 bg-background overflow-auto">
+        <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
           {children}
-        </div>
-      </SidebarInset>
-    </>
+        </main>
+      </div>
+    </div>
   );
 };
 
