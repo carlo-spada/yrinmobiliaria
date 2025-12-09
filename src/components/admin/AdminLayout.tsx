@@ -2,14 +2,13 @@ import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate, useLocation } from 'react-router-dom';
-import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AdminOrgProvider } from './AdminOrgContext';
 
@@ -19,22 +18,17 @@ interface AdminLayoutProps {
 
 // Inner component that has access to sidebar context
 const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
-  const { open } = useSidebar();
-
   return (
-    <div className="min-h-screen flex w-full overflow-hidden">
+    <>
       <AdminSidebar />
-      {/* Main content - uses padding to account for sidebar */}
-      <div className={cn(
-        "flex-1 flex flex-col min-w-0 transition-all duration-200 overflow-hidden",
-        open ? "md:pl-64" : "md:pl-14"
-      )}>
+      {/* Main content area - no extra padding needed, sidebar handles spacing */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminHeader />
         <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
           {children}
         </main>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -103,19 +97,21 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <ProfileCompletionGuard>
       <AdminOrgProvider organizationId={profile?.organization_id ?? null} canViewAll={isSuperadmin}>
         <SidebarProvider defaultOpen={true}>
-          <AdminLayoutContent>
-            {showOrgWarning && (
-              <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Falta organización</AlertTitle>
-                <AlertDescription>
-                  No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
-                  Contacta a un administrador para asignarte a una organización.
-                </AlertDescription>
-              </Alert>
-            )}
-            {children}
-          </AdminLayoutContent>
+          <div className="min-h-screen flex w-full">
+            <AdminLayoutContent>
+              {showOrgWarning && (
+                <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Falta organización</AlertTitle>
+                  <AlertDescription>
+                    No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
+                    Contacta a un administrador para asignarte a una organización.
+                  </AlertDescription>
+                </Alert>
+              )}
+              {children}
+            </AdminLayoutContent>
+          </div>
         </SidebarProvider>
       </AdminOrgProvider>
     </ProfileCompletionGuard>

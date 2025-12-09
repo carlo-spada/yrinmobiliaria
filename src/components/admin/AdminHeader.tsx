@@ -19,22 +19,28 @@ import { useAdminOrg } from './AdminOrgContext';
 
 export const AdminHeader = () => {
   const { user, signOut } = useAuth();
-  const { isSuperadmin, organizationId } = useUserRole();
+  const { isSuperadmin } = useUserRole();
   const { selectedOrgId, setSelectedOrgId, canViewAll } = useAdminOrg();
   const navigate = useNavigate();
   const [selectedOrg, setSelectedOrg] = useState<string>(selectedOrgId ?? 'all');
 
-  const { data: organizations } = useQuery({
-    queryKey: ['organizations'],
+  // Always fetch organizations for superadmins - don't filter by is_active to get all
+  const { data: organizations, isLoading: orgsLoading } = useQuery({
+    queryKey: ['admin-organizations'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('organizations')
         .select('id, name, slug')
+        .eq('is_active', true)
         .order('name');
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching organizations:', error);
+        throw error;
+      }
+      console.log('Organizations fetched:', data);
+      return data ?? [];
     },
-    enabled: isSuperadmin,
+    enabled: isSuperadmin && canViewAll,
   });
 
   const handleSignOut = async () => {
@@ -50,7 +56,8 @@ export const AdminHeader = () => {
   const handleOrgChange = (value: string) => {
     setSelectedOrg(value);
     setSelectedOrgId(value);
-    toast.info(`Cambiando contexto a: ${organizations?.find(o => o.id === value)?.name || 'Todas'}`);
+    const orgName = value === 'all' ? 'Todas' : organizations?.find(o => o.id === value)?.name || value;
+    toast.info(`Contexto: ${orgName}`);
   };
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export const AdminHeader = () => {
   }, [selectedOrgId]);
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-4 md:px-6 bg-card shrink-0 w-full overflow-hidden">
+    <header className="h-16 border-b flex items-center justify-between px-4 md:px-6 bg-card shrink-0 w-full">
       <div className="flex items-center gap-4 min-w-0">
         <SidebarTrigger className="shrink-0" />
         <h1 className="text-xl font-semibold hidden md:block truncate">Panel de Administración</h1>
@@ -70,15 +77,19 @@ export const AdminHeader = () => {
             <Building2 className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
             <Select value={selectedOrg} onValueChange={handleOrgChange}>
               <SelectTrigger className="w-[140px] md:w-[200px]">
-                <SelectValue placeholder="Seleccionar Org" />
+                <SelectValue placeholder={orgsLoading ? "Cargando..." : "Seleccionar Org"} />
               </SelectTrigger>
-              <SelectContent className="bg-popover">
+              <SelectContent className="bg-popover z-50">
                 <SelectItem value="all">Todas las Organizaciones</SelectItem>
-                {organizations?.map((org) => (
-                  <SelectItem key={org.id} value={org.id}>
-                    {org.name}
-                  </SelectItem>
-                ))}
+                {organizations && organizations.length > 0 ? (
+                  organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  !orgsLoading && <SelectItem value="none" disabled>No hay organizaciones</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
