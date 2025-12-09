@@ -799,6 +799,50 @@ export type Database = {
     }
     Functions: {
       cleanup_temp_storage_images: { Args: never; Returns: undefined }
+      get_public_agent_by_id: {
+        Args: { _agent_id: string }
+        Returns: {
+          agent_level: Database["public"]["Enums"]["agent_level"]
+          agent_license_number: string
+          agent_specialty: string[]
+          agent_years_experience: number
+          bio_en: string
+          bio_es: string
+          display_name: string
+          facebook_url: string
+          id: string
+          instagram_handle: string
+          is_featured: boolean
+          languages: string[]
+          linkedin_url: string
+          organization_id: string
+          photo_url: string
+          service_zones: string[]
+          whatsapp_number: string
+        }[]
+      }
+      get_public_agents: {
+        Args: never
+        Returns: {
+          agent_level: Database["public"]["Enums"]["agent_level"]
+          agent_license_number: string
+          agent_specialty: string[]
+          agent_years_experience: number
+          bio_en: string
+          bio_es: string
+          display_name: string
+          facebook_url: string
+          id: string
+          instagram_handle: string
+          is_featured: boolean
+          languages: string[]
+          linkedin_url: string
+          organization_id: string
+          photo_url: string
+          service_zones: string[]
+          whatsapp_number: string
+        }[]
+      }
       get_user_email: { Args: { target_user_id: string }; Returns: string }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
