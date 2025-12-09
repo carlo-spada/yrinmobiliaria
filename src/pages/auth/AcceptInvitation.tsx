@@ -9,6 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
+import { z } from "zod";
+import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
+
+const passwordSchema = z.string()
+  .min(12, "La contraseña debe tener al menos 12 caracteres")
+  .regex(/[A-Z]/, "Debe contener al menos una mayúscula")
+  .regex(/[a-z]/, "Debe contener al menos una minúscula")
+  .regex(/[0-9]/, "Debe contener al menos un número")
+  .regex(/[^A-Za-z0-9]/, "Debe contener al menos un carácter especial");
 
 type AgentInvitation = Database['public']['Tables']['agent_invitations']['Row'] & {
   organization: Database['public']['Tables']['organizations']['Row'] | null;
@@ -74,8 +83,14 @@ export default function AcceptInvitation() {
   }, [token, validateInvitation]);
 
   const handleAccept = async () => {
-    if (!invitation || !password || password.length < 6) {
-      toast.error("La contraseña debe tener al menos 6 caracteres");
+    if (!invitation) {
+      toast.error("Invitación no válida");
+      return;
+    }
+
+    const passwordValidation = passwordSchema.safeParse(password);
+    if (!passwordValidation.success) {
+      toast.error(passwordValidation.error.issues[0].message);
       return;
     }
 
@@ -202,18 +217,20 @@ export default function AcceptInvitation() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 12 caracteres"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isProcessing}
+                  minLength={12}
                 />
+                {password && <PasswordStrengthIndicator password={password} />}
               </div>
             </div>
           </div>
 
           <Button
             onClick={handleAccept}
-            disabled={isProcessing || password.length < 6}
+            disabled={isProcessing || password.length < 12}
             className="w-full"
           >
             {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
