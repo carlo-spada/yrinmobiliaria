@@ -6,16 +6,17 @@ import {
   MessageSquare,
   Calendar,
   Users,
-  UserPlus,
   UserCircle,
   FileText,
   Settings,
   Activity,
+  Database,
+  Building2,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from '@/utils/LanguageContext';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useUserRole, UserRole } from '@/hooks/useUserRole';
 import {
   Sidebar,
   SidebarContent,
@@ -25,123 +26,200 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
+
+type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
 
 interface MenuItem {
   title: string;
   url: string;
   icon: LucideIcon;
   exactMatch?: boolean;
-  roles: ('superadmin' | 'admin' | 'agent' | 'user' | 'client')[];
+  roles: AllowedRole[];
+}
+
+interface MenuGroup {
+  label: string;
+  items: MenuItem[];
+  roles: AllowedRole[];
 }
 
 export function AdminSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
   const { t } = useLanguage();
-  const { role } = useUserRole();
+  const { role, isSuperadmin, isAdmin, isAgent } = useUserRole();
   const currentPath = location.pathname;
 
-  // Define all menu items with role-based access
-  const allMenuItems: MenuItem[] = [
-    // Common for everyone
+  // Define menu groups with role-based access
+  const menuGroups: MenuGroup[] = [
     {
-      title: t.admin.profile,
-      url: '/admin/profile',
-      icon: UserCircle,
-      roles: ['superadmin', 'admin', 'agent', 'user', 'client']
-    },
-    // Agent & Up
-    {
-      title: t.admin.properties,
-      url: '/admin/properties',
-      icon: Home,
-      roles: ['superadmin', 'admin', 'agent']
-    },
-    {
-      title: "Calendario", // Was Visits
-      url: '/admin/visits',
-      icon: Calendar,
-      roles: ['superadmin', 'admin', 'agent']
-    },
-    // Admin & Up
-    {
-      title: t.admin.users,
-      url: '/admin/users',
-      icon: Users,
-      roles: ['superadmin', 'admin']
+      label: 'General',
+      roles: ['superadmin', 'admin', 'agent', 'user'],
+      items: [
+        {
+          title: 'Dashboard',
+          url: '/admin',
+          icon: LayoutDashboard,
+          exactMatch: true,
+          roles: ['superadmin', 'admin', 'agent'],
+        },
+        {
+          title: 'Mi Perfil',
+          url: '/admin/profile',
+          icon: UserCircle,
+          roles: ['superadmin', 'admin', 'agent', 'user'],
+        },
+      ],
     },
     {
-      title: t.admin.zones,
-      url: '/admin/zones',
-      icon: MapPin,
-      roles: ['superadmin', 'admin']
+      label: 'Operaciones',
+      roles: ['superadmin', 'admin', 'agent'],
+      items: [
+        {
+          title: 'Propiedades',
+          url: '/admin/properties',
+          icon: Home,
+          roles: ['superadmin', 'admin', 'agent'],
+        },
+        {
+          title: 'Consultas',
+          url: '/admin/inquiries',
+          icon: MessageSquare,
+          roles: ['superadmin', 'admin', 'agent'],
+        },
+        {
+          title: 'Visitas',
+          url: '/admin/visits',
+          icon: Calendar,
+          roles: ['superadmin', 'admin', 'agent'],
+        },
+      ],
     },
     {
-      title: "Organización", // Was Settings
-      url: '/admin/settings',
-      icon: Settings,
-      roles: ['superadmin', 'admin']
+      label: 'Administración',
+      roles: ['superadmin', 'admin'],
+      items: [
+        {
+          title: 'Usuarios',
+          url: '/admin/users',
+          icon: Users,
+          roles: ['superadmin', 'admin'],
+        },
+        {
+          title: 'Agentes',
+          url: '/admin/agents',
+          icon: UserCircle,
+          roles: ['superadmin', 'admin'],
+        },
+        {
+          title: 'Zonas',
+          url: '/admin/zones',
+          icon: MapPin,
+          roles: ['superadmin', 'admin'],
+        },
+        {
+          title: 'Configuración',
+          url: '/admin/settings',
+          icon: Settings,
+          roles: ['superadmin', 'admin'],
+        },
+        {
+          title: 'Actividad',
+          url: '/admin/audit-logs',
+          icon: Activity,
+          roles: ['superadmin', 'admin'],
+        },
+      ],
     },
     {
-      title: "Actividad", // Was Audit Logs
-      url: '/admin/audit-logs',
-      icon: Activity,
-      roles: ['superadmin', 'admin']
-    },
-    // Superadmin Only
-    {
-      title: "Sistema", // Was Health
-      url: '/admin/health',
-      icon: Activity,
-      roles: ['superadmin']
-    },
-    {
-      title: "Schema Builder",
-      url: '/admin/schema-builder',
-      icon: FileText,
-      roles: ['superadmin']
+      label: 'Sistema',
+      roles: ['superadmin'],
+      items: [
+        {
+          title: 'Organizaciones',
+          url: '/admin/settings',
+          icon: Building2,
+          roles: ['superadmin'],
+        },
+        {
+          title: 'Salud del Sistema',
+          url: '/admin/health',
+          icon: Activity,
+          roles: ['superadmin'],
+        },
+        {
+          title: 'Schema Builder',
+          url: '/admin/schema-builder',
+          icon: Database,
+          roles: ['superadmin'],
+        },
+        {
+          title: 'Seed Database',
+          url: '/admin/seed',
+          icon: FileText,
+          roles: ['superadmin'],
+        },
+      ],
     },
   ];
 
-  // Filter menu items based on user role
-  const menuItems = allMenuItems.filter(item =>
-    item.roles.includes(role as 'superadmin' | 'admin' | 'agent' | 'user' | 'client')
-  );
+  // Check if user has access to an item
+  const hasAccess = (roles: AllowedRole[]): boolean => {
+    if (!role) return false;
+    return roles.includes(role as AllowedRole);
+  };
+
+  // Filter groups and their items based on user role
+  const visibleGroups = menuGroups
+    .filter(group => hasAccess(group.roles))
+    .map(group => ({
+      ...group,
+      items: group.items.filter(item => hasAccess(item.roles)),
+    }))
+    .filter(group => group.items.length > 0);
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className={!open ? 'sr-only' : ''}>
-            {t.admin.dashboard}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = item.exactMatch
-                  ? currentPath === item.url
-                  : currentPath.startsWith(item.url);
+        {visibleGroups.map((group, groupIndex) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className={!open ? 'sr-only' : ''}>
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = item.exactMatch
+                    ? currentPath === item.url
+                    : currentPath.startsWith(item.url) && item.url !== '/admin';
 
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className="hover:bg-accent"
-                        activeClassName="bg-accent text-accent-foreground font-medium"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {open && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  // Special case for dashboard - only active on exact match
+                  const isDashboardActive = item.url === '/admin' && currentPath === '/admin';
+                  const finalIsActive = item.url === '/admin' ? isDashboardActive : isActive;
+
+                  return (
+                    <SidebarMenuItem key={item.url + item.title}>
+                      <SidebarMenuButton asChild isActive={finalIsActive}>
+                        <NavLink
+                          to={item.url}
+                          className="hover:bg-accent"
+                          activeClassName="bg-accent text-accent-foreground font-medium"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {open && <span>{item.title}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+            {groupIndex < visibleGroups.length - 1 && <SidebarSeparator />}
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );
