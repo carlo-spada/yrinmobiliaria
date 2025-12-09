@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuthContext, UserRole } from '@/contexts/AuthContext';
 
-export type UserRole = 'superadmin' | 'admin' | 'agent' | 'user' | 'client';
+export type { UserRole };
 
 export interface UserRoleData {
   role: UserRole;
-  isStaff: boolean; // true for superadmin, admin, or agent
+  isStaff: boolean;
   isSuperadmin: boolean;
   isAdmin: boolean;
   isAgent: boolean;
@@ -15,7 +13,8 @@ export interface UserRoleData {
 }
 
 /**
- * Hook to determine user's role and permissions
+ * Hook to determine user's role and permissions.
+ * Uses the shared AuthContext for consistent state across the app.
  *
  * Role hierarchy:
  * - superadmin: Full system access, no org scoping
@@ -23,98 +22,16 @@ export interface UserRoleData {
  * - agent: Limited access to own properties/inquiries/visits
  * - user: Regular customer, no admin access
  */
-export function useUserRole() {
-  const { user } = useAuth();
-  const [roleData, setRoleData] = useState<UserRoleData>({
-    role: 'user',
-    isStaff: false,
-    isSuperadmin: false,
-    isAdmin: false,
-    isAgent: false,
-    organizationId: null,
-    loading: true,
-  });
+export function useUserRole(): UserRoleData {
+  const context = useAuthContext();
 
-  useEffect(() => {
-    async function checkRole() {
-      if (!user) {
-        setRoleData({
-          role: 'user',
-          isStaff: false,
-          isSuperadmin: false,
-          isAdmin: false,
-          isAgent: false,
-          organizationId: null,
-          loading: false,
-        });
-        return;
-      }
-
-      try {
-        // Get organization and agent info from profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('organization_id, agent_level')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Error fetching profile data:', profileError);
-          setRoleData(prev => ({ ...prev, loading: false }));
-          return;
-        }
-
-        // Get all roles from role_assignments table
-        const { data: roleAssignments, error: roleError } = await supabase
-          .from('role_assignments')
-          .select('role')
-          .eq('user_id', user.id);
-
-        if (roleError) {
-          console.error('Error fetching roles:', roleError);
-          setRoleData(prev => ({ ...prev, loading: false }));
-          return;
-        }
-
-        // Determine highest role based on hierarchy
-        let role: UserRole = 'user';
-        if (roleAssignments && roleAssignments.length > 0) {
-          const roles = roleAssignments.map(r => r.role);
-          if (roles.includes('superadmin')) {
-            role = 'superadmin';
-          } else if (roles.includes('admin')) {
-            role = 'admin';
-          }
-        }
-
-        // If no admin role but has agent_level, consider them an agent
-        if (role === 'user' && profileData?.agent_level) {
-          role = 'agent';
-        }
-
-        const isSuperadmin = role === 'superadmin';
-        const isAdmin = role === 'admin' || isSuperadmin;
-        const isAgent = role === 'agent' || isAdmin;
-        const isStaff = isAgent; // All agents and above are staff
-
-        setRoleData({
-          role,
-          isStaff,
-          isSuperadmin,
-          isAdmin,
-          isAgent,
-          organizationId: profileData?.organization_id ?? null,
-          loading: false,
-        });
-
-      } catch (error) {
-        console.error('Error checking user role:', error);
-        setRoleData(prev => ({ ...prev, loading: false }));
-      }
-    }
-
-    checkRole();
-  }, [user]);
-
-  return roleData;
+  return {
+    role: context.role,
+    isStaff: context.isStaff,
+    isSuperadmin: context.isSuperadmin,
+    isAdmin: context.isAdmin,
+    isAgent: context.isAgent,
+    organizationId: context.organizationId,
+    loading: context.roleLoading,
+  };
 }
