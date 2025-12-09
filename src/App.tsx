@@ -33,6 +33,7 @@ const UserDashboard = lazy(() => import("./pages/user/UserDashboard"));
 const AgentDirectory = lazy(() => import("./pages/AgentDirectory"));
 const AgentProfile = lazy(() => import("./pages/AgentProfile"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminEditProfile = lazy(() => import("./pages/admin/AdminEditProfile"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
 const AdminAgents = lazy(() => import("./pages/admin/AdminAgents"));
 const AdminZones = lazy(() => import("./pages/admin/AdminZones"));
@@ -110,7 +111,7 @@ const App = () => (
                 <Route path="/agent/dashboard" element={<Suspense fallback={<PageLoader />}><AgentDashboard /></Suspense>} />
                 <Route path="/agent/profile/edit" element={<Suspense fallback={<PageLoader />}><EditProfile /></Suspense>} />
                 <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
-                <Route path="/admin/profile" element={<Suspense fallback={<PageLoader />}><EditProfile /></Suspense>} />
+                <Route path="/admin/profile" element={<Suspense fallback={<PageLoader />}><AdminEditProfile /></Suspense>} />
                 <Route path="/admin/properties" element={<Suspense fallback={<PageLoader />}><AdminProperties /></Suspense>} />
                 <Route path="/admin/agents" element={<Suspense fallback={<PageLoader />}><AdminAgents /></Suspense>} />
                 <Route path="/admin/zones" element={<Suspense fallback={<PageLoader />}><AdminZones /></Suspense>} />
