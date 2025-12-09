@@ -12,6 +12,7 @@ import {
   Activity,
   Database,
   Building2,
+  X,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -27,8 +28,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 
 type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
 
@@ -47,11 +50,18 @@ interface MenuGroup {
 }
 
 export function AdminSidebar() {
-  const { open } = useSidebar();
+  const { open, isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const { t } = useLanguage();
   const { role, isSuperadmin, isAdmin, isAgent } = useUserRole();
   const currentPath = location.pathname;
+
+  // Close mobile sidebar when navigating
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Define menu groups with role-based access
   const menuGroups: MenuGroup[] = [
@@ -183,10 +193,30 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon">
+      {/* Mobile Header */}
+      {isMobile && (
+        <SidebarHeader className="border-b px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-lg">Admin</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setOpenMobile(false)}
+              className="h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Cerrar menú</span>
+            </Button>
+          </div>
+        </SidebarHeader>
+      )}
       <SidebarContent>
         {visibleGroups.map((group, groupIndex) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className={!open ? 'sr-only' : ''}>
+            <SidebarGroupLabel className={!open && !isMobile ? 'sr-only' : ''}>
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -207,9 +237,10 @@ export function AdminSidebar() {
                           to={item.url}
                           className="hover:bg-accent"
                           activeClassName="bg-accent text-accent-foreground font-medium"
+                          onClick={handleNavClick}
                         >
                           <item.icon className="h-4 w-4" />
-                          {open && <span>{item.title}</span>}
+                          {(open || isMobile) && <span>{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
