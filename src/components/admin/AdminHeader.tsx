@@ -58,21 +58,21 @@ export const AdminHeader = () => {
   }, [selectedOrgId]);
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-6 bg-card">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger />
-        <h1 className="text-xl font-semibold hidden md:block">Panel de Administración</h1>
+    <header className="h-16 border-b flex items-center justify-between px-4 md:px-6 bg-card shrink-0 w-full overflow-hidden">
+      <div className="flex items-center gap-4 min-w-0">
+        <SidebarTrigger className="shrink-0" />
+        <h1 className="text-xl font-semibold hidden md:block truncate">Panel de Administración</h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4 min-w-0">
         {isSuperadmin && canViewAll && (
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 min-w-0">
+            <Building2 className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
             <Select value={selectedOrg} onValueChange={handleOrgChange}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[140px] md:w-[200px]">
                 <SelectValue placeholder="Seleccionar Org" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover">
                 <SelectItem value="all">Todas las Organizaciones</SelectItem>
                 {organizations?.map((org) => (
                   <SelectItem key={org.id} value={org.id}>
@@ -84,11 +84,11 @@ export const AdminHeader = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-2 text-sm border-l pl-4">
-          <User className="h-4 w-4" />
-          <span className="text-muted-foreground hidden sm:inline-block">{user?.email}</span>
+        <div className="flex items-center gap-2 text-sm border-l pl-2 md:pl-4 min-w-0">
+          <User className="h-4 w-4 shrink-0" />
+          <span className="text-muted-foreground hidden sm:inline-block truncate max-w-[120px] md:max-w-[200px]">{user?.email}</span>
         </div>
-        <Button variant="ghost" size="icon" onClick={handleSignOut} title="Cerrar Sesión">
+        <Button variant="ghost" size="icon" onClick={handleSignOut} title="Cerrar Sesión" className="shrink-0">
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
