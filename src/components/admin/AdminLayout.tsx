@@ -59,7 +59,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   const loading = authLoading || roleLoading;
-  const showOrgWarning = !!profile && !profile.organization_id;
+  // Don't show org warning for superadmins - they have access to all orgs
+  const showOrgWarning = !!profile && !profile.organization_id && !isSuperadmin;
 
   if (loading) {
     return (
