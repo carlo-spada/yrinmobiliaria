@@ -65,10 +65,10 @@ export const AdminHeader = () => {
   }, [selectedOrgId]);
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-4 md:px-6 bg-card shrink-0 w-full">
-      <div className="flex items-center gap-4 min-w-0">
+    <header className="h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 bg-card shrink-0 w-full">
+      <div className="flex items-center gap-2 md:gap-4 min-w-0">
         <SidebarTrigger className="shrink-0" />
-        <h1 className="text-xl font-semibold hidden md:block truncate">Panel de Administración</h1>
+        <h1 className="text-base md:text-xl font-semibold truncate">Panel Admin</h1>
       </div>
 
       <div className="flex items-center gap-2 md:gap-4 min-w-0">
