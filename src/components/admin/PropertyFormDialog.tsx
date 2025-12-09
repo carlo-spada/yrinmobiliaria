@@ -94,7 +94,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     resolver: zodResolver(propertyFormSchema),
   });
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
-  const { isSuperadmin } = useUserRole();
+  const { isSuperadmin, organizationId: userOrgId } = useUserRole();
 
   const [images, setImages] = useState<Array<{
     url: string;
@@ -104,11 +104,23 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       webp: Record<number, string>;
     };
   }>>([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
   const propertyType = watch('type');
   const operation = watch('operation');
   const status = watch('status');
   const zone = watch('zone');
+
+  // Fetch organizations for superadmin when creating new property in "all orgs" mode
+  const { data: organizations = [] } = useQuery({
+    queryKey: ['organizations-for-property'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_public_organizations');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: isSuperadmin && isAllOrganizations && !property,
+  });
 
   // Fetch available zones from database
   const { data: zones = [], isLoading: zonesLoading } = useQuery({
@@ -170,8 +182,17 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     mutationFn: async (formData: PropertyFormData) => {
       console.log("[Property Save] Starting mutation", { isEdit: !!property, formData });
       
-      const scopedOrgId = property?.organization_id || (isSuperadmin && isAllOrganizations ? null : effectiveOrgId);
-      console.log("[Property Save] Scoped org:", { scopedOrgId, isSuperadmin, isAllOrganizations, effectiveOrgId });
+      // Determine org: editing uses property's org, new property uses selected/effective/user's org
+      let scopedOrgId: string | null = null;
+      if (property?.organization_id) {
+        scopedOrgId = property.organization_id;
+      } else if (isSuperadmin && isAllOrganizations) {
+        scopedOrgId = selectedOrgId;
+      } else {
+        scopedOrgId = effectiveOrgId || userOrgId;
+      }
+      
+      console.log("[Property Save] Scoped org:", { scopedOrgId, isSuperadmin, isAllOrganizations, effectiveOrgId, userOrgId, selectedOrgId });
 
       if (!scopedOrgId) {
         throw new Error('Selecciona una organización antes de crear la propiedad');
@@ -386,6 +407,24 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Organization selector for superadmin creating new property with "all orgs" mode */}
+          {!property && isSuperadmin && isAllOrganizations && (
+            <div className="p-4 bg-muted/50 rounded-lg border">
+              <Label className="text-sm font-medium mb-2 block">Organización *</Label>
+              <Select value={selectedOrgId || ''} onValueChange={setSelectedOrgId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una organización" />
+                </SelectTrigger>
+                <SelectContent>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title_es">Título (Español)</Label>
