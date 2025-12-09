@@ -1,36 +1,9 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
+import { useEffect, useState, ReactNode, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Tables } from '@/integrations/supabase/types';
-
-export type UserRole = 'superadmin' | 'admin' | 'agent' | 'user' | 'client';
-
-// Use the exact database type for profiles
-type Profile = Tables<'profiles'>;
-
-interface AuthContextValue {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  profile: Profile | null;
-  profileLoading: boolean;
-  // Role data
-  role: UserRole;
-  isStaff: boolean;
-  isSuperadmin: boolean;
-  isAdmin: boolean;
-  isAgent: boolean;
-  organizationId: string | null;
-  roleLoading: boolean;
-  // Actions
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<{ error: Error | null }>;
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+import { AuthContext, type AuthContextValue, type UserRole } from './AuthContextBase';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -210,12 +183,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuthContext() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuthContext must be used within AuthProvider');
-  }
-  return context;
 }

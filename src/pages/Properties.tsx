@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
-import { PageLayout } from '@/components/PageLayout';
+import { PageLayout } from '@/components/layout';
 import { PropertyCard } from '@/components/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';

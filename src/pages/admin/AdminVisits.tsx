@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
-import { useAdminOrg } from '@/components/admin/AdminOrgContext';
+import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import { useUserRole } from '@/hooks/useUserRole';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 

@@ -1,4 +1,4 @@
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/useAuthContext';
 
 /**
  * Hook to access authentication state and methods.

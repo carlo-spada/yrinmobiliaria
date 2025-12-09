@@ -1,10 +1,40 @@
-import { PageLayout } from '@/components/PageLayout';
+import { PageLayout } from '@/components/layout';
 import { useLanguage } from '@/utils/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { FileText, Scale, AlertTriangle, ShieldCheck, Loader2 } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Language } from '@/types';
+import type { Database } from '@/integrations/supabase/types';
+
+type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
+
+interface CmsSectionItem {
+  subtitle: string;
+  text: string;
+}
+
+interface CmsSection {
+  title: string;
+  content: CmsSectionItem[];
+}
+
+interface CmsAdditionalSection {
+  title: string;
+  text: string;
+}
+
+type TermsCmsContent = Record<
+  Language,
+  {
+    title: string;
+    lastUpdated: string;
+    intro: string;
+    sections?: CmsSection[];
+    additionalSections?: CmsAdditionalSection[];
+  }
+> | null;
 
 export default function TermsOfService() {
   const { language } = useLanguage();
@@ -17,13 +47,13 @@ export default function TermsOfService() {
     queryKey: ['cms-terms'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('cms_pages' as any)
+        .from('cms_pages')
         .select('content')
         .eq('slug', 'terms')
-        .maybeSingle() as any;
+        .maybeSingle<{ content: CmsJsonContent | null }>();
 
       if (error) throw error;
-      return data?.content;
+      return data?.content as TermsCmsContent;
     }
   });
 
@@ -38,7 +68,13 @@ export default function TermsOfService() {
   }
 
   // Fallback content if CMS is empty
-  const fallbackContent = {
+  const fallbackContent: Record<Language, {
+    title: string;
+    lastUpdated: string;
+    intro: string;
+    sections: CmsSection[];
+    additionalSections: CmsAdditionalSection[];
+  }> = {
     es: {
       title: 'Términos y Condiciones de Servicio',
       lastUpdated: 'Última actualización: Noviembre 2025',
@@ -91,7 +127,7 @@ export default function TermsOfService() {
         {/* Main Sections - If structured data exists */}
         {currentContent.sections && (
           <div className="space-y-8">
-            {currentContent.sections.map((section: any, index: number) => (
+            {currentContent.sections.map((section, index) => (
               <Card key={index} className="p-8 bg-card">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="p-3 rounded-lg bg-primary/10">
@@ -103,7 +139,7 @@ export default function TermsOfService() {
                 </div>
 
                 <div className="space-y-6 ml-16">
-                  {section.content.map((item: any, idx: number) => (
+                  {section.content.map((item, idx) => (
                     <div key={idx}>
                       <h3 className="text-lg font-semibold mb-2 text-foreground">
                         {item.subtitle}
@@ -118,7 +154,7 @@ export default function TermsOfService() {
             ))}
 
             {/* Additional Sections */}
-            {currentContent.additionalSections?.map((section: any, index: number) => (
+            {currentContent.additionalSections?.map((section, index) => (
               <Card key={`additional-${index}`} className="p-8 bg-card">
                 <h2 className="text-2xl font-bold mb-4 text-foreground">
                   {section.title}

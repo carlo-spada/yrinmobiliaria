@@ -20,6 +20,25 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Language } from '@/types';
+import type { Database } from '@/integrations/supabase/types';
+
+type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
+
+type CmsAboutContent = CmsJsonContent & {
+  hero?: Record<Language, { title: string; subtitle: string }>;
+  story?: Record<
+    Language,
+    {
+      title: string;
+      p1: string;
+      p2: string;
+      p3: string;
+      mission_title: string;
+      mission_text: string;
+    }
+  >;
+};
 
 export default function About() {
   const { t, language } = useLanguage();
@@ -28,13 +47,13 @@ export default function About() {
     queryKey: ['cms-about'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('cms_pages' as any)
+        .from('cms_pages')
         .select('content')
         .eq('slug', 'about')
-        .maybeSingle() as any;
+        .maybeSingle<{ content: CmsAboutContent | null }>();
 
       if (error) throw error;
-      return data?.content;
+      return data?.content ?? null;
     }
   });
 

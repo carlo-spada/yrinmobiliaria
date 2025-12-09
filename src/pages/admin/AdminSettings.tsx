@@ -35,6 +35,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { PermissionsMatrix } from '@/components/admin/PermissionsMatrix';
+import type { Database } from '@/integrations/supabase/types';
+
+type OrganizationRow = Database['public']['Tables']['organizations']['Row'];
 
 interface SettingEditorProps {
   settingKey: string;
@@ -174,9 +177,12 @@ export default function AdminSettings() {
   const queryClient = useQueryClient();
 
   const [isOrgDialogOpen, setIsOrgDialogOpen] = useState(false);
-  const [editingOrg, setEditingOrg] = useState<any>(null);
+  const [editingOrg, setEditingOrg] = useState<OrganizationRow | null>(null);
   const [deletingOrgId, setDeletingOrgId] = useState<string | null>(null);
-  const [orgFormData, setOrgFormData] = useState({
+  const [orgFormData, setOrgFormData] = useState<Pick<
+    OrganizationRow,
+    'name' | 'slug' | 'contact_email' | 'phone' | 'domain'
+  >>({
     name: '',
     slug: '',
     contact_email: '',
@@ -225,7 +231,7 @@ export default function AdminSettings() {
       setEditingOrg(null);
       setOrgFormData({ name: '', slug: '', contact_email: '', phone: '', domain: '' });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
         description: error.message,
@@ -248,7 +254,7 @@ export default function AdminSettings() {
       toast({ title: 'Organización eliminada' });
       setDeletingOrgId(null);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error al eliminar',
         description: error.message,
@@ -257,7 +263,7 @@ export default function AdminSettings() {
     },
   });
 
-  const handleOpenOrgDialog = (org?: any) => {
+  const handleOpenOrgDialog = (org?: OrganizationRow) => {
     if (org) {
       setEditingOrg(org);
       setOrgFormData({

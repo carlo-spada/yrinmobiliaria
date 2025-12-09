@@ -15,13 +15,20 @@ interface WizardStep {
   type: 'text' | 'textarea';
 }
 
+export type CmsPageType = 'about' | 'terms' | 'privacy';
+
+export interface WizardResult {
+  content: string;
+  raw_answers: Record<string, string>;
+}
+
 interface AgenticContentWizardProps {
-  pageType: 'about' | 'terms' | 'privacy';
-  onComplete: (content: any) => void;
+  pageType: CmsPageType;
+  onComplete: (content: WizardResult) => void;
   onCancel: () => void;
 }
 
-const STEPS: Record<string, WizardStep[]> = {
+const STEPS: Record<CmsPageType, WizardStep[]> = {
   about: [
     { id: 'mission', question: '¿Cuál es la misión principal de su inmobiliaria?', placeholder: 'Ej: Ayudar a familias a encontrar su hogar ideal...', type: 'textarea' },
     { id: 'experience', question: '¿Cuántos años de experiencia tienen y en qué zonas se especializan?', placeholder: 'Ej: Más de 10 años en la zona centro...', type: 'text' },

@@ -1,22 +1,7 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-
-type OrgValue = string | 'all' | null;
+import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { AdminOrgContext, type AdminOrgContextValue, type OrgValue } from './AdminOrgContextBase';
 
 const STORAGE_KEY = 'admin-selected-org';
-
-interface AdminOrgContextValue {
-  selectedOrgId: OrgValue;
-  setSelectedOrgId: (orgId: OrgValue) => void;
-  /**
-   * Organization that should be applied to queries.
-   * Superadmins get `null` when "all" is selected to avoid filtering.
-   */
-  effectiveOrgId: string | null;
-  isAllOrganizations: boolean;
-  canViewAll: boolean;
-}
-
-const AdminOrgContext = createContext<AdminOrgContextValue | undefined>(undefined);
 
 interface AdminOrgProviderProps {
   children: ReactNode;
@@ -85,12 +70,4 @@ export const AdminOrgProvider = ({
   }, [canViewAll, selectedOrgId]);
 
   return <AdminOrgContext.Provider value={value}>{children}</AdminOrgContext.Provider>;
-};
-
-export const useAdminOrg = () => {
-  const context = useContext(AdminOrgContext);
-  if (!context) {
-    throw new Error('useAdminOrg must be used within AdminOrgProvider');
-  }
-  return context;
 };

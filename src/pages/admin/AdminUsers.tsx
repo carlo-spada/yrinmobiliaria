@@ -29,7 +29,36 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
 import { RoleGuard } from '@/components/admin/RoleGuard';
-import { useAdminOrg } from '@/components/admin/AdminOrgContext';
+import { useAdminOrg } from '@/components/admin/useAdminOrg';
+import type { Database } from '@/integrations/supabase/types';
+
+type OrganizationSummary = Pick<Database['public']['Tables']['organizations']['Row'], 'id' | 'name' | 'slug'>;
+
+type UserListItem = {
+  user_id: string;
+  profile_id: string;
+  email: string;
+  role: 'superadmin' | 'admin' | 'user';
+  organization_id: string | null;
+  display_name: string;
+  photo_url: string | null;
+  bio_es: string | null;
+  bio_en: string | null;
+  job_title: string | null;
+  languages: string[] | null;
+  professional_email: string | null;
+  email_preference: string | null;
+  organization: OrganizationSummary | null;
+  roles: { role: string; granted_at: string }[];
+};
+
+type ProfileFormData = {
+  bio_es: string;
+  job_title: string;
+  languages: string;
+  professional_email: string;
+  email_preference: string;
+};
 
 function UsersContent() {
   const queryClient = useQueryClient();
@@ -38,11 +67,11 @@ function UsersContent() {
   const scopedOrgId = isSuperadmin && isAllOrganizations ? null : (effectiveOrgId ?? organizationId);
   const canQuery = isSuperadmin || !!scopedOrgId;
   
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Form state for editing
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>({
     bio_es: '',
     job_title: '',
     languages: '',
@@ -147,7 +176,10 @@ function UsersContent() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: ProfileFormData) => {
+      if (!selectedUser) {
+        throw new Error('No hay usuario seleccionado');
+      }
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -243,7 +275,7 @@ function UsersContent() {
     },
   });
 
-  const handleEditClick = (user: any) => {
+  const handleEditClick = (user: UserListItem) => {
     setSelectedUser(user);
     setSelectedRole(user.role as 'superadmin' | 'admin' | 'user');
     setSelectedOrgId(user.organization_id);

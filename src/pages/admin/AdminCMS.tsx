@@ -3,14 +3,14 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AgenticContentWizard } from '@/components/admin/cms/AgenticContentWizard';
+import { AgenticContentWizard, type CmsPageType, type WizardResult } from '@/components/admin/cms/AgenticContentWizard';
 import { FileText, Wand2, Eye, Save } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 
 export default function AdminCMS() {
-    const [activeTab, setActiveTab] = useState('about');
+    const [activeTab, setActiveTab] = useState<CmsPageType>('about');
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [content, setContent] = useState<Record<string, string>>({
         about: '',
@@ -18,7 +18,7 @@ export default function AdminCMS() {
         privacy: ''
     });
 
-    const handleWizardComplete = (result: any) => {
+    const handleWizardComplete = (result: WizardResult) => {
         setContent(prev => ({
             ...prev,
             [activeTab]: result.content
@@ -53,16 +53,16 @@ export default function AdminCMS() {
                     </div>
                 </div>
 
-                {isWizardOpen ? (
+                        {isWizardOpen ? (
                     <div className="animate-in fade-in zoom-in-95 duration-300">
                         <AgenticContentWizard
-                            pageType={activeTab as any}
+                            pageType={activeTab}
                             onComplete={handleWizardComplete}
                             onCancel={() => setIsWizardOpen(false)}
                         />
                     </div>
                 ) : (
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+                    <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as CmsPageType)} className="space-y-4">
                         <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
                             <TabsTrigger value="about">Sobre Nosotros</TabsTrigger>
                             <TabsTrigger value="terms">Términos</TabsTrigger>

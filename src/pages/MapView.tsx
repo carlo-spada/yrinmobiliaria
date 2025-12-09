@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./MapView.css";
-import { PageLayout } from "@/components/PageLayout";
+import { PageLayout } from "@/components/layout";
 import { useLanguage } from "@/utils/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
 import { Property, PropertyType } from "@/types/property";

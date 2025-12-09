@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
-import { useAdminOrg } from './AdminOrgContext';
+import { useAdminOrg } from './useAdminOrg';
 import { useUserRole } from '@/hooks/useUserRole';
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
