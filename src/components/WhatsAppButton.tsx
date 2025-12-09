@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface WhatsAppButtonProps {

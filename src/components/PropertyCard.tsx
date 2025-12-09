@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PropertyAgent {
   id: string;

@@ -8,7 +8,20 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(wc:*)",
+      "Bash(git fetch:*)",
+      "Bash(find:*)",
+      "Bash(xargs sed:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(npm audit:*)",
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(nvm use:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npx npm-check-updates:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

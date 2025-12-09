@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface ServiceZone {
   id: string;

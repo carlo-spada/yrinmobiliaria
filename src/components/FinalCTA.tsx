@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Phone } from 'lucide-react';
 
 export function FinalCTA() {

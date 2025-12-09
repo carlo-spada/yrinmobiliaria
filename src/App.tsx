@@ -6,7 +6,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { LanguageProvider } from "@/utils/LanguageContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppRoutes } from "@/routes";
 import NProgress from "nprogress";

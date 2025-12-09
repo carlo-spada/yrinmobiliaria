@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail, Heart, User, LogOut } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LanguageSelector } from './LanguageSelectorNew';
+import { LanguageSelector } from './LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useServiceZones } from '@/hooks/useServiceZones';
 import { useAuth } from '@/hooks/useAuth';
 import {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Share2, Facebook, Twitter, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,

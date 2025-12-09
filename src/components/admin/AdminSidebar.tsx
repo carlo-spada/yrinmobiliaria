@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserRole, UserRole } from '@/hooks/useUserRole';
 import {
   Sidebar,

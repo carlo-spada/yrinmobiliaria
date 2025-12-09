@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { PropertyCard } from '@/components/PropertyCard';
 import { AlertCircle, Heart, Mail, Phone, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {

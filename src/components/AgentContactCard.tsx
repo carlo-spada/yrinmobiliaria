@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
 import { generateSlug } from '@/hooks/useAgentBySlug';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PropertyAgent {
   id: string;

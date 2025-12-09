@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MapPin, Languages } from 'lucide-react';
 import { PublicAgent } from '@/hooks/usePublicAgents';
 import { generateSlug } from '@/hooks/useAgentBySlug';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 
 interface AgentCardProps {

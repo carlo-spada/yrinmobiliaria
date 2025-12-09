@@ -5,7 +5,7 @@ import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useLanguage } from "@/utils/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Home, MessageSquare, Calendar, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 

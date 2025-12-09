@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { MetaTags } from '@/components/seo/MetaTags';
 import { StructuredData } from '@/components/seo/StructuredData';
 import { getOrganizationSchema, getLocalBusinessSchema } from '@/lib/schema-helpers';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 

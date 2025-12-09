@@ -1,4 +1,4 @@
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Building2, Users, Calendar } from 'lucide-react';
 
 export function StatsSection() {

@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';

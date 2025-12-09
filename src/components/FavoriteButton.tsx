@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FavoriteButtonProps {
   propertyId: string;

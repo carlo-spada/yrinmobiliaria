@@ -1,5 +1,5 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';

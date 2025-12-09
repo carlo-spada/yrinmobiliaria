@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/utils/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

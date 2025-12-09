@@ -11,7 +11,7 @@ import {
 import { AgentCard } from '@/components/AgentCard';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { useServiceZones } from '@/hooks/useServiceZones';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { Search, X } from 'lucide-react';
 import { MetaTags } from '@/components/seo/MetaTags';

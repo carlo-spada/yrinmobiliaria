@@ -2,6 +2,7 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { Session, User } from "@supabase/supabase-js";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const supabaseMock = vi.hoisted(() => ({
   auth: {
@@ -50,11 +51,7 @@ const setupAuthMock = ({
     if (table === "role_assignments") {
       return {
         select: () => ({
-          eq: () => ({
-            in: () => ({
-              limit: () => Promise.resolve({ data: roles, error: null }),
-            }),
-          }),
+          eq: () => Promise.resolve({ data: roles, error: null }),
         }),
       };
     }
@@ -81,7 +78,9 @@ describe("useAuth", () => {
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>
   );
 
   it("sets isAdmin for admin roles", async () => {
@@ -94,9 +93,10 @@ describe("useAuth", () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
+    // Wait for role query to complete
+    await waitFor(() => expect(result.current.isAdmin).toBe(true));
 
     expect(result.current.user?.id).toBe("user-1");
-    expect(result.current.isAdmin).toBe(true);
   });
 
   it("flags non-admin when no admin roles", async () => {

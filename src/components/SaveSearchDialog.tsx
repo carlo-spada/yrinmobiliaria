@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { PropertyFilters } from '@/types/property';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SaveSearchDialogProps {
   filters: PropertyFilters;

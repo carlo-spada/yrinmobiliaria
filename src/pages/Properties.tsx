@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select } from '@/components/ui/select-enhanced';
 import { Badge } from '@/components/ui/badge';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { EmptyPropertyList } from '@/components/EmptyPropertyList';

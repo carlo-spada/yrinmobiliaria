@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InviteAgentDialog } from "@/components/admin/InviteAgentDialog";
-import { useLanguage } from "@/utils/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { UserPlus, Search, Star, Home, MessageSquare, Calendar, Mail, Phone } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RoleGuard } from "@/components/admin/RoleGuard";

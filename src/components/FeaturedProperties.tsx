@@ -1,7 +1,7 @@
 import { PropertyCard } from '@/components/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';

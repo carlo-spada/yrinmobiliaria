@@ -1,5 +1,5 @@
 import { PageLayout } from '@/components/layout';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Shield, Lock, FileText, AlertCircle, Loader2 } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';

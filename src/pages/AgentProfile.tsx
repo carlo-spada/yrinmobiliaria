@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAgentBySlug } from '@/hooks/useAgentBySlug';
 import { useAgentStats } from '@/hooks/usePublicAgents';
 import { useProperties } from '@/hooks/useProperties';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

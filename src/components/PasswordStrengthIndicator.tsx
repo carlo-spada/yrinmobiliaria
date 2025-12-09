@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Progress } from '@/components/ui/progress';
 
 interface PasswordStrengthIndicatorProps {
@@ -19,22 +19,9 @@ interface StrengthResult {
 }
 
 export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicatorProps) => {
-  const [strength, setStrength] = useState<StrengthResult>({
-    score: 0,
-    label: '',
-    color: 'bg-muted',
-    requirements: {
-      length: false,
-      uppercase: false,
-      lowercase: false,
-      number: false,
-      special: false,
-    },
-  });
-
-  useEffect(() => {
+  const strength = useMemo<StrengthResult>(() => {
     if (!password) {
-      setStrength({
+      return {
         score: 0,
         label: '',
         color: 'bg-muted',
@@ -45,8 +32,7 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
           number: false,
           special: false,
         },
-      });
-      return;
+      };
     }
 
     const requirements = {
@@ -80,7 +66,7 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
       color = 'bg-red-500';
     }
 
-    setStrength({ score, label, color, requirements });
+    return { score, label, color, requirements };
   }, [password]);
 
   if (!password) return null;

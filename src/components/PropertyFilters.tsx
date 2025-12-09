@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input-enhanced';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useLanguage } from '@/utils/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { PropertyFilters as PropertyFiltersType, PropertyType, PropertyOperation } from '@/types/property';
 import { useServiceZones } from '@/hooks/useServiceZones';
 import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
