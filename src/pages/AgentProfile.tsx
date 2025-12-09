@@ -11,7 +11,6 @@ import { PropertyCard } from '@/components/PropertyCard';
 import { MetaTags } from '@/components/seo/MetaTags';
 import { StructuredData } from '@/components/seo/StructuredData';
 import {
-  MessageCircle,
   MapPin,
   Award,
   Linkedin,
@@ -92,18 +91,8 @@ export default function AgentProfile() {
     .toUpperCase()
     .substring(0, 2);
 
-  const handleWhatsApp = () => {
-    if (agent.whatsapp_number) {
-      const message =
-        language === 'es'
-          ? `Hola ${agent.display_name}, me gustaría ponerme en contacto contigo`
-          : `Hi ${agent.display_name}, I would like to get in touch`;
-      window.open(
-        `https://wa.me/${agent.whatsapp_number}?text=${encodeURIComponent(message)}`,
-        '_blank'
-      );
-    }
-  };
+  // Contact is now handled through property inquiries or the contact page
+  // WhatsApp numbers are no longer publicly exposed for privacy
 
   // Structured data - only include public info
   const personSchema = {
@@ -191,11 +180,6 @@ export default function AgentProfile() {
 
                   {/* Social Links */}
                   <div className="flex gap-3">
-                    {agent.whatsapp_number && (
-                      <Button size="sm" variant="outline" onClick={handleWhatsApp}>
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
-                    )}
                     {agent.linkedin_url && (
                       <Button size="sm" variant="outline" asChild>
                         <a href={agent.linkedin_url} target="_blank" rel="noopener noreferrer">
@@ -234,12 +218,6 @@ export default function AgentProfile() {
                     {language === 'es' ? 'Contactar' : 'Contact'}
                   </h3>
                   <div className="space-y-2">
-                    {agent.whatsapp_number && (
-                      <Button variant="default" className="w-full" onClick={handleWhatsApp}>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        WhatsApp
-                      </Button>
-                    )}
                     {agent.linkedin_url && (
                       <Button variant="outline" className="w-full" asChild>
                         <a href={agent.linkedin_url} target="_blank" rel="noopener noreferrer">
@@ -260,7 +238,7 @@ export default function AgentProfile() {
                         </a>
                       </Button>
                     )}
-                    {!agent.whatsapp_number && !agent.linkedin_url && !agent.instagram_handle && (
+                    {!agent.linkedin_url && !agent.instagram_handle && !agent.facebook_url && (
                       <p className="text-sm text-muted-foreground text-center">
                         {language === 'es'
                           ? 'Contacte a través de la propiedad de su interés'
@@ -422,12 +400,6 @@ export default function AgentProfile() {
                   {language === 'es' ? 'Contactar' : 'Contact'}
                 </h3>
                 <div className="space-y-2">
-                  {agent.whatsapp_number && (
-                    <Button variant="default" className="w-full" onClick={handleWhatsApp}>
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      WhatsApp
-                    </Button>
-                  )}
                   {agent.linkedin_url && (
                     <Button variant="outline" className="w-full" asChild>
                       <a href={agent.linkedin_url} target="_blank" rel="noopener noreferrer">
@@ -448,7 +420,15 @@ export default function AgentProfile() {
                       </a>
                     </Button>
                   )}
-                  {!agent.whatsapp_number && !agent.linkedin_url && !agent.instagram_handle && (
+                  {agent.facebook_url && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <a href={agent.facebook_url} target="_blank" rel="noopener noreferrer">
+                        <Facebook className="mr-2 h-4 w-4" />
+                        Facebook
+                      </a>
+                    </Button>
+                  )}
+                  {!agent.linkedin_url && !agent.instagram_handle && !agent.facebook_url && (
                     <p className="text-sm text-muted-foreground text-center">
                       {language === 'es'
                         ? 'Contacte a través de la propiedad de su interés'

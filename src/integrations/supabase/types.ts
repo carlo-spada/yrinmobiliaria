@@ -818,7 +818,6 @@ export type Database = {
           organization_id: string
           photo_url: string
           service_zones: string[]
-          whatsapp_number: string
         }[]
       }
       get_public_agents: {
@@ -840,7 +839,6 @@ export type Database = {
           organization_id: string
           photo_url: string
           service_zones: string[]
-          whatsapp_number: string
         }[]
       }
       get_public_organization: {
