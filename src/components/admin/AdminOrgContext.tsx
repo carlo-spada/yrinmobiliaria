@@ -2,6 +2,8 @@ import { createContext, ReactNode, useContext, useEffect, useMemo, useState } fr
 
 type OrgValue = string | 'all' | null;
 
+const STORAGE_KEY = 'admin-selected-org';
+
 interface AdminOrgContextValue {
   selectedOrgId: OrgValue;
   setSelectedOrgId: (orgId: OrgValue) => void;
@@ -22,21 +24,51 @@ interface AdminOrgProviderProps {
   canViewAll: boolean;
 }
 
+const getStoredOrgId = (canViewAll: boolean, fallbackOrgId: string | null): OrgValue => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      // Validate stored value
+      if (stored === 'all' && canViewAll) return 'all';
+      if (stored !== 'all') return stored;
+    }
+  } catch {
+    // localStorage not available
+  }
+  return canViewAll ? 'all' : fallbackOrgId;
+};
+
 export const AdminOrgProvider = ({
   children,
   organizationId,
   canViewAll,
 }: AdminOrgProviderProps) => {
-  const [selectedOrgId, setSelectedOrgId] = useState<OrgValue>(
-    canViewAll ? 'all' : organizationId,
+  const [selectedOrgId, setSelectedOrgIdState] = useState<OrgValue>(() =>
+    getStoredOrgId(canViewAll, organizationId)
   );
+
+  // Wrapper to persist selection
+  const setSelectedOrgId = (orgId: OrgValue) => {
+    setSelectedOrgIdState(orgId);
+    try {
+      if (orgId) {
+        localStorage.setItem(STORAGE_KEY, orgId);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // localStorage not available
+    }
+  };
 
   // Keep selection in sync with role/org changes (e.g., after login or role swap)
   useEffect(() => {
-    setSelectedOrgId((prev) => {
+    setSelectedOrgIdState((prev) => {
       if (canViewAll) {
+        // If user can view all, keep their preference unless it was never set
         return prev ?? 'all';
       }
+      // Non-superadmins are locked to their org
       return organizationId;
     });
   }, [canViewAll, organizationId]);
