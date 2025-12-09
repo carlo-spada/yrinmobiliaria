@@ -6,23 +6,14 @@ export function useAgentBySlug(slug: string) {
   return useQuery({
     queryKey: ['agent-by-slug', slug],
     queryFn: async () => {
-      // Convert slug back to display_name pattern
-      // "yasmin-ruiz" -> "yasmin ruiz"
-      const searchName = slug.replace(/-/g, ' ');
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('is_active', true)
-        .eq('show_in_directory', true)
-        .eq('is_complete', true)
-        .ilike('display_name', searchName);
+      // Use secure RPC function that only returns non-sensitive fields
+      const { data, error } = await supabase.rpc('get_public_agents');
 
       if (error) throw error;
       
-      // Find exact match (case-insensitive)
+      // Find exact match by converting display_name to slug format
       const agent = data?.find(
-        (a) => a.display_name.toLowerCase().replace(/ /g, '-') === slug.toLowerCase()
+        (a: PublicAgent) => a.display_name.toLowerCase().replace(/ /g, '-') === slug.toLowerCase()
       );
 
       return agent as PublicAgent | null;

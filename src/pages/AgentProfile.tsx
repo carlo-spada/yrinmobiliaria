@@ -11,8 +11,6 @@ import { PropertyCard } from '@/components/PropertyCard';
 import { MetaTags } from '@/components/seo/MetaTags';
 import { StructuredData } from '@/components/seo/StructuredData';
 import {
-  Mail,
-  Phone,
   MessageCircle,
   MapPin,
   Award,
@@ -107,13 +105,11 @@ export default function AgentProfile() {
     }
   };
 
-  // Structured data
+  // Structured data - only include public info
   const personSchema = {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: agent.display_name,
-    email: agent.email,
-    telephone: agent.phone,
     image: agent.photo_url,
     jobTitle:
       agent.agent_level && levelLabels[agent.agent_level]
@@ -167,22 +163,8 @@ export default function AgentProfile() {
                     )}
                   </div>
 
-                  {/* Contact Info */}
+                  {/* Languages */}
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      <a href={`mailto:${agent.email}`} className="hover:text-primary">
-                        {agent.email}
-                      </a>
-                    </div>
-                    {agent.phone && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="h-4 w-4" />
-                        <a href={`tel:${agent.phone}`} className="hover:text-primary">
-                          {agent.phone}
-                        </a>
-                      </div>
-                    )}
                     {agent.languages && agent.languages.length > 0 && (
                       <div className="flex items-center gap-2">
                         {agent.languages.includes('es') && <span>🇪🇸 Español</span>}
@@ -252,25 +234,38 @@ export default function AgentProfile() {
                     {language === 'es' ? 'Contactar' : 'Contact'}
                   </h3>
                   <div className="space-y-2">
-                    <Button variant="default" className="w-full" asChild>
-                      <a href={`mailto:${agent.email}`}>
-                        <Mail className="mr-2 h-4 w-4" />
-                        {language === 'es' ? 'Enviar email' : 'Send email'}
-                      </a>
-                    </Button>
-                    {agent.phone && (
-                      <Button variant="outline" className="w-full" asChild>
-                        <a href={`tel:${agent.phone}`}>
-                          <Phone className="mr-2 h-4 w-4" />
-                          {language === 'es' ? 'Llamar' : 'Call'}
-                        </a>
-                      </Button>
-                    )}
                     {agent.whatsapp_number && (
-                      <Button variant="outline" className="w-full" onClick={handleWhatsApp}>
+                      <Button variant="default" className="w-full" onClick={handleWhatsApp}>
                         <MessageCircle className="mr-2 h-4 w-4" />
                         WhatsApp
                       </Button>
+                    )}
+                    {agent.linkedin_url && (
+                      <Button variant="outline" className="w-full" asChild>
+                        <a href={agent.linkedin_url} target="_blank" rel="noopener noreferrer">
+                          <Linkedin className="mr-2 h-4 w-4" />
+                          LinkedIn
+                        </a>
+                      </Button>
+                    )}
+                    {agent.instagram_handle && (
+                      <Button variant="outline" className="w-full" asChild>
+                        <a
+                          href={`https://instagram.com/${agent.instagram_handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Instagram className="mr-2 h-4 w-4" />
+                          Instagram
+                        </a>
+                      </Button>
+                    )}
+                    {!agent.whatsapp_number && !agent.linkedin_url && !agent.instagram_handle && (
+                      <p className="text-sm text-muted-foreground text-center">
+                        {language === 'es'
+                          ? 'Contacte a través de la propiedad de su interés'
+                          : 'Contact through the property of interest'}
+                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -427,25 +422,38 @@ export default function AgentProfile() {
                   {language === 'es' ? 'Contactar' : 'Contact'}
                 </h3>
                 <div className="space-y-2">
-                  <Button variant="default" className="w-full" asChild>
-                    <a href={`mailto:${agent.email}`}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Enviar email' : 'Send email'}
-                    </a>
-                  </Button>
-                  {agent.phone && (
-                    <Button variant="outline" className="w-full" asChild>
-                      <a href={`tel:${agent.phone}`}>
-                        <Phone className="mr-2 h-4 w-4" />
-                        {language === 'es' ? 'Llamar' : 'Call'}
-                      </a>
-                    </Button>
-                  )}
                   {agent.whatsapp_number && (
-                    <Button variant="outline" className="w-full" onClick={handleWhatsApp}>
+                    <Button variant="default" className="w-full" onClick={handleWhatsApp}>
                       <MessageCircle className="mr-2 h-4 w-4" />
                       WhatsApp
                     </Button>
+                  )}
+                  {agent.linkedin_url && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <a href={agent.linkedin_url} target="_blank" rel="noopener noreferrer">
+                        <Linkedin className="mr-2 h-4 w-4" />
+                        LinkedIn
+                      </a>
+                    </Button>
+                  )}
+                  {agent.instagram_handle && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <a
+                        href={`https://instagram.com/${agent.instagram_handle}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Instagram className="mr-2 h-4 w-4" />
+                        Instagram
+                      </a>
+                    </Button>
+                  )}
+                  {!agent.whatsapp_number && !agent.linkedin_url && !agent.instagram_handle && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      {language === 'es'
+                        ? 'Contacte a través de la propiedad de su interés'
+                        : 'Contact through the property of interest'}
+                    </p>
                   )}
                 </div>
               </CardContent>

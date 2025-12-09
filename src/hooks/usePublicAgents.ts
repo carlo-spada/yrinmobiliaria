@@ -1,12 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// Public agent data - only non-sensitive fields exposed via secure RPC
 export interface PublicAgent {
   id: string;
   display_name: string;
-  email: string;
-  phone: string | null;
-  whatsapp_number: string | null;
   photo_url: string | null;
   bio_es: string | null;
   bio_en: string | null;
@@ -16,11 +14,13 @@ export interface PublicAgent {
   agent_specialty: string[] | null;
   languages: string[] | null;
   service_zones: string[] | null;
+  is_featured: boolean;
+  organization_id: string | null;
+  // Social links are public by nature
   instagram_handle: string | null;
   linkedin_url: string | null;
   facebook_url: string | null;
-  is_featured: boolean;
-  organization_id: string | null;
+  whatsapp_number: string | null;
 }
 
 export interface AgentStats {
@@ -33,14 +33,8 @@ export function usePublicAgents() {
   return useQuery({
     queryKey: ['public-agents'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('is_active', true)
-        .eq('show_in_directory', true)
-        .eq('is_complete', true)
-        .order('is_featured', { ascending: false })
-        .order('display_name');
+      // Use secure RPC function that only returns non-sensitive fields
+      const { data, error } = await supabase.rpc('get_public_agents');
 
       if (error) throw error;
       return (data || []) as PublicAgent[];
