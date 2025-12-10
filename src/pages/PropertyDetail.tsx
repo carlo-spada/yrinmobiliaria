@@ -17,20 +17,20 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { AgentContactCard } from "@/components/AgentContactCard";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { PropertyCard } from "@/components/PropertyCard";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { MetaTags } from "@/components/seo/MetaTags";
+import { StructuredData } from "@/components/seo/StructuredData";
 import { ShareButtons } from "@/components/ShareButtons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { useProperty, useProperties } from "@/hooks/useProperties";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input-enhanced";
 import { Textarea } from "@/components/ui/textarea";
-import { StructuredData } from "@/components/seo/StructuredData";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
+import { useProperty, useProperties } from "@/hooks/useProperties";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/lib/schema-helpers";
-import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 // UUID validation helper
 const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);

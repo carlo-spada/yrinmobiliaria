@@ -1,14 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-
-
-import { Switch } from '@/components/ui/switch';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
+
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { ImageUploadZone } from '@/components/admin/ImageUploadZone';
-import { logAuditEvent } from '@/utils/auditLog';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -31,6 +29,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { logAuditEvent } from '@/utils/auditLog';
 
 type ServiceZone = Database['public']['Tables']['service_zones']['Row'];
 

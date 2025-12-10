@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FavoriteButton } from '@/components/FavoriteButton';
@@ -8,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateSlug } from '@/hooks/useAgentBySlug';
 import { cn } from '@/lib/utils';
 
 interface PropertyAgent {
@@ -39,7 +41,7 @@ interface PropertyCardProps {
   agent?: PropertyAgent;
 }
 
-export function PropertyCard({
+export const PropertyCard = memo(function PropertyCard({
   id,
   image,
   alt,
@@ -58,9 +60,6 @@ export function PropertyCard({
   agent,
 }: PropertyCardProps) {
   const { t, language } = useLanguage();
-
-  const generateSlug = (name: string) =>
-    name.toLowerCase().replace(/\s+/g, '-');
 
   const agentInitials = agent?.display_name
     .split(' ')
@@ -197,4 +196,4 @@ export function PropertyCard({
       </motion.div>
     </Link>
   );
-}
+});

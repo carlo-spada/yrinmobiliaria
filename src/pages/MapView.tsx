@@ -1,5 +1,19 @@
 import { Icon, LatLngBounds } from "leaflet";
 import type { Marker as LeafletMarker } from "leaflet";
+import {
+  X,
+  Menu,
+  MapPin,
+  Home,
+  Building2,
+  Store,
+  Briefcase,
+  ChevronRight,
+  Loader2,
+  Navigation,
+  Maximize2,
+  LandPlot,
+} from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
@@ -25,23 +39,8 @@ import { Property, PropertyType } from "@/types/property";
 import { filterPropertiesByMap, isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
 import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from "@/utils/priceSliderHelpers";
 
-import {
-  X,
-  Menu,
-  MapPin,
-  Home,
-  Building2,
-  Store,
-  Briefcase,
-  ChevronRight,
-  Loader2,
-  Navigation,
-  Maximize2,
-  LandPlot,
-} from "lucide-react";
-
 // Property type colors
-const propertyColors = {
+const propertyColors: Record<PropertyType, string> = {
   casa: "#C85A3C",
   departamento: "#2D5E4F",
   local: "#D4A574",
@@ -49,23 +48,33 @@ const propertyColors = {
   terrenos: "#8B7355",
 };
 
-// Create custom icons for each property type
-const createCustomIcon = (type: PropertyType, selected: boolean = false) => {
-  const color = propertyColors[type];
-  const scale = selected ? 1.3 : 1;
-  return new Icon({
-    iconUrl: `data:image/svg+xml;base64,${btoa(`
-      <svg width="${32 * scale}" height="${40 * scale}" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 0C7.163 0 0 7.163 0 16c0 11 16 24 16 24s16-13 16-24c0-8.837-7.163-16-16-16z" 
-              fill="${color}" stroke="${selected ? '#FFD700' : '#fff'}" stroke-width="${selected ? 3 : 2}"/>
-        <circle cx="16" cy="16" r="6" fill="#fff"/>
-      </svg>
-    `)}`,
-    iconSize: [32 * scale, 40 * scale],
-    iconAnchor: [16 * scale, 40 * scale],
-    popupAnchor: [0, -40 * scale],
-  });
-};
+// Pre-compute icons for each property type and selection state to avoid btoa() on every render
+const iconCache = new Map<string, Icon>();
+
+function getPropertyIcon(type: PropertyType, selected: boolean = false): Icon {
+  const cacheKey = `${type}-${selected}`;
+  let icon = iconCache.get(cacheKey);
+
+  if (!icon) {
+    const color = propertyColors[type];
+    const scale = selected ? 1.3 : 1;
+    icon = new Icon({
+      iconUrl: `data:image/svg+xml;base64,${btoa(`
+        <svg width="${32 * scale}" height="${40 * scale}" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 0C7.163 0 0 7.163 0 16c0 11 16 24 16 24s16-13 16-24c0-8.837-7.163-16-16-16z"
+                fill="${color}" stroke="${selected ? '#FFD700' : '#fff'}" stroke-width="${selected ? 3 : 2}"/>
+          <circle cx="16" cy="16" r="6" fill="#fff"/>
+        </svg>
+      `)}`,
+      iconSize: [32 * scale, 40 * scale],
+      iconAnchor: [16 * scale, 40 * scale],
+      popupAnchor: [0, -40 * scale],
+    });
+    iconCache.set(cacheKey, icon);
+  }
+
+  return icon;
+}
 
 // Component to handle map bounds changes and click-to-deselect
 function MapBoundsTracker({
@@ -357,7 +366,7 @@ export default function MapView() {
         <Marker
           key={property.id}
           position={[lat, lng]}
-          icon={createCustomIcon(property.type, isSelected)}
+          icon={getPropertyIcon(property.type, isSelected)}
           eventHandlers={{
             click: (e) => {
               // Close previous popup before opening new one

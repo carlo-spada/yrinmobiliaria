@@ -12,13 +12,13 @@ import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useServiceZones } from "@/hooks/useServiceZones";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
+import { useServiceZones } from "@/hooks/useServiceZones";
+import { supabase } from "@/integrations/supabase/client";
 
 
 const profileSchema = z.object({

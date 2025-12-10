@@ -21,7 +21,13 @@
       "Bash(nvm use:*)",
       "Bash(npm outdated:*)",
       "Bash(npx npm-check-updates:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(while read f)",
+      "Bash(do basename \"$f\" .tsx)",
+      "Bash(done)",
+      "Bash(for component in collapsible breadcrumb radio-group toggle progress-steps)",
+      "Bash(do echo \"=== Checking: $component ===\" grep -r \"$component\" src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

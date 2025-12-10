@@ -1,5 +1,5 @@
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
 import { PageLayout } from '@/components/layout';
@@ -171,12 +171,12 @@ export default function Properties() {
     return filtered;
   }, [filters, sortBy, allProperties, selectedAgentId]);
 
-  // Pagination - use effectiveCurrentPage which handles agent URL changes
+  // Pagination
   const totalPages = Math.ceil(filteredProperties.length / ITEMS_PER_PAGE);
   const paginatedProperties = useMemo(() => {
-    const start = (effectiveCurrentPage - 1) * ITEMS_PER_PAGE;
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredProperties.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredProperties, effectiveCurrentPage]);
+  }, [filteredProperties, currentPage]);
 
   const sortOptions = [
     { value: 'relevance', label: t.properties?.sort?.relevance || 'Relevancia' },
@@ -184,6 +184,15 @@ export default function Properties() {
     { value: 'price-desc', label: t.properties?.sort?.priceDesc || 'Precio (mayor a menor)' },
     { value: 'newest', label: t.properties?.sort?.newest || 'Más recientes' },
   ];
+
+  // Memoize price formatter to avoid creating new Intl.NumberFormat on every render
+  const formatPrice = useCallback((price: number) => {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      minimumFractionDigits: 0,
+    }).format(price);
+  }, []);
 
   return (
     <PageLayout>
@@ -339,14 +348,6 @@ export default function Properties() {
                       renta: 'rent',
                       vendida: 'sold',
                       rentada: 'sold',
-                    };
-
-                    const formatPrice = (price: number) => {
-                      return new Intl.NumberFormat('es-MX', {
-                        style: 'currency',
-                        currency: 'MXN',
-                        minimumFractionDigits: 0,
-                      }).format(price);
                     };
 
                     return (
