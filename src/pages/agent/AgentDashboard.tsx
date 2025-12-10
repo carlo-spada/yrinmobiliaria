@@ -21,15 +21,15 @@ function AgentDashboardContent() {
         supabase
           .from('properties')
           .select('id', { count: 'exact', head: true })
-          .eq('agent_id', profile?.id),
+          .eq('agent_id', profile?.id ?? ''),
         supabase
           .from('contact_inquiries')
           .select('id', { count: 'exact', head: true })
-          .eq('assigned_to_agent', profile?.id),
+          .eq('assigned_to_agent', profile?.id ?? ''),
         supabase
           .from('scheduled_visits')
           .select('id', { count: 'exact', head: true })
-          .eq('agent_id', profile?.id),
+          .eq('agent_id', profile?.id ?? ''),
       ]);
 
       return {

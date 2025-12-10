@@ -24,7 +24,7 @@ export function TableSkeleton({ columns, rows = 5, headers }: TableSkeletonProps
               ? headers.map((header, i) => (
                 <TableHead key={i}>{header}</TableHead>
               ))
-              : Array.from({ length: columns }).map((unused, i) => (
+              : Array.from({ length: columns }).map((_, i) => (
                 <TableHead key={i}>
                   <Skeleton className="h-4 w-20" />
                 </TableHead>
@@ -32,9 +32,9 @@ export function TableSkeleton({ columns, rows = 5, headers }: TableSkeletonProps
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Array.from({ length: rows }).map((unused, rowIndex) => (
+          {Array.from({ length: rows }).map((_, rowIndex) => (
             <TableRow key={rowIndex}>
-              {Array.from({ length: columns }).map((unused, colIndex) => (
+              {Array.from({ length: columns }).map((_, colIndex) => (
                 <TableCell key={colIndex}>
                   <Skeleton
                     className={`h-4 ${colIndex === 0 ? 'w-32' :
@@ -74,16 +74,16 @@ export function DashboardSkeleton() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((unused, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <CardSkeleton key={i} />
         ))}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {Array.from({ length: 2 }).map((unused, i) => (
+        {Array.from({ length: 2 }).map((_, i) => (
           <div key={i} className="border rounded-lg p-6 space-y-4">
             <Skeleton className="h-6 w-40" />
-            {Array.from({ length: 3 }).map((unused, j) => (
+            {Array.from({ length: 3 }).map((_, j) => (
               <div key={j} className="flex flex-col space-y-2 border-b pb-3">
                 <div className="flex items-center justify-between">
                   <Skeleton className="h-4 w-32" />

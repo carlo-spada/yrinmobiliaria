@@ -7,6 +7,18 @@ import { logger } from '@/utils/logger';
 
 type PropertyRow = Database['public']['Tables']['properties']['Row'];
 
+interface AgentInfo {
+  id: string;
+  display_name: string;
+  photo_url: string | null;
+  agent_level: string | null;
+  whatsapp_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  bio_es?: string | null;
+  bio_en?: string | null;
+}
+
 interface PropertyWithRelations extends PropertyRow {
   property_images?: {
     alt_text_en: string | null;
@@ -14,17 +26,7 @@ interface PropertyWithRelations extends PropertyRow {
     display_order: number;
     image_url: string;
   }[];
-  agent?: {
-    id: string;
-    display_name: string;
-    photo_url: string | null;
-    agent_level: string | null;
-    whatsapp_number?: string | null;
-    phone?: string | null;
-    email?: string | null;
-    bio_es?: string | null;
-    bio_en?: string | null;
-  } | null;
+  agent?: AgentInfo | null;
 }
 
 // Transform database row to Property type with proper coordinate handling
@@ -33,6 +35,8 @@ const transformProperty = (row: PropertyWithRelations): Property => {
   const location = row.location as unknown as PropertyLocation;
   const features = row.features as unknown as PropertyFeatures;
   const imageVariants = row.image_variants as unknown as Property['imageVariants'];
+  
+  const agentData = row.agent as AgentInfo | null;
   
   return {
     id: row.id,
@@ -65,13 +69,13 @@ const transformProperty = (row: PropertyWithRelations): Property => {
     })) || [],
     imageVariants: imageVariants || [],
     status: row.status,
-    featured: row.featured,
-    publishedDate: row.published_date,
-    agent: row.agent ? {
-      id: row.agent.id,
-      display_name: row.agent.display_name,
-      photo_url: row.agent.photo_url,
-      agent_level: row.agent.agent_level as Property['agent']['agent_level'],
+    featured: row.featured ?? false,
+    publishedDate: row.published_date ?? '',
+    agent: agentData ? {
+      id: agentData.id,
+      display_name: agentData.display_name,
+      photo_url: agentData.photo_url,
+      agent_level: agentData.agent_level as Property['agent']['agent_level'],
     } : undefined,
   };
 };

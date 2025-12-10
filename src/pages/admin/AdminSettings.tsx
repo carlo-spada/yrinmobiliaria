@@ -503,7 +503,7 @@ export default function AdminSettings() {
                 <Label htmlFor="phone">Teléfono</Label>
                 <Input
                   id="phone"
-                  value={orgFormData.phone}
+                  value={orgFormData.phone ?? ''}
                   onChange={(e) => setOrgFormData({ ...orgFormData, phone: e.target.value })}
                   placeholder="(951) 123-4567"
                 />
@@ -512,7 +512,7 @@ export default function AdminSettings() {
                 <Label htmlFor="domain">Dominio</Label>
                 <Input
                   id="domain"
-                  value={orgFormData.domain}
+                  value={orgFormData.domain ?? ''}
                   onChange={(e) => setOrgFormData({ ...orgFormData, domain: e.target.value })}
                   placeholder="empresa.com"
                 />

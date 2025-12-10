@@ -41,7 +41,7 @@ export function PropertyCardSkeleton() {
 export function PropertyGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <>
-      {Array.from({ length: count }).map((unused, i) => (
+      {Array.from({ length: count }).map((_, i) => (
         <PropertyCardSkeleton key={i} />
       ))}
     </>

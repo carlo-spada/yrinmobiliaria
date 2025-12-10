@@ -19,6 +19,7 @@ interface CmsSectionItem {
 interface CmsSection {
   title: string;
   content: CmsSectionItem[];
+  icon?: unknown;
 }
 
 interface CmsAdditionalSection {

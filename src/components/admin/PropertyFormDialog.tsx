@@ -163,13 +163,13 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         reset({
           title_es: property.title_es,
           title_en: property.title_en,
-          description_es: property.description_es,
-          description_en: property.description_en,
+          description_es: property.description_es ?? undefined,
+          description_en: property.description_en ?? undefined,
           type: property.type as "casa" | "departamento" | "local" | "oficina" | "terrenos",
           operation: property.operation as "venta" | "renta",
           price: property.price.toString(),
           status: property.status as "disponible" | "vendida" | "rentada" | "pendiente",
-          featured: property.featured,
+          featured: property.featured ?? false,
           zone: location?.zone || "",
           neighborhood: location?.neighborhood || "",
           address: location?.address || "",
@@ -359,7 +359,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       }
 
       // Insert all images
-      if (images.length > 0) {
+      if (images.length > 0 && propertyId) {
         const imageRecords = images.map((image, index) => ({
           property_id: propertyId,
           image_url: image.url,

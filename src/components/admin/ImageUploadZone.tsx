@@ -117,7 +117,7 @@ export const ImageUploadZone = ({
         await deleteImage(path);
       }
 
-      const newImages = images.filter((unused, i) => i !== index);
+      const newImages = images.filter((_, i) => i !== index);
       onImagesChange(newImages);
       toast.success('Imagen eliminada');
     } catch (error) {

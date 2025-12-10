@@ -49,8 +49,8 @@ type UserListItem = {
   languages: string[] | null;
   professional_email: string | null;
   email_preference: string | null;
-  organization: OrganizationSummary | null;
-  roles: { role: string; granted_at: string }[];
+  organization: OrganizationSummary | null | undefined;
+  roles: { role: string; granted_at: string | null }[];
 };
 
 type ProfileFormData = {
@@ -139,7 +139,7 @@ function UsersContent() {
       roleAssignments?.forEach(ra => {
         const existing = roleMap.get(ra.user_id);
         if (!existing || ra.role === 'superadmin' || (ra.role === 'admin' && existing.role !== 'superadmin')) {
-          roleMap.set(ra.user_id, { role: ra.role, granted_at: ra.granted_at });
+          roleMap.set(ra.user_id, { role: ra.role, granted_at: ra.granted_at ?? '' });
         }
       });
 
@@ -339,7 +339,7 @@ function UsersContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Array.from({ length: 5 }).map((unused, i) => (
+                {Array.from({ length: 5 }).map((_, i) => (
                   <UserRowSkeleton key={i} />
                 ))}
               </TableBody>
@@ -463,7 +463,9 @@ function UsersContent() {
                           onClick={() => {
                             const typedRole = role as 'superadmin' | 'admin' | 'user';
                             setSelectedRole(typedRole);
-                            changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: typedRole });
+                            if (selectedUser) {
+                              changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: typedRole });
+                            }
                           }}
                           disabled={changeRoleMutation.isPending || !isSuperadmin}
                         >
@@ -472,7 +474,7 @@ function UsersContent() {
                       ))}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.role)}>{getRoleLabel(selectedUser?.role)}</Badge>
+                      Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.role ?? 'user')}>{getRoleLabel(selectedUser?.role ?? 'user')}</Badge>
                     </p>
                   </div>
 
@@ -501,11 +503,15 @@ function UsersContent() {
                             </SelectContent>
                           </Select>
                           <Button
-                            onClick={() => changeOrganizationMutation.mutate({
-                              userId: selectedUser.user_id,
-                              orgId: selectedOrgId
-                            })}
-                            disabled={!isSuperadmin || changeOrganizationMutation.isPending || selectedOrgId === selectedUser.organization_id}
+                            onClick={() => {
+                              if (selectedUser) {
+                                changeOrganizationMutation.mutate({
+                                  userId: selectedUser.user_id,
+                                  orgId: selectedOrgId
+                                });
+                              }
+                            }}
+                            disabled={!isSuperadmin || changeOrganizationMutation.isPending || selectedOrgId === selectedUser?.organization_id}
                           >
                             <Building2 className="h-4 w-4 mr-2" />
                             Asignar
@@ -578,7 +584,7 @@ function UsersContent() {
                         </div>
                       )}
                       <div className="text-xs text-muted-foreground">
-                        {user.languages?.length > 0 ? user.languages.join(', ') : 'Sin idiomas'}
+                        {user.languages && user.languages.length > 0 ? user.languages.join(', ') : 'Sin idiomas'}
                       </div>
                     </div>
                   </TableCell>

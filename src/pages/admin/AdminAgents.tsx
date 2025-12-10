@@ -31,7 +31,7 @@ export default function AdminAgents() {
           inquiries:contact_inquiries(count),
           visits:scheduled_visits(count)
         `)
-        .eq('organization_id', profile?.organization_id)
+        .eq('organization_id', profile?.organization_id ?? '')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;

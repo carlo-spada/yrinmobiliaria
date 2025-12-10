@@ -47,7 +47,7 @@ export default function AdminZones() {
   const [editingZone, setEditingZone] = useState<ServiceZone | null>(null);
   const [zoneImages, setZoneImages] = useState<Array<{ url: string; path?: string }>>([]);
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, setValue, control } = useForm();
+  const { register, handleSubmit, reset, setValue, control } = useForm<ZoneFormData>();
   const activeValue = useWatch({ control, name: 'active', defaultValue: true });
 
   const { data: zones, isLoading } = useQuery({
@@ -127,8 +127,8 @@ export default function AdminZones() {
     setEditingZone(zone);
     setValue('name_es', zone.name_es);
     setValue('name_en', zone.name_en);
-    setValue('description_es', zone.description_es);
-    setValue('description_en', zone.description_en);
+    setValue('description_es', zone.description_es ?? undefined);
+    setValue('description_en', zone.description_en ?? undefined);
     setValue('active', zone.active);
     setValue('display_order', zone.display_order);
     // Set zone image if it exists
@@ -150,8 +150,8 @@ export default function AdminZones() {
     mutation.mutate({
       name_es: data.name_es,
       name_en: data.name_en,
-      description_es: data.description_es,
-      description_en: data.description_en,
+      description_es: data.description_es ?? null,
+      description_en: data.description_en ?? null,
       image_url: zoneImages.length > 0 ? zoneImages[0].url : null,
       active: data.active,
       display_order: parseInt(String(data.display_order)),
