@@ -1,5 +1,5 @@
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
 import { PageLayout } from '@/components/layout';
@@ -69,14 +69,15 @@ export default function Properties() {
       const agent = agents.find(
         (a) => a.display_name.toLowerCase().replace(/\s+/g, '-') === agentSlug
       );
-      if (agent) setSelectedAgentId(agent.id);
+      if (agent) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedAgentId(agent.id);
+        setCurrentPage(1);
+      }
     }
   }, [searchParams, agents]);
 
   const [filters, setFiltersInternal] = useState<PropertyFiltersType>(filtersFromUrl);
-
-  // Track agent ID to detect changes from URL navigation
-  const prevAgentIdRef = useRef(selectedAgentId);
 
   // Wrapper functions that also reset page when filters change
   const setFilters = (newFilters: PropertyFiltersType) => {
@@ -89,14 +90,7 @@ export default function Properties() {
     setCurrentPage(1);
   };
 
-  // Compute effective current page - reset to 1 when agent changes from URL
-  const effectiveCurrentPage = useMemo(() => {
-    if (selectedAgentId !== prevAgentIdRef.current) {
-      prevAgentIdRef.current = selectedAgentId;
-      return 1;
-    }
-    return currentPage;
-  }, [selectedAgentId, currentPage]);
+
 
   // Update URL when filters change
   useEffect(() => {
@@ -258,7 +252,10 @@ export default function Properties() {
                       })),
                     ]}
                     value={selectedAgentId || 'all'}
-                    onChange={(e) => setSelectedAgentId(e.target.value === 'all' ? null : e.target.value)}
+                    onChange={(e) => {
+                      setSelectedAgentId(e.target.value === 'all' ? null : e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="w-full sm:w-64"
                   />
 
@@ -267,7 +264,10 @@ export default function Properties() {
                     <Badge variant="secondary" className="gap-2">
                       {agents.find((a) => a.id === selectedAgentId)?.display_name}
                       <button
-                        onClick={() => setSelectedAgentId(null)}
+                        onClick={() => {
+                          setSelectedAgentId(null);
+                          setCurrentPage(1);
+                        }}
                         className="hover:bg-background/50 rounded-full"
                         aria-label={language === 'es' ? 'Quitar filtro de agente' : 'Remove agent filter'}
                       >
@@ -364,7 +364,7 @@ export default function Properties() {
                         area={property.features.constructionArea}
                         featured={property.featured}
                         status={statusMap[property.operation] || 'sale'}
-                        priority={effectiveCurrentPage === 1 && index < 6}
+                        priority={currentPage === 1 && index < 6}
                         agent={property.agent}
                       />
                     );
@@ -377,7 +377,7 @@ export default function Properties() {
                     <Button
                       variant="outline"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={effectiveCurrentPage === 1}
+                      disabled={currentPage === 1}
                     >
                       {t.properties?.previous || 'Anterior'}
                     </Button>
@@ -386,7 +386,7 @@ export default function Properties() {
                       {Array.from({ length: totalPages }, (unused, i) => i + 1).map((page) => (
                         <Button
                           key={page}
-                          variant={effectiveCurrentPage === page ? 'default' : 'outline'}
+                          variant={currentPage === page ? 'default' : 'outline'}
                           size="icon"
                           onClick={() => setCurrentPage(page)}
                           className="w-10"
@@ -399,7 +399,7 @@ export default function Properties() {
                     <Button
                       variant="outline"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={effectiveCurrentPage === totalPages}
+                      disabled={currentPage === totalPages}
                     >
                       {t.properties?.next || 'Siguiente'}
                     </Button>
