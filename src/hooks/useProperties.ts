@@ -29,6 +29,7 @@ interface PropertyWithRelations extends PropertyRow {
   agent?: AgentInfo | null;
 }
 
+
 // Transform database row to Property type with proper coordinate handling
 const transformProperty = (row: PropertyWithRelations): Property => {
   // Cast Json types to proper structures
@@ -36,7 +37,7 @@ const transformProperty = (row: PropertyWithRelations): Property => {
   const features = row.features as unknown as PropertyFeatures;
   const imageVariants = row.image_variants as unknown as Property['imageVariants'];
   
-  const agentData = row.agent as AgentInfo | null;
+  const agentData = row.agent;
   
   return {
     id: row.id,
@@ -71,12 +72,15 @@ const transformProperty = (row: PropertyWithRelations): Property => {
     status: row.status,
     featured: row.featured ?? false,
     publishedDate: row.published_date ?? '',
-    agent: agentData ? {
-      id: agentData.id,
-      display_name: agentData.display_name,
-      photo_url: agentData.photo_url,
-      agent_level: agentData.agent_level as Property['agent']['agent_level'],
-    } : undefined,
+    agent: agentData ? (() => {
+      const a = agentData as unknown as Record<string, unknown>;
+      return {
+        id: String(a['id'] ?? ''),
+        display_name: String(a['display_name'] ?? ''),
+        photo_url: a['photo_url'] as string | null,
+        agent_level: a['agent_level'] as 'junior' | 'associate' | 'senior' | 'partner' | null,
+      };
+    })() : undefined,
   };
 };
 
