@@ -666,7 +666,7 @@ export default function MapView() {
                 </div>
                 {isLoading ? (
                   <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((unused, i) => (
+                    {Array.from({ length: 3 }).map((_, i) => (
                       <div key={i} className="bg-card rounded-lg border border-border p-3">
                         <Skeleton className="h-24 w-full mb-2 rounded" />
                         <Skeleton className="h-5 w-3/4 mb-2" />

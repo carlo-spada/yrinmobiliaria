@@ -44,7 +44,7 @@ export default function AcceptInvitation() {
           *,
           organization:organizations(*)
         `)
-        .eq("token", token)
+        .eq("token", token ?? '')
         .single();
 
       if (fetchError || !data) {

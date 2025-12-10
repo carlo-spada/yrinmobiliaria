@@ -161,7 +161,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
             <Twitter className="mr-2 h-4 w-4" />
             Twitter
           </DropdownMenuItem>
-          {navigator.share && (
+          {'share' in navigator && (
             <DropdownMenuItem onClick={handleNativeShare}>
               <Share2 className="mr-2 h-4 w-4" />
               {language === 'es' ? 'Más opciones' : 'More options'}
@@ -203,7 +203,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
       >
         <Twitter className="h-4 w-4" />
       </Button>
-      {navigator.share && (
+      {'share' in navigator && (
         <Button 
           variant="outline" 
           onClick={handleNativeShare} 

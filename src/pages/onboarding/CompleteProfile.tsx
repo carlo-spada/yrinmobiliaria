@@ -84,7 +84,7 @@ export default function CompleteProfile() {
           is_complete: true,
           completed_at: new Date().toISOString(),
         })
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id ?? '');
 
       if (error) throw error;
 

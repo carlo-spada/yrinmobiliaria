@@ -108,7 +108,7 @@ export function ResponsiveImage({
     return srcsetParts.join(', ');
   };
   
-  const srcset = isSupabase ? generateSupabaseSrcset(src) : undefined;
+  const srcset = isSupabase && src ? generateSupabaseSrcset(src) : undefined;
 
   // If no src provided, render nothing (caller error guard)
   if (!src) {

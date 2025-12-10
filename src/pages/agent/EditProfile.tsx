@@ -85,7 +85,7 @@ function EditProfileContent() {
       const { error } = await supabase
         .from("profiles")
         .update(data)
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id ?? '');
 
       if (error) throw error;
 

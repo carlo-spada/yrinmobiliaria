@@ -195,7 +195,7 @@ export const PropertiesTable = () => {
       <PropertyFormDialog
         open={!!editingProperty}
         onOpenChange={(open) => !open && setEditingProperty(null)}
-        property={editingProperty}
+        property={editingProperty ?? undefined}
       />
 
       {reassigningProperty && (

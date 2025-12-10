@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import React from "react";
 import { vi } from "vitest";
 
 vi.mock("@/pages/MapView", () => ({ default: () => <div>MapViewMock</div> }));

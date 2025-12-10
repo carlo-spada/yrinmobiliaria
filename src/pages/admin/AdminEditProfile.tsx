@@ -87,7 +87,7 @@ function AdminEditProfileContent() {
       const { data: result, error } = await supabase
         .from("profiles")
         .update(data)
-        .eq("user_id", user?.id)
+        .eq("user_id", user?.id ?? '')
         .select();
 
       // console.log("[Profile Update] Supabase response:", { result, error });

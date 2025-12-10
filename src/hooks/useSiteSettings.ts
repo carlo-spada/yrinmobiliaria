@@ -81,7 +81,7 @@ export function useSiteSettings() {
     },
   });
 
-  const getSetting = (key: string, fallback?: SettingValue): SettingValue => {
+  const getSetting = (key: string, fallback: SettingValue = null): SettingValue => {
     return settings?.[key] ?? fallback;
   };
 
