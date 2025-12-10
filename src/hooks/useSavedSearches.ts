@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { PropertyFilters } from '@/types/property';
 
 export interface SavedSearch {

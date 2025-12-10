@@ -1,5 +1,5 @@
-import { useAuthContext } from '@/contexts/useAuthContext';
 import { UserRole } from '@/contexts/AuthContextBase';
+import { useAuthContext } from '@/contexts/useAuthContext';
 
 export type { UserRole };
 

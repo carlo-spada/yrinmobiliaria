@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Public agent data - only non-sensitive fields exposed via secure RPC

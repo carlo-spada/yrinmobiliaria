@@ -1,9 +1,10 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
+
 import App from "./App.tsx";
 import "./index.css";
-import { validateSupabaseEnv, SupabaseConfigError } from "./utils/supabaseValidation";
 import { initGA } from "./utils/analytics";
+import { validateSupabaseEnv, SupabaseConfigError } from "./utils/supabaseValidation";
 
 // Initialize Google Analytics if measurement ID is provided
 initGA();

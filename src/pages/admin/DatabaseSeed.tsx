@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { clearProperties } from '@/utils/supabase-properties';
-import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, Database, Trash2, Upload, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -16,9 +15,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { RoleGuard } from '@/components/admin/RoleGuard';
+import { useToast } from '@/hooks/use-toast';
+import { clearProperties } from '@/utils/supabase-properties';
 
 export default function DatabaseSeed() {
   const [isSeeding] = useState(false);

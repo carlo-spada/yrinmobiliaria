@@ -1,26 +1,10 @@
-import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw, Plus, Pencil, Trash2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { SettingValue } from '@/hooks/useSiteSettings';
-import { useUserRole } from '@/hooks/useUserRole';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw, Plus, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { PermissionsMatrix } from '@/components/admin/PermissionsMatrix';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,8 +16,25 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { RoleGuard } from '@/components/admin/RoleGuard';
-import { PermissionsMatrix } from '@/components/admin/PermissionsMatrix';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { SettingValue } from '@/hooks/useSiteSettings';
+import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
 type OrganizationRow = Database['public']['Tables']['organizations']['Row'];

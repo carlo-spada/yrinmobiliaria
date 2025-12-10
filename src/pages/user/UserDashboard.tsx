@@ -1,18 +1,26 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
+import { AlertCircle, Heart, Mail, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import * as z from 'zod';
+
+import { PropertyCard } from '@/components/PropertyCard';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { PropertyCard } from '@/components/PropertyCard';
-import { AlertCircle, Heart, Mail, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+
+
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -26,11 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useQueryClient } from '@tanstack/react-query';
-import { useUserRole } from '@/hooks/useUserRole';
+
 
 const profileSchema = z.object({
   display_name: z.string().min(1, 'Name is required').max(100),

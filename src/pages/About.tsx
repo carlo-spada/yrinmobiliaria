@@ -1,10 +1,4 @@
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   Heart,
   Shield,
@@ -17,10 +11,17 @@ import {
   Calendar,
   Loader2
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+
+import { Footer } from '@/components/Footer';
+import { Header } from '@/components/Header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import type { Language } from '@/types';
 import type { Database } from '@/integrations/supabase/types';
+import type { Language } from '@/types';
 
 type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
 

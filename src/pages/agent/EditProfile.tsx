@@ -1,23 +1,25 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useServiceZones } from "@/hooks/useServiceZones";
+
+import { ImageUploadZone } from "@/components/admin/ImageUploadZone";
 import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
-import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useServiceZones } from "@/hooks/useServiceZones";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ImageUploadZone } from "@/components/admin/ImageUploadZone";
-import { Loader2, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { Link } from "react-router-dom";
+
 
 const profileSchema = z.object({
   photo_url: z.string().url("Foto de perfil requerida"),

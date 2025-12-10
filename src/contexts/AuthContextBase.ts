@@ -1,5 +1,6 @@
-import { createContext } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
+import { createContext } from 'react';
+
 import type { Tables } from '@/integrations/supabase/types';
 
 export type UserRole = 'superadmin' | 'admin' | 'agent' | 'user' | 'client';

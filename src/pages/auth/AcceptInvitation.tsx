@@ -1,16 +1,17 @@
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { z } from "zod";
-import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 
 const passwordSchema = z.string()
   .min(12, "La contraseña debe tener al menos 12 caracteres")

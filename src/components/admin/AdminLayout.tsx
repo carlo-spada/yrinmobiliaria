@@ -1,16 +1,18 @@
+import { AlertTriangle } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+
+import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Navigate, useLocation } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AdminSidebar } from './AdminSidebar';
+
 import { AdminHeader } from './AdminHeader';
-import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AdminOrgProvider } from './AdminOrgContext';
+import { AdminSidebar } from './AdminSidebar';
 
 const SIDEBAR_STORAGE_KEY = 'admin-sidebar-open';
 

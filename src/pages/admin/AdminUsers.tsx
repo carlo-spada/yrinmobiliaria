@@ -1,21 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Pencil, Shield, Mail, User, Building2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { RoleGuard } from '@/components/admin/RoleGuard';
 import { UserRowSkeleton } from '@/components/admin/TableSkeleton';
+import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -24,12 +21,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, Shield, Mail, User, Building2 } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
-import { RoleGuard } from '@/components/admin/RoleGuard';
-import { useAdminOrg } from '@/components/admin/useAdminOrg';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
 type OrganizationSummary = Pick<Database['public']['Tables']['organizations']['Row'], 'id' | 'name' | 'slug'>;

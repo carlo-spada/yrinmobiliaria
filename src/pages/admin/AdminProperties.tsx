@@ -1,9 +1,10 @@
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
+
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PropertiesTable } from '@/components/admin/PropertiesTable';
 import { PropertyFormDialog } from '@/components/admin/PropertyFormDialog';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 
 export default function AdminProperties() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);

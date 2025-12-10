@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AgenticContentWizard, type CmsPageType, type WizardResult } from '@/components/admin/cms/AgenticContentWizard';
 import { FileText, Wand2, Eye, Save } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 import { toast } from 'sonner';
+
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AgenticContentWizard, type CmsPageType, type WizardResult } from '@/components/admin/cms/AgenticContentWizard';
 import { RoleGuard } from '@/components/admin/RoleGuard';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function AdminCMS() {
     const [activeTab, setActiveTab] = useState<CmsPageType>('about');

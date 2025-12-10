@@ -1,7 +1,8 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { Session, User } from "@supabase/supabase-js";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { describe, expect, it, beforeEach, vi } from "vitest";
+
 import { AuthProvider } from "@/contexts/AuthContext";
 
 const supabaseMock = vi.hoisted(() => ({

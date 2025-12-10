@@ -1,9 +1,14 @@
-import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
-import { ImageUploadZone } from './ImageUploadZone';
-import { vi, afterEach } from 'vitest';
-import { uploadImage } from '@/utils/imageUpload';
+import React from 'react';
 import { toast } from 'sonner';
+import { vi, afterEach } from 'vitest';
+
+import { uploadImage } from '@/utils/imageUpload';
+
+import { ImageUploadZone } from './ImageUploadZone';
+
+
+
 
 vi.mock('@/utils/imageUpload', () => ({
   uploadImage: vi.fn(),

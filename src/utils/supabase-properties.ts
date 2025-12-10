@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Property } from '@/types/property';
 import { Database } from '@/integrations/supabase/types';
+import { Property } from '@/types/property';
 
 type Json = Database['public']['Tables']['properties']['Insert']['location'];
 

@@ -1,5 +1,6 @@
 import { Suspense, lazy, type ComponentType, type ReactElement } from "react";
 import { Route, Routes } from "react-router-dom";
+
 import { PageLoader } from "@/components/ui/page-loader";
 
 type LazyComponent = () => Promise<{ default: ComponentType<unknown> }>;

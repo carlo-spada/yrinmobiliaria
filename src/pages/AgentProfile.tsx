@@ -1,15 +1,3 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAgentBySlug } from '@/hooks/useAgentBySlug';
-import { useAgentStats } from '@/hooks/usePublicAgents';
-import { useProperties } from '@/hooks/useProperties';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PropertyCard } from '@/components/PropertyCard';
-import { MetaTags } from '@/components/seo/MetaTags';
-import { StructuredData } from '@/components/seo/StructuredData';
 import {
   MapPin,
   Award,
@@ -21,7 +9,20 @@ import {
   Calendar,
   ClipboardList,
 } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+
+import { PropertyCard } from '@/components/PropertyCard';
+import { MetaTags } from '@/components/seo/MetaTags';
+import { StructuredData } from '@/components/seo/StructuredData';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAgentBySlug } from '@/hooks/useAgentBySlug';
+import { useProperties } from '@/hooks/useProperties';
+import { useAgentStats } from '@/hooks/usePublicAgents';
 
 const levelColors = {
   junior: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',

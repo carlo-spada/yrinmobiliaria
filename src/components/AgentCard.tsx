@@ -1,12 +1,14 @@
+import { motion } from 'framer-motion';
+import { MapPin, Languages } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin, Languages } from 'lucide-react';
-import { PublicAgent } from '@/hooks/usePublicAgents';
-import { generateSlug } from '@/hooks/useAgentBySlug';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { motion } from 'framer-motion';
+import { generateSlug } from '@/hooks/useAgentBySlug';
+import { PublicAgent } from '@/hooks/usePublicAgents';
+
 
 interface AgentCardProps {
   agent: PublicAgent;

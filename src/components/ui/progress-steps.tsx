@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 
 interface ProgressStepsProps {

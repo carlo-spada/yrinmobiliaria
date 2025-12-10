@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 import { Property, PropertyFilters, PropertyLocation, PropertyFeatures } from '@/types/property';
 import { logger } from '@/utils/logger';
-import { Database } from '@/integrations/supabase/types';
 
 type PropertyRow = Database['public']['Tables']['properties']['Row'];
 

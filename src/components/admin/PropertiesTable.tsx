@@ -1,20 +1,8 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { TableSkeleton } from './TableSkeleton';
-import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, UserCog } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { PropertyFormDialog } from './PropertyFormDialog';
-import { ReassignPropertyDialog } from './ReassignPropertyDialog';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,10 +13,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { logAuditEvent } from '@/utils/auditLog';
-import { Database } from '@/integrations/supabase/types';
-import { useAdminOrg } from './useAdminOrg';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+import { logAuditEvent } from '@/utils/auditLog';
+
+import { PropertyFormDialog } from './PropertyFormDialog';
+import { ReassignPropertyDialog } from './ReassignPropertyDialog';
+import { TableSkeleton } from './TableSkeleton';
+import { useAdminOrg } from './useAdminOrg';
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
   property_images?: Array<{ image_url: string; display_order: number }>;

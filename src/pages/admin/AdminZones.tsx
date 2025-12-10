@@ -1,19 +1,16 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { ImageUploadZone } from '@/components/admin/ImageUploadZone';
+import { useState } from 'react';
+
+
+import { Switch } from '@/components/ui/switch';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { ImageUploadZone } from '@/components/admin/ImageUploadZone';
+import { logAuditEvent } from '@/utils/auditLog';
+import { RoleGuard } from '@/components/admin/RoleGuard';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -23,12 +20,17 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { useForm, useWatch } from 'react-hook-form';
-import { logAuditEvent } from '@/utils/auditLog';
+import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { RoleGuard } from '@/components/admin/RoleGuard';
 
 type ServiceZone = Database['public']['Tables']['service_zones']['Row'];
 

@@ -1,17 +1,13 @@
+import { Heart, ArrowLeft, Trash2, X, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ArrowLeft, Trash2, X, AlertCircle } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { PropertyCard } from '@/components/PropertyCard';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useFavorites } from '@/hooks/useFavorites';
-import { useProperties } from '@/hooks/useProperties';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
+
 import { FadeIn } from '@/components/animations/FadeIn';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer';
+import { Footer } from '@/components/Footer';
+import { Header } from '@/components/Header';
+import { PropertyCard } from '@/components/PropertyCard';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +19,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useProperties } from '@/hooks/useProperties';
 
 export default function Favorites() {
   const { language } = useLanguage();

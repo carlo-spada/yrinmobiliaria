@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { Home, MessageSquare, Calendar, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
+
+import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 function AgentDashboardContent() {
   const { profile } = useAuth();

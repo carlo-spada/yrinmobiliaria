@@ -1,9 +1,28 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Eye, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { RoleGuard } from '@/components/admin/RoleGuard';
+import { TableSkeleton } from '@/components/admin/TableSkeleton';
+import { useAdminOrg } from '@/components/admin/useAdminOrg';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -12,28 +31,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { TableSkeleton } from '@/components/admin/TableSkeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { Eye, Trash2 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { logAuditEvent } from '@/utils/auditLog';
-import { Database } from '@/integrations/supabase/types';
-import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import { useUserRole } from '@/hooks/useUserRole';
-import { RoleGuard } from '@/components/admin/RoleGuard';
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+import { logAuditEvent } from '@/utils/auditLog';
 
 type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & {
   properties?: { title_es: string } | null;

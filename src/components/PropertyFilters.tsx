@@ -1,14 +1,15 @@
-import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input-enhanced';
-import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { PropertyFilters as PropertyFiltersType, PropertyType, PropertyOperation } from '@/types/property';
 import { useServiceZones } from '@/hooks/useServiceZones';
+import { PropertyFilters as PropertyFiltersType, PropertyType, PropertyOperation } from '@/types/property';
 import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 
 interface PropertyFiltersProps {

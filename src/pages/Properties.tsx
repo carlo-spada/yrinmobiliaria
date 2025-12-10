@@ -1,19 +1,18 @@
+import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
+
 import { PageLayout } from '@/components/layout';
 import { PropertyCard } from '@/components/PropertyCard';
-import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';
-
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Select } from '@/components/ui/select-enhanced';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select-enhanced';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
-
 import { PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';

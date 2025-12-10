@@ -1,7 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useFavorites } from "./useFavorites";
+
 import { FAVORITES_STORAGE_KEY } from "@/utils/favoritesStorage";
+
+import { useFavorites } from "./useFavorites";
 
 const mockToast = vi.fn();
 const supabaseMock = vi.hoisted(() => ({

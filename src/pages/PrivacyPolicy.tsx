@@ -1,12 +1,13 @@
-import { PageLayout } from '@/components/layout';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card } from '@/components/ui/card';
-import { Shield, Loader2 } from 'lucide-react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useQuery } from '@tanstack/react-query';
+import { Shield, Loader2 } from 'lucide-react';
+
+import { PageLayout } from '@/components/layout';
+import { Card } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
-import type { Language } from '@/types';
 import type { Database } from '@/integrations/supabase/types';
+import type { Language } from '@/types';
 
 type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
 

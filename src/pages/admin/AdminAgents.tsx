@@ -1,17 +1,18 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { InviteAgentDialog } from "@/components/admin/InviteAgentDialog";
 import { UserPlus, Search, Star, Home, MessageSquare, Calendar, Mail, Phone } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
+
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { InviteAgentDialog } from "@/components/admin/InviteAgentDialog";
 import { RoleGuard } from "@/components/admin/RoleGuard";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminAgents() {
   const { profile } = useAuth();

@@ -1,9 +1,12 @@
-import { useRef } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useRef } from 'react';
+import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -11,10 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -22,13 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { logAuditEvent } from '@/utils/auditLog';
-import { ImageUploadZone } from './ImageUploadZone';
-import { useState } from 'react';
-import { Database } from '@/integrations/supabase/types';
-import { useAdminOrg } from './useAdminOrg';
+import { Textarea } from '@/components/ui/textarea';
 import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+import { logAuditEvent } from '@/utils/auditLog';
+
+import { ImageUploadZone } from './ImageUploadZone';
+import { useAdminOrg } from './useAdminOrg';
+
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
   property_images?: Array<{ image_url: string; display_order: number }>;

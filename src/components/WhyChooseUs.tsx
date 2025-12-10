@@ -1,6 +1,7 @@
+import { MapPinned, Users, FileCheck } from 'lucide-react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { MapPinned, Users, FileCheck } from 'lucide-react';
 
 export function WhyChooseUs() {
   const { t } = useLanguage();

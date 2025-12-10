@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "./logger";
 import { Database } from "@/integrations/supabase/types";
+
+import { logger } from "./logger";
 
 type Json = Database['public']['Tables']['audit_logs']['Row']['changes'];
 

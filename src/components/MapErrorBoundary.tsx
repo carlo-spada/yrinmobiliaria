@@ -1,6 +1,7 @@
+import { AlertCircle } from "lucide-react";
 import { Component, ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 interface Props {

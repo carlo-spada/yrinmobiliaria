@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
+
 import { FAVORITES_STORAGE_KEY, getLocalFavorites, persistLocalFavorites } from "./favoritesStorage";
 
 describe("favoritesStorage", () => {

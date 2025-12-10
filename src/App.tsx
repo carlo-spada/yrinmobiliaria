@@ -1,17 +1,19 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import NProgress from "nprogress";
+import { useEffect } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
+
 import { PageTransition } from "@/components/animations/PageTransition";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppRoutes } from "@/routes";
-import NProgress from "nprogress";
+
 import "nprogress/nprogress.css";
-import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 

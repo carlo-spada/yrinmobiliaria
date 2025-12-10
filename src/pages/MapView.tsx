@@ -1,27 +1,30 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { Icon, LatLngBounds } from "leaflet";
 import type { Marker as LeafletMarker } from "leaflet";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
+import { useSearchParams, Link } from "react-router-dom";
+
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./MapView.css";
 import { PageLayout } from "@/components/layout";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useProperties } from "@/hooks/useProperties";
-import { Property, PropertyType } from "@/types/property";
+import { MapErrorBoundary } from "@/components/MapErrorBoundary";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select-enhanced";
-import { Slider } from "@/components/ui/slider";
-import { ResponsiveImage } from "@/components/ResponsiveImage";
-import { MapErrorBoundary } from "@/components/MapErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton-loader";
+import { Slider } from "@/components/ui/slider";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useProperties } from "@/hooks/useProperties";
 import { useServiceZones } from "@/hooks/useServiceZones";
+import { Property, PropertyType } from "@/types/property";
+import { filterPropertiesByMap, isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
 import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from "@/utils/priceSliderHelpers";
+
 import {
   X,
   Menu,
@@ -36,7 +39,6 @@ import {
   Maximize2,
   LandPlot,
 } from "lucide-react";
-import { filterPropertiesByMap, isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
 
 // Property type colors
 const propertyColors = {

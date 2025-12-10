@@ -1,14 +1,16 @@
+import { lazy, Suspense } from 'react';
+
+import { FeaturedProperties } from '@/components/FeaturedProperties';
+import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
-import { FeaturedProperties } from '@/components/FeaturedProperties';
 import { LazySection } from '@/components/LazySection';
-import { Footer } from '@/components/Footer';
 import { MetaTags } from '@/components/seo/MetaTags';
 import { StructuredData } from '@/components/seo/StructuredData';
-import { getOrganizationSchema, getLocalBusinessSchema } from '@/lib/schema-helpers';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getOrganizationSchema, getLocalBusinessSchema } from '@/lib/schema-helpers';
+
 
 // Lazy load below-the-fold sections for better initial page load
 const ZonesSection = lazy(() => import('@/components/ZonesSection').then(m => ({ default: m.ZonesSection })));

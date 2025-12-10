@@ -1,4 +1,5 @@
 import { ImgHTMLAttributes } from 'react';
+
 import { cn } from '@/lib/utils';
 
 type ImageVariants = {

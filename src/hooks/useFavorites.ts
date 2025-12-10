@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useToast } from './use-toast';
-import { logger } from '@/utils/logger';
 import { FAVORITES_STORAGE_KEY, getLocalFavorites, persistLocalFavorites } from '@/utils/favoritesStorage';
+import { logger } from '@/utils/logger';
+
+import { useToast } from './use-toast';
+import { useAuth } from './useAuth';
+
 
 export function useFavorites() {
   const { user } = useAuth();

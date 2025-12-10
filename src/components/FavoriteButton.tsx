@@ -1,10 +1,11 @@
-import { Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { useFavorites } from '@/hooks/useFavorites';
+import { Heart } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
+import { useFavorites } from '@/hooks/useFavorites';
+import { cn } from '@/lib/utils';
 
 interface FavoriteButtonProps {
   propertyId: string;

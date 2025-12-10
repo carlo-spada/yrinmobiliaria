@@ -1,11 +1,14 @@
+import { useQuery } from '@tanstack/react-query';
+import { MapPin } from 'lucide-react';
+
+import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ResponsiveImage } from '@/components/ResponsiveImage';
+
+
 
 export function ZonesSection() {
   const { t, language } = useLanguage();

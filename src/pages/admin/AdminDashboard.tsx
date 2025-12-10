@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, MessageSquare, Calendar, FileText } from 'lucide-react';
+
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { useAdminOrg } from '@/components/admin/useAdminOrg';
-import { useUserRole } from '@/hooks/useUserRole';
 import { DashboardSkeleton } from '@/components/admin/TableSkeleton';
+import { useAdminOrg } from '@/components/admin/useAdminOrg';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
 
 function DashboardContent() {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();

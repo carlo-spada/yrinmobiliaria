@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
@@ -14,9 +15,10 @@ import {
   Building2,
   X,
 } from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
-import { useUserRole } from '@/hooks/useUserRole';
+
+import { NavLink } from '@/components/NavLink';
+import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -31,11 +33,12 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { useAdminOrg } from './useAdminOrg';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
+
+import { useAdminOrg } from './useAdminOrg';
+
 
 type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
 

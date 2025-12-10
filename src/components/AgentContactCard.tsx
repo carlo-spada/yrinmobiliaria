@@ -1,11 +1,12 @@
+import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
-import { generateSlug } from '@/hooks/useAgentBySlug';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateSlug } from '@/hooks/useAgentBySlug';
 
 interface PropertyAgent {
   id: string;

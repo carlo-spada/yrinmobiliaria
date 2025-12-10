@@ -1,9 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
 
 interface ProfileCompletionGuardProps {
   children: ReactNode;

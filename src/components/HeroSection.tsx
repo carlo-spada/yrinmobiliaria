@@ -1,10 +1,11 @@
 import { Search } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useServiceZones } from '@/hooks/useServiceZones';
 import { toLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 

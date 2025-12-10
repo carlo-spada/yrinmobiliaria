@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { toLogPrice, fromLogPrice, MIN_PRICE, MAX_PRICE } from "./priceSliderHelpers";
 
 describe("priceSliderHelpers", () => {

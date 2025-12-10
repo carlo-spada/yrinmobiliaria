@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { filterPropertiesByMap, isValidCoordinate, normalizeCoord, type MapFilters } from "./mapUtils";
+
 import type { Property } from "@/types/property";
+
+import { filterPropertiesByMap, isValidCoordinate, normalizeCoord, type MapFilters } from "./mapUtils";
 
 describe("mapUtils", () => {
   it("validates numeric and string coordinates", () => {

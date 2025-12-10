@@ -1,8 +1,11 @@
-import { useEffect, useState, ReactNode, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState, ReactNode, useMemo } from 'react';
+
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+
 import { AuthContext, type AuthContextValue, type UserRole } from './AuthContextBase';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
