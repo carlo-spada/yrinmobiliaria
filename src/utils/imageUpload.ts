@@ -216,7 +216,6 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
           console.warn('Failed to generate variants, will use transform fallback:', variantsError);
         } else if (variantsData?.variants) {
           variants = variantsData.variants;
-          console.log('Generated image variants:', variants);
         }
       } catch (err) {
         console.warn('Error calling optimization function, will use transform fallback:', err);
@@ -248,7 +247,7 @@ export const deleteImage = async (path: string): Promise<void> => {
     const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .remove([path]);
-    
+
     if (error) throw error;
   } catch (error) {
     console.error('Error deleting image:', error);
@@ -264,7 +263,7 @@ export const deleteImages = async (paths: string[]): Promise<void> => {
     const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .remove(paths);
-    
+
     if (error) throw error;
   } catch (error) {
     console.error('Error deleting images:', error);

@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
   Sidebar,
@@ -57,8 +56,7 @@ interface MenuGroup {
 export function AdminSidebar() {
   const { open, isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
-  const { t: _t } = useLanguage();
-  const { role, isSuperadmin: _isSuperadmin, isAdmin: _isAdmin, isAgent: _isAgent } = useUserRole();
+  const { role } = useUserRole();
   const { profile } = useAuth();
   const { selectedOrgId, isAllOrganizations, canViewAll } = useAdminOrg();
   const currentPath = location.pathname;

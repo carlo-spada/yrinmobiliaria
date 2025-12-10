@@ -8,7 +8,6 @@ interface PageLayoutProps {
   className?: string;
   includeFooter?: boolean;
   fullHeight?: boolean;
-  fixedHeader?: boolean;
 }
 
 export function PageLayout({
@@ -16,7 +15,6 @@ export function PageLayout({
   className,
   includeFooter = true,
   fullHeight = false,
-  fixedHeader: _fixedHeader = true
 }: PageLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">

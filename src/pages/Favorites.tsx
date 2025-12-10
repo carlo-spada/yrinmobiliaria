@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Favorites() {
-  const { language, t: _t } = useLanguage();
+  const { language } = useLanguage();
   const { favorites, clearFavorites } = useFavorites();
   const { data: properties = [] } = useProperties();
   const { user } = useAuth();

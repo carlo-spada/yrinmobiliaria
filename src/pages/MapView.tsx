@@ -66,10 +66,10 @@ const createCustomIcon = (type: PropertyType, selected: boolean = false) => {
 };
 
 // Component to handle map bounds changes and click-to-deselect
-function MapBoundsTracker({ 
+function MapBoundsTracker({
   onBoundsChange,
   onMapClick
-}: { 
+}: {
   onBoundsChange: (bounds: LatLngBounds) => void;
   onMapClick: () => void;
 }) {
@@ -94,21 +94,21 @@ function MapBoundsTracker({
 }
 
 // Component to fly to specific coordinates
-function FlyToLocation({ 
-  center, 
-  zoom = 15 
-}: { 
+function FlyToLocation({
+  center,
+  zoom = 15
+}: {
   center: [number, number] | null;
   zoom?: number;
 }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (center) {
       map.flyTo(center, zoom, { duration: 1 });
     }
   }, [center, zoom, map]);
-  
+
   return null;
 }
 
@@ -118,14 +118,14 @@ export default function MapView() {
   const { data: allProperties = [], isLoading } = useProperties({ featured: false });
   const { zones: dbZones } = useServiceZones();
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
-  
+
   // URL params
   const urlType = searchParams.get("type") || "all";
   const urlZone = searchParams.get("zone") || "all";
   const urlMinPrice = searchParams.get("minPrice") || MIN_PRICE.toString();
   const urlMaxPrice = searchParams.get("maxPrice") || MAX_PRICE.toString();
   const urlPropertyId = searchParams.get("propertyId") || null;
-  
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(urlPropertyId);
   const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
@@ -177,7 +177,6 @@ export default function MapView() {
     return filterPropertiesByMap(validProperties, filters, mapBounds);
   }, [validProperties, filters, mapBounds]);
 
-  const _zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
 
   // Update URL when filters change
   useEffect(() => {
@@ -187,7 +186,7 @@ export default function MapView() {
     if (filters.priceRange[0] !== MIN_PRICE) params.set("minPrice", filters.priceRange[0].toString());
     if (filters.priceRange[1] !== MAX_PRICE) params.set("maxPrice", filters.priceRange[1].toString());
     if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
-    
+
     setSearchParams(params, { replace: true });
   }, [filters, selectedPropertyId, setSearchParams]);
 
@@ -197,9 +196,9 @@ export default function MapView() {
     if (openPopupRef.current && openPopupRef.current !== markerRef) {
       openPopupRef.current.closePopup();
     }
-    
+
     setSelectedPropertyId(property.id);
-    
+
     if (
       property.location?.coordinates &&
       isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)
@@ -230,7 +229,7 @@ export default function MapView() {
     if (urlPropertyId && filteredProperties.length > 0) {
       const property = filteredProperties.find((p) => p.id === urlPropertyId);
       if (property?.location?.coordinates &&
-          isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)) {
+        isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)) {
         return [property.location.coordinates.lat, property.location.coordinates.lng] as [number, number];
       }
     }
@@ -316,24 +315,24 @@ export default function MapView() {
   const activeFilters = useMemo(() => {
     const badges = [];
     if (filters.type !== "all") {
-      badges.push({ 
-        type: 'type' as const, 
+      badges.push({
+        type: 'type' as const,
         label: filters.type === "casa"
           ? language === "es" ? "Casa" : "House"
           : filters.type === "departamento"
-          ? language === "es" ? "Departamento" : "Apartment"
-          : filters.type === "local"
-          ? language === "es" ? "Local" : "Commercial"
-          : language === "es" ? "Oficina" : "Office"
+            ? language === "es" ? "Departamento" : "Apartment"
+            : filters.type === "local"
+              ? language === "es" ? "Local" : "Commercial"
+              : language === "es" ? "Oficina" : "Office"
       });
     }
     if (filters.zone !== "all") {
       badges.push({ type: 'zone' as const, label: filters.zone });
     }
     if (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 100000000) {
-      badges.push({ 
-        type: 'price' as const, 
-        label: `$${(filters.priceRange[0] / 1000000).toFixed(1)}M - $${(filters.priceRange[1] / 1000000).toFixed(1)}M` 
+      badges.push({
+        type: 'price' as const,
+        label: `$${(filters.priceRange[0] / 1000000).toFixed(1)}M - $${(filters.priceRange[1] / 1000000).toFixed(1)}M`
       });
     }
     return badges;
@@ -345,13 +344,13 @@ export default function MapView() {
       // Normalize and validate coordinates
       const lat = normalizeCoord(property.location.coordinates.lat);
       const lng = normalizeCoord(property.location.coordinates.lng);
-      
+
       if (!lat || !lng || !isValidCoordinate(lat, lng)) {
         return null;
       }
 
       const isSelected = selectedPropertyId === property.id;
-      
+
       return (
         <Marker
           key={property.id}
@@ -476,7 +475,7 @@ export default function MapView() {
         {/* Main container - proper height calculation excluding header, prevent page scroll */}
         <div className="flex flex-col h-[calc(100vh-5rem)] overflow-hidden">
           {/* Map controls bar - auto-hide on hover */}
-          <div 
+          <div
             className="bg-background border-b px-4 py-3 flex items-center justify-between relative flex-shrink-0
                        lg:opacity-0 lg:hover:opacity-100 lg:focus-within:opacity-100 transition-opacity duration-300
                        h-12 sm:h-14 lg:h-14"
@@ -538,8 +537,8 @@ export default function MapView() {
                 {activeFilters.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {activeFilters.map((filter) => (
-                      <Badge 
-                        key={filter.type} 
+                      <Badge
+                        key={filter.type}
                         variant="secondary"
                         className="flex items-center gap-1 cursor-pointer hover:bg-secondary/80"
                         onClick={() => clearFilter(filter.type)}
@@ -589,9 +588,9 @@ export default function MapView() {
                     value={sliderValues}
                     onValueChange={(value) => {
                       setSliderValues(value as [number, number]);
-                      setFilters({ 
-                        ...filters, 
-                        priceRange: [toLogPrice(value[0]), toLogPrice(value[1])] 
+                      setFilters({
+                        ...filters,
+                        priceRange: [toLogPrice(value[0]), toLogPrice(value[1])]
                       });
                     }}
                     className="mb-2"
@@ -649,14 +648,14 @@ export default function MapView() {
                   <h3 className="font-semibold text-sm">
                     {isLoading
                       ? (language === "es" ? "Cargando..." : "Loading...")
-                      : language === "es" 
+                      : language === "es"
                         ? `Mostrando ${filteredProperties.length} de ${validProperties.length} propiedades`
                         : `Showing ${filteredProperties.length} of ${validProperties.length} properties`}
                   </h3>
                 </div>
                 {isLoading ? (
                   <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
+                    {Array.from({ length: 3 }).map((unused, i) => (
                       <div key={i} className="bg-card rounded-lg border border-border p-3">
                         <Skeleton className="h-24 w-full mb-2 rounded" />
                         <Skeleton className="h-5 w-3/4 mb-2" />
@@ -691,14 +690,13 @@ export default function MapView() {
                     {filteredProperties.map((property) => {
                       const Icon = propertyTypeIcons[property.type];
                       const isSelected = selectedPropertyId === property.id;
-                      
+
                       return (
                         <Card
                           key={property.id}
                           id={`property-card-${property.id}`}
-                          className={`cursor-pointer transition-all hover:shadow-md ${
-                            isSelected ? "ring-2 ring-primary" : ""
-                          }`}
+                          className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? "ring-2 ring-primary" : ""
+                            }`}
                           onClick={() => {
                             handlePropertyClick(property);
                           }}

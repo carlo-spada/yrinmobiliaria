@@ -5,7 +5,6 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -45,7 +44,6 @@ interface InviteAgentDialogProps {
 
 export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps) {
   const { user, profile } = useAuth();
-  const { t: _t } = useLanguage();
   const { zones } = useServiceZones();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();

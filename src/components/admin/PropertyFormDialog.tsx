@@ -162,21 +162,21 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           title_en: property.title_en,
           description_es: property.description_es,
           description_en: property.description_en,
-          type: property.type,
-          operation: property.operation,
-          price: property.price,
-          status: property.status,
+          type: property.type as "casa" | "departamento" | "local" | "oficina" | "terrenos",
+          operation: property.operation as "venta" | "renta",
+          price: property.price.toString(),
+          status: property.status as "disponible" | "vendida" | "rentada" | "pendiente",
           featured: property.featured,
-          zone: location?.zone,
-          neighborhood: location?.neighborhood,
-          address: location?.address,
-          lat: location?.coordinates?.lat,
-          lng: location?.coordinates?.lng,
-          bedrooms: features?.bedrooms,
-          bathrooms: features?.bathrooms,
-          parking: features?.parking,
-          constructionArea: features?.constructionArea,
-          landArea: features?.landArea,
+          zone: location?.zone || "",
+          neighborhood: location?.neighborhood || "",
+          address: location?.address || "",
+          lat: location?.coordinates?.lat?.toString() || "",
+          lng: location?.coordinates?.lng?.toString() || "",
+          bedrooms: features?.bedrooms?.toString() || "",
+          bathrooms: features?.bathrooms?.toString() || "",
+          parking: features?.parking?.toString() || "",
+          constructionArea: features?.constructionArea?.toString() || "",
+          landArea: features?.landArea?.toString() || "",
         });
 
         if (property.property_images && Array.isArray(property.property_images)) {
@@ -196,8 +196,8 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
   const mutation = useMutation({
     mutationFn: async (formData: PropertyFormData) => {
-      console.log("[Property Save] Starting mutation", { isEdit: !!property, formData });
-      
+      // console.log("[Property Save] Starting mutation", { isEdit: !!property, formData });
+
       // Determine org: editing uses property's org, new property uses selected/effective/user's org
       let scopedOrgId: string | null = null;
       if (property?.organization_id) {
@@ -207,8 +207,8 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       } else {
         scopedOrgId = effectiveOrgId || userOrgId;
       }
-      
-      console.log("[Property Save] Scoped org:", { scopedOrgId, isSuperadmin, isAllOrganizations, effectiveOrgId, userOrgId, selectedOrgId });
+
+      // console.log("[Property Save] Scoped org:", { scopedOrgId, isSuperadmin, isAllOrganizations, effectiveOrgId, userOrgId, selectedOrgId });
 
       if (!scopedOrgId) {
         throw new Error('Selecciona una organización antes de crear la propiedad');
@@ -241,7 +241,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
 
       if (!property) {
         const { data: { user } } = await supabase.auth.getUser();
-        console.log("[Property Save] Current user:", user?.id);
+        // console.log("[Property Save] Current user:", user?.id);
 
         if (user) {
           const { data: profile } = await supabase
@@ -251,7 +251,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             .single();
 
           agentId = profile?.id || null;
-          console.log("[Property Save] Agent ID for new property:", agentId);
+          // console.log("[Property Save] Agent ID for new property:", agentId);
         }
       }
 
@@ -292,19 +292,19 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         })),
       };
 
-      console.log("[Property Save] Property data to save:", propertyData);
+      // console.log("[Property Save] Property data to save:", propertyData);
 
       let propertyId = property?.id;
 
       if (property) {
-        console.log("[Property Save] Updating existing property:", property.id);
+        // console.log("[Property Save] Updating existing property:", property.id);
         const { data: result, error } = await supabase
           .from('properties')
           .update(propertyData)
           .eq('id', property.id)
           .select();
 
-        console.log("[Property Save] Update response:", { result, error });
+        // console.log("[Property Save] Update response:", { result, error });
 
         if (error) {
           console.error("[Property Save] Update RLS/DB error:", {
@@ -321,14 +321,14 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           throw new Error('No se pudo actualizar la propiedad. Verifica tus permisos.');
         }
       } else {
-        console.log("[Property Save] Creating new property");
+        // console.log("[Property Save] Creating new property");
         const { data, error } = await supabase
           .from('properties')
           .insert([propertyData])
           .select()
           .single();
 
-        console.log("[Property Save] Insert response:", { data, error });
+        // console.log("[Property Save] Insert response:", { data, error });
 
         if (error) {
           console.error("[Property Save] Insert RLS/DB error:", {
@@ -349,7 +349,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           .from('property_images')
           .delete()
           .eq('property_id', property.id);
-        
+
         if (deleteError) {
           console.error("[Property Save] Image delete error:", deleteError);
         }
@@ -365,7 +365,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           alt_text_en: `${formData.title_en} - Image ${index + 1}`,
         }));
 
-        console.log("[Property Save] Inserting images:", imageRecords);
+        // console.log("[Property Save] Inserting images:", imageRecords);
         const { error } = await supabase
           .from('property_images')
           .insert(imageRecords);
@@ -389,10 +389,10 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         }
       });
 
-      console.log("[Property Save] Mutation completed successfully");
+      // console.log("[Property Save] Mutation completed successfully");
     },
     onSuccess: () => {
-      console.log("[Property Save] onSuccess triggered");
+      // console.log("[Property Save] onSuccess triggered");
       queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
       toast.success(property ? 'Propiedad actualizada' : 'Propiedad creada correctamente');
       onOpenChange(false);
@@ -470,7 +470,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Tipo</Label>
-              <Select value={propertyType} onValueChange={(value) => setValue('type', value)}>
+              <Select value={propertyType} onValueChange={(value) => setValue('type', value as "casa" | "departamento" | "local" | "oficina" | "terrenos")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -485,7 +485,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             </div>
             <div className="space-y-2">
               <Label htmlFor="operation">Operación</Label>
-              <Select value={operation} onValueChange={(value) => setValue('operation', value)}>
+              <Select value={operation} onValueChange={(value) => setValue('operation', value as "venta" | "renta")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -497,7 +497,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Estado</Label>
-              <Select value={status} onValueChange={(value) => setValue('status', value)}>
+              <Select value={status} onValueChange={(value) => setValue('status', value as "disponible" | "vendida" | "rentada" | "pendiente")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

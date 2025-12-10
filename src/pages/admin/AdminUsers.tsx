@@ -66,7 +66,7 @@ function UsersContent() {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const scopedOrgId = isSuperadmin && isAllOrganizations ? null : (effectiveOrgId ?? organizationId);
   const canQuery = isSuperadmin || !!scopedOrgId;
-  
+
   const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -152,12 +152,12 @@ function UsersContent() {
       return profiles.map((profile) => {
         const org = profile.organization_id ? orgMap.get(profile.organization_id) : null;
         const roleInfo = roleMap.get(profile.user_id) || { role: 'user', granted_at: profile.created_at };
-        
+
         return {
           user_id: profile.user_id,
           profile_id: profile.id,
           email: profile.email,
-          role: roleInfo.role,
+          role: roleInfo.role as 'superadmin' | 'admin' | 'user',
           organization_id: profile.organization_id,
           display_name: profile.display_name || profile.email,
           photo_url: profile.photo_url,
@@ -249,7 +249,7 @@ function UsersContent() {
       if (!isSuperadmin) {
         throw new Error('Solo los superadministradores pueden asignar organizaciones');
       }
-      
+
       // Update profile's organization (single source of truth now)
       const { error: profileError } = await supabase
         .from('profiles')
@@ -338,7 +338,7 @@ function UsersContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Array.from({ length: 5 }).map((_, i) => (
+                {Array.from({ length: 5 }).map((unused, i) => (
                   <UserRowSkeleton key={i} />
                 ))}
               </TableBody>

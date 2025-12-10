@@ -5,7 +5,7 @@ import { PageLayout } from '@/components/layout';
 import { PropertyCard } from '@/components/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';
-import { SaveSearchDialog as _SaveSearchDialog } from '@/components/SaveSearchDialog';
+
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select } from '@/components/ui/select-enhanced';
@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
-import { EmptyPropertyList as _EmptyPropertyList } from '@/components/EmptyPropertyList';
+
 import { PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';
@@ -62,15 +62,16 @@ export default function Properties() {
   }, [searchParams]);
 
   // Parse agent filter from URL (computed, not in effect)
-  const selectedAgentId = useMemo(() => {
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+
+  useEffect(() => {
     const agentSlug = searchParams.get('agent');
     if (agentSlug && agents.length > 0) {
       const agent = agents.find(
         (a) => a.display_name.toLowerCase().replace(/\s+/g, '-') === agentSlug
       );
-      return agent?.id || null;
+      if (agent) setSelectedAgentId(agent.id);
     }
-    return null;
   }, [searchParams, agents]);
 
   const [filters, setFiltersInternal] = useState<PropertyFiltersType>(filtersFromUrl);
@@ -101,7 +102,7 @@ export default function Properties() {
   // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     if (filters.type) params.set('type', filters.type);
     if (filters.operation) params.set('operation', filters.operation);
     if (filters.zone) params.set('zone', filters.zone);
@@ -115,7 +116,7 @@ export default function Properties() {
         params.set('agent', agent.display_name.toLowerCase().replace(/\s+/g, '-'));
       }
     }
-    
+
     setSearchParams(params, { replace: true });
   }, [filters, selectedAgentId, agents, setSearchParams]);
 
@@ -194,92 +195,92 @@ export default function Properties() {
   return (
     <PageLayout>
       <div className="container mx-auto px-4 lg:px-8 py-8">
-          <div className="flex gap-8">
-            {/* Desktop Filters Sidebar */}
-            <aside className="hidden lg:block w-80 flex-shrink-0">
-              <div className="sticky top-24">
-                <PropertyFilters
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                />
-              </div>
-            </aside>
+        <div className="flex gap-8">
+          {/* Desktop Filters Sidebar */}
+          <aside className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-24">
+              <PropertyFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+            </div>
+          </aside>
 
-            {/* Main Content */}
-            <div className="flex-1 min-w-0">
-              {/* Header */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">
-                      {t.properties?.title || 'Propiedades'}
-                    </h1>
-                    <p className="text-muted-foreground">
-                      {filteredProperties.length} {t.properties?.results || 'resultados encontrados'}
-                    </p>
-                  </div>
-
-                  {/* Mobile Filter Button */}
-                  <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                    <SheetTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="lg:hidden"
-                        aria-label={language === 'es' ? 'Abrir filtros' : 'Open filters'}
-                      >
-                        <SlidersHorizontal className="h-4 w-4 mr-2" />
-                        {t.properties?.filters || 'Filtros'}
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-80 overflow-y-auto">
-                      <PropertyFilters
-                        filters={filters}
-                        onFiltersChange={(newFilters) => {
-                          setFilters(newFilters);
-                          setIsFilterOpen(false);
-                        }}
-                        isMobile
-                      />
-                    </SheetContent>
-                  </Sheet>
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground mb-2">
+                    {t.properties?.title || 'Propiedades'}
+                  </h1>
+                  <p className="text-muted-foreground">
+                    {filteredProperties.length} {t.properties?.results || 'resultados encontrados'}
+                  </p>
                 </div>
 
-                {/* Agent Filter */}
-                <div className="mb-4">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Select
-                      label={language === 'es' ? 'Agente' : 'Agent'}
-                      options={[
-                        { value: 'all', label: language === 'es' ? 'Todos los agentes' : 'All agents' },
-                        ...agents.map((agent) => ({
-                          value: agent.id,
-                          label: agent.display_name,
-                        })),
-                      ]}
-                      value={selectedAgentId || 'all'}
-                      onChange={(e) => setSelectedAgentId(e.target.value === 'all' ? null : e.target.value)}
-                      className="w-full sm:w-64"
+                {/* Mobile Filter Button */}
+                <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="lg:hidden"
+                      aria-label={language === 'es' ? 'Abrir filtros' : 'Open filters'}
+                    >
+                      <SlidersHorizontal className="h-4 w-4 mr-2" />
+                      {t.properties?.filters || 'Filtros'}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-80 overflow-y-auto">
+                    <PropertyFilters
+                      filters={filters}
+                      onFiltersChange={(newFilters) => {
+                        setFilters(newFilters);
+                        setIsFilterOpen(false);
+                      }}
+                      isMobile
                     />
+                  </SheetContent>
+                </Sheet>
+              </div>
 
-                    {/* Active Agent Filter Badge */}
-                    {selectedAgentId && (
-                      <Badge variant="secondary" className="gap-2">
-                        {agents.find((a) => a.id === selectedAgentId)?.display_name}
-                        <button
-                          onClick={() => setSelectedAgentId(null)}
-                          className="hover:bg-background/50 rounded-full"
-                          aria-label={language === 'es' ? 'Quitar filtro de agente' : 'Remove agent filter'}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    )}
-                  </div>
+              {/* Agent Filter */}
+              <div className="mb-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Select
+                    label={language === 'es' ? 'Agente' : 'Agent'}
+                    options={[
+                      { value: 'all', label: language === 'es' ? 'Todos los agentes' : 'All agents' },
+                      ...agents.map((agent) => ({
+                        value: agent.id,
+                        label: agent.display_name,
+                      })),
+                    ]}
+                    value={selectedAgentId || 'all'}
+                    onChange={(e) => setSelectedAgentId(e.target.value === 'all' ? null : e.target.value)}
+                    className="w-full sm:w-64"
+                  />
+
+                  {/* Active Agent Filter Badge */}
+                  {selectedAgentId && (
+                    <Badge variant="secondary" className="gap-2">
+                      {agents.find((a) => a.id === selectedAgentId)?.display_name}
+                      <button
+                        onClick={() => setSelectedAgentId(null)}
+                        className="hover:bg-background/50 rounded-full"
+                        aria-label={language === 'es' ? 'Quitar filtro de agente' : 'Remove agent filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
                 </div>
+              </div>
 
-                {/* Controls */}
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              {/* Controls */}
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <Select
                   label={language === 'es' ? 'Ordenar por' : 'Sort by'}
                   options={sortOptions}
@@ -288,137 +289,137 @@ export default function Properties() {
                   className="w-full sm:w-64"
                 />
 
-                  <div className="flex gap-2">
-                    <Link to="/mapa">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        title={t.nav.map}
-                        aria-label={language === 'es' ? 'Ver propiedades en el mapa' : 'View properties on map'}
-                      >
-                        <MapPin className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                <div className="flex gap-2">
+                  <Link to="/mapa">
                     <Button
-                      variant={viewMode === 'grid' ? 'default' : 'outline'}
+                      variant="outline"
                       size="icon"
-                      onClick={() => setViewMode('grid')}
-                      aria-label={language === 'es' ? 'Vista de cuadrícula' : 'Grid view'}
-                      title={language === 'es' ? 'Vista de cuadrícula' : 'Grid view'}
+                      title={t.nav.map}
+                      aria-label={language === 'es' ? 'Ver propiedades en el mapa' : 'View properties on map'}
                     >
-                      <Grid className="h-4 w-4" />
+                      <MapPin className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'default' : 'outline'}
-                      size="icon"
-                      onClick={() => setViewMode('list')}
-                      aria-label={language === 'es' ? 'Vista de lista' : 'List view'}
-                      title={language === 'es' ? 'Vista de lista' : 'List view'}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Properties Grid/List */}
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  <PropertyGridSkeleton count={9} />
-                </div>
-              ) : paginatedProperties.length > 0 ? (
-                <>
-                  <div className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                      : 'flex flex-col gap-6'
-                  }>
-                    {paginatedProperties.map((property, index) => {
-                      const statusMap: Record<string, 'sale' | 'rent' | 'sold'> = {
-                        venta: 'sale',
-                        renta: 'rent',
-                        vendida: 'sold',
-                        rentada: 'sold',
-                      };
-                      
-                      const formatPrice = (price: number) => {
-                        return new Intl.NumberFormat('es-MX', {
-                          style: 'currency',
-                          currency: 'MXN',
-                          minimumFractionDigits: 0,
-                        }).format(price);
-                      };
-                      
-                      return (
-                        <PropertyCard
-                          key={property.id}
-                          id={property.id}
-                          image={property.images[0]}
-                          variants={property.imageVariants?.[0]?.variants}
-                          alt={property.imagesAlt?.[0]?.[language] || `${property.title[language]} - ${property.location.zone}`}
-                          title={property.title[language]}
-                          price={formatPrice(property.price)}
-                          location={`${property.location.neighborhood}, ${property.location.zone}`}
-                          bedrooms={property.features.bedrooms || 0}
-                          bathrooms={property.features.bathrooms}
-                          area={property.features.constructionArea}
-                          featured={property.featured}
-                          status={statusMap[property.operation] || 'sale'}
-                          priority={effectiveCurrentPage === 1 && index < 6}
-                          agent={property.agent}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="mt-8 flex justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={effectiveCurrentPage === 1}
-                      >
-                        {t.properties?.previous || 'Anterior'}
-                      </Button>
-
-                      <div className="flex items-center gap-2">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            variant={effectiveCurrentPage === page ? 'default' : 'outline'}
-                            size="icon"
-                            onClick={() => setCurrentPage(page)}
-                            className="w-10"
-                          >
-                            {page}
-                          </Button>
-                        ))}
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={effectiveCurrentPage === totalPages}
-                      >
-                        {t.properties?.next || 'Siguiente'}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-16">
-                  <p className="text-xl text-muted-foreground mb-4">
-                    {t.properties?.noResults || 'No se encontraron propiedades'}
-                  </p>
-                  <Button onClick={() => setFilters({})}>
-                    {t.properties?.clearFilters || 'Limpiar filtros'}
+                  </Link>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => setViewMode('grid')}
+                    aria-label={language === 'es' ? 'Vista de cuadrícula' : 'Grid view'}
+                    title={language === 'es' ? 'Vista de cuadrícula' : 'Grid view'}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => setViewMode('list')}
+                    aria-label={language === 'es' ? 'Vista de lista' : 'List view'}
+                    title={language === 'es' ? 'Vista de lista' : 'List view'}
+                  >
+                    <List className="h-4 w-4" />
                   </Button>
                 </div>
-              )}
+              </div>
             </div>
+
+            {/* Properties Grid/List */}
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <PropertyGridSkeleton count={9} />
+              </div>
+            ) : paginatedProperties.length > 0 ? (
+              <>
+                <div className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                    : 'flex flex-col gap-6'
+                }>
+                  {paginatedProperties.map((property, index) => {
+                    const statusMap: Record<string, 'sale' | 'rent' | 'sold'> = {
+                      venta: 'sale',
+                      renta: 'rent',
+                      vendida: 'sold',
+                      rentada: 'sold',
+                    };
+
+                    const formatPrice = (price: number) => {
+                      return new Intl.NumberFormat('es-MX', {
+                        style: 'currency',
+                        currency: 'MXN',
+                        minimumFractionDigits: 0,
+                      }).format(price);
+                    };
+
+                    return (
+                      <PropertyCard
+                        key={property.id}
+                        id={property.id}
+                        image={property.images[0]}
+                        variants={property.imageVariants?.[0]?.variants}
+                        alt={property.imagesAlt?.[0]?.[language] || `${property.title[language]} - ${property.location.zone}`}
+                        title={property.title[language]}
+                        price={formatPrice(property.price)}
+                        location={`${property.location.neighborhood}, ${property.location.zone}`}
+                        bedrooms={property.features.bedrooms || 0}
+                        bathrooms={property.features.bathrooms}
+                        area={property.features.constructionArea}
+                        featured={property.featured}
+                        status={statusMap[property.operation] || 'sale'}
+                        priority={effectiveCurrentPage === 1 && index < 6}
+                        agent={property.agent}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={effectiveCurrentPage === 1}
+                    >
+                      {t.properties?.previous || 'Anterior'}
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }, (unused, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={effectiveCurrentPage === page ? 'default' : 'outline'}
+                          size="icon"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-10"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={effectiveCurrentPage === totalPages}
+                    >
+                      {t.properties?.next || 'Siguiente'}
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-xl text-muted-foreground mb-4">
+                  {t.properties?.noResults || 'No se encontraron propiedades'}
+                </p>
+                <Button onClick={() => setFilters({})}>
+                  {t.properties?.clearFilters || 'Limpiar filtros'}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
     </PageLayout>
   );
 }

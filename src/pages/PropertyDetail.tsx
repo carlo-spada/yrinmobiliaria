@@ -95,10 +95,10 @@ export default function PropertyDetail() {
     currency: 'MXN',
     minimumFractionDigits: 0,
   }).format(property.price)} - ${property.location.zone} | YR Inmobiliaria`;
-  
-  const propertyDescription = property.description[language]?.substring(0, 150) || 
+
+  const propertyDescription = property.description[language]?.substring(0, 150) ||
     `${property.title[language]} en ${property.location.zone}. ${property.features.bedrooms || 0} habitaciones, ${property.features.bathrooms} baños, ${property.features.constructionArea}m².`;
-  
+
   const propertyImage = property.images[0] || 'https://lovable.dev/opengraph-image-p98pqg.png';
   const propertyUrl = window.location.href;
   const getImageAlt = (index: number) => property.imagesAlt?.[index]?.[language] || property.title[language];
@@ -109,14 +109,6 @@ export default function PropertyDetail() {
     { name: language === 'es' ? 'Propiedades' : 'Properties', url: `${window.location.origin}/propiedades` },
     { name: property.title[language], url: propertyUrl },
   ];
-
-  const _handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: language === "es" ? "Enlace copiado" : "Link copied",
-      description: language === "es" ? "El enlace ha sido copiado al portapapeles" : "The link has been copied to clipboard",
-    });
-  };
 
   const handleWhatsApp = () => {
     const phoneNumber = getSetting('whatsapp_number') || import.meta.env.VITE_WHATSAPP_NUMBER;
@@ -134,7 +126,7 @@ export default function PropertyDetail() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form:", formData);
+    // console.log("Contact form:", formData);
     alert(language === "es" ? "Mensaje enviado" : "Message sent");
   };
 
@@ -156,12 +148,12 @@ export default function PropertyDetail() {
         url={propertyUrl}
         type="product"
       />
-      
+
       {/* Structured Data */}
       <StructuredData type="Organization" data={getOrganizationSchema(language)} />
       <StructuredData type="Product" data={getProductSchema(property, language)} />
       <StructuredData type="BreadcrumbList" data={getBreadcrumbSchema(breadcrumbItems)} />
-      
+
       {/* Lightbox Modal */}
       {isLightboxOpen && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
@@ -253,19 +245,18 @@ export default function PropertyDetail() {
               <button
                 key={index}
                 onClick={() => setSelectedImageIndex(index)}
-                className={`h-20 w-28 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
-                  selectedImageIndex === index
+                className={`h-20 w-28 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-primary ${selectedImageIndex === index
                     ? "ring-2 ring-primary"
                     : "opacity-70 hover:opacity-100"
-                }`}
+                  }`}
                 aria-label={`${language === "es" ? "Ver imagen" : "View image"} ${index + 1} ${language === "es" ? "de" : "of"} ${property.images.length}`}
               >
-              <ResponsiveImage
-                src={image}
-                variants={property.imageVariants?.[index]?.variants}
-                alt={getImageAlt(index)}
-                className="h-full w-full object-cover rounded-md"
-              />
+                <ResponsiveImage
+                  src={image}
+                  variants={property.imageVariants?.[index]?.variants}
+                  alt={getImageAlt(index)}
+                  className="h-full w-full object-cover rounded-md"
+                />
               </button>
             ))}
           </div>
@@ -285,8 +276,8 @@ export default function PropertyDetail() {
                       ? "Venta"
                       : "Sale"
                     : language === "es"
-                    ? "Renta"
-                    : "Rent"}
+                      ? "Renta"
+                      : "Rent"}
                 </Badge>
               </div>
               <div className="flex items-center text-muted-foreground mb-4">
@@ -394,9 +385,9 @@ export default function PropertyDetail() {
               <h2 className="text-xl font-semibold mb-3">
                 {language === "es" ? "Ubicación" : "Location"}
               </h2>
-              {property.location.coordinates && 
-               property.location.coordinates.lat !== 0 && 
-               property.location.coordinates.lng !== 0 ? (
+              {property.location.coordinates &&
+                property.location.coordinates.lat !== 0 &&
+                property.location.coordinates.lng !== 0 ? (
                 <div className="h-[300px] bg-muted rounded-lg relative overflow-hidden">
                   <iframe
                     title={language === "es" ? "Mapa de ubicación de la propiedad" : "Property location map"}
@@ -495,7 +486,7 @@ export default function PropertyDetail() {
                       </Button>
                     </Link>
                     <div className="w-full">
-                      <ShareButtons 
+                      <ShareButtons
                         title={property.title[language]}
                         description={property.description[language]}
                         variant="default"

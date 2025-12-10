@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { SettingValue } from '@/hooks/useSiteSettings';
@@ -171,7 +170,6 @@ const defaultSettings = {
 };
 
 export default function AdminSettings() {
-  const { t: _t } = useLanguage();
   const { isSuperadmin } = useUserRole();
   const { getSettingsByCategory, updateSetting, isUpdating, isLoading } = useSiteSettings();
   const queryClient = useQueryClient();

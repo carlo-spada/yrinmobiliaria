@@ -41,7 +41,6 @@ export default function PrivacyPolicy() {
   const { getSetting } = useSiteSettings();
 
   const companyName = getSetting('company_name', 'YR Inmobiliaria');
-  const _companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
 
   const { data: cmsContent, isLoading } = useQuery({
     queryKey: ['cms-privacy'],

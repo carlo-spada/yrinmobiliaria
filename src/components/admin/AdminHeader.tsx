@@ -37,7 +37,7 @@ export const AdminHeader = () => {
         console.error('Error fetching organizations:', error);
         throw error;
       }
-      console.log('Organizations fetched:', data);
+      // console.log('Organizations fetched:', data);
       return data ?? [];
     },
     enabled: isSuperadmin && canViewAll,

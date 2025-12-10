@@ -78,9 +78,9 @@ function AdminEditProfileContent() {
   }, [profile, setValue]);
 
   const onSubmit = async (data: ProfileFormData) => {
-    console.log("[Profile Update] Starting update for user:", user?.id);
-    console.log("[Profile Update] Data to update:", data);
-    
+    // console.log("[Profile Update] Starting update for user:", user?.id);
+    // console.log("[Profile Update] Data to update:", data);
+
     try {
       const { data: result, error } = await supabase
         .from("profiles")
@@ -88,7 +88,7 @@ function AdminEditProfileContent() {
         .eq("user_id", user?.id)
         .select();
 
-      console.log("[Profile Update] Supabase response:", { result, error });
+      // console.log("[Profile Update] Supabase response:", { result, error });
 
       if (error) {
         console.error("[Profile Update] RLS or DB error:", {
@@ -106,7 +106,7 @@ function AdminEditProfileContent() {
         return;
       }
 
-      console.log("[Profile Update] Success - updated rows:", result.length);
+      // console.log("[Profile Update] Success - updated rows:", result.length);
       toast.success("Perfil actualizado exitosamente");
       navigate("/admin");
     } catch (error) {
@@ -158,7 +158,7 @@ function AdminEditProfileContent() {
                 <AvatarImage src={watchedValues.photo_url || undefined} />
                 <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
               </Avatar>
-              <ImageUploadZone 
+              <ImageUploadZone
                 images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
                 onImagesChange={(imgs) => {
                   if (imgs.length > 0) {
@@ -183,7 +183,7 @@ function AdminEditProfileContent() {
                     checked={watchedValues.languages?.includes("es")}
                     onCheckedChange={(checked) => {
                       const current = watchedValues.languages || [];
-                      setValue("languages", checked 
+                      setValue("languages", checked
                         ? [...current, "es"]
                         : current.filter(l => l !== "es")
                       );
@@ -197,7 +197,7 @@ function AdminEditProfileContent() {
                     checked={watchedValues.languages?.includes("en")}
                     onCheckedChange={(checked) => {
                       const current = watchedValues.languages || [];
-                      setValue("languages", checked 
+                      setValue("languages", checked
                         ? [...current, "en"]
                         : current.filter(l => l !== "en")
                       );

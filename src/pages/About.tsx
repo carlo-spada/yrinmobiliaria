@@ -40,7 +40,7 @@ type CmsAboutContent = CmsJsonContent & {
 };
 
 export default function About() {
-  const { t: _t, language } = useLanguage();
+  const { language } = useLanguage();
 
   const { data: cmsContent, isLoading } = useQuery({
     queryKey: ['cms-about'],

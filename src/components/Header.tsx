@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useServiceZones } from '@/hooks/useServiceZones';
 import { useAuth } from '@/hooks/useAuth';
 import {
   NavigationMenu,
@@ -37,7 +36,6 @@ export function Header() {
   const navigate = useNavigate();
   const { count: favoritesCount } = useFavorites();
   const { getSetting } = useSiteSettings();
-  const { zones: _dbZones } = useServiceZones();
   const { user, profile, signOut } = useAuth();
   
   const companyName = getSetting('company_name', 'YR Inmobiliaria');

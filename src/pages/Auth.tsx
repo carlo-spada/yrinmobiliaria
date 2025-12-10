@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 import { mapAuthError } from '@/utils/authErrors';
-import { supabase as _supabase } from '@/integrations/supabase/client';
+
 
 const passwordSchema = z.string()
   .min(12, "La contraseña debe tener al menos 12 caracteres")

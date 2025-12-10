@@ -10,7 +10,7 @@ type Json = Database['public']['Tables']['properties']['Insert']['location'];
  */
 export const seedProperties = async (properties: Property[]) => {
   try {
-    console.log('Starting database seeding...');
+    // console.log('Starting database seeding...');
 
     // Get YR organization ID
     const { data: yrOrg } = await supabase
@@ -73,10 +73,10 @@ export const seedProperties = async (properties: Property[]) => {
         }
       }
 
-      console.log(`✓ Seeded property: ${property.title.es}`);
+      // console.log(`✓ Seeded property: ${property.title.es}`);
     }
 
-    console.log('Database seeding completed!');
+    // console.log('Database seeding completed!');
     return { success: true };
   } catch (error) {
     console.error('Error seeding database:', error);
@@ -101,7 +101,7 @@ export const clearProperties = async () => {
       return { success: false, error };
     }
 
-    console.log('All properties cleared from database');
+    // console.log('All properties cleared from database');
     return { success: true };
   } catch (error) {
     console.error('Error in clearProperties:', error);

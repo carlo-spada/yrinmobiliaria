@@ -5,16 +5,16 @@ import { uploadImage, deleteImage, extractPathFromUrl } from '@/utils/imageUploa
 import { toast } from 'sonner';
 
 interface ImageUploadZoneProps {
-  images: Array<{ 
-    url: string; 
+  images: Array<{
+    url: string;
     path?: string;
     variants?: {
       avif: Record<number, string>;
       webp: Record<number, string>;
     };
   }>;
-  onImagesChange: (images: Array<{ 
-    url: string; 
+  onImagesChange: (images: Array<{
+    url: string;
     path?: string;
     variants?: {
       avif: Record<number, string>;
@@ -25,11 +25,11 @@ interface ImageUploadZoneProps {
   maxImages?: number;
 }
 
-export const ImageUploadZone = ({ 
-  images, 
-  onImagesChange, 
+export const ImageUploadZone = ({
+  images,
+  onImagesChange,
   propertyId,
-  maxImages = 10 
+  maxImages = 10
 }: ImageUploadZoneProps) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -37,7 +37,7 @@ export const ImageUploadZone = ({
 
   const handleFiles = async (files: FileList) => {
     const fileArray = Array.from(files);
-    
+
     // Check if adding these files would exceed max
     if (images.length + fileArray.length > maxImages) {
       toast.error(`Máximo ${maxImages} imágenes permitidas`);
@@ -45,8 +45,8 @@ export const ImageUploadZone = ({
     }
 
     setUploading(true);
-    const uploadedImages: Array<{ 
-      url: string; 
+    const uploadedImages: Array<{
+      url: string;
       path: string;
       variants?: {
         avif: Record<number, string>;
@@ -105,17 +105,17 @@ export const ImageUploadZone = ({
 
   const handleRemoveImage = async (index: number) => {
     const imageToRemove = images[index];
-    
+
     try {
       // Extract path from URL if it's a storage URL
       const path = imageToRemove.path || extractPathFromUrl(imageToRemove.url);
-      
+
       // Only delete from storage if it's a storage URL
       if (path && imageToRemove.url.includes('supabase.co')) {
         await deleteImage(path);
       }
-      
-      const newImages = images.filter((_, i) => i !== index);
+
+      const newImages = images.filter((unused, i) => i !== index);
       onImagesChange(newImages);
       toast.success('Imagen eliminada');
     } catch (error) {
@@ -187,7 +187,7 @@ export const ImageUploadZone = ({
                   e.currentTarget.classList.add('hidden');
                 }}
               />
-              
+
               {/* Overlay with delete button */}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Button

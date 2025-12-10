@@ -3,6 +3,7 @@ import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+import eslintPluginImport from "eslint-plugin-import";
 
 export default tseslint.config(
   { ignores: ["dist"] },
@@ -13,10 +14,7 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
+    plugins: { "react-hooks": reactHooks, "react-refresh": reactRefresh, import: eslintPluginImport },
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
@@ -26,6 +24,22 @@ export default tseslint.config(
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
           ignoreRestSiblings: true,
+        },
+      ],
+      "import/order": [
+        "warn",
+        {
+          groups: [["builtin", "external"], ["internal"], ["parent", "sibling", "index"]],
+          pathGroups: [
+            {
+              pattern: "@/**",
+              group: "internal",
+              position: "before",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["builtin"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
         },
       ],
     },

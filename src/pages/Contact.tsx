@@ -12,11 +12,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { SuccessAnimation as _SuccessAnimation } from '@/components/animations/SuccessAnimation';
+
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Skeleton as _Skeleton } from '@/components/ui/skeleton';
+
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
@@ -31,9 +31,9 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export default function Contact() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { getSetting, isLoading: _settingsLoading } = useSiteSettings();
+  const { getSetting } = useSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Get dynamic settings with fallbacks
   const companyPhone = getSetting('company_phone', '(951) 123-4567');
   const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
@@ -57,9 +57,9 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormData) => {
     if (!data.name || !data.email || !data.phone || !data.subject || !data.message) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Submit via secure Edge Function with validation and rate limiting
       const { data: result, error: submitError } = await supabase.functions.invoke('submit-contact', {
@@ -149,7 +149,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-16 md:py-24">
