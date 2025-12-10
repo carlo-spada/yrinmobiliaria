@@ -6,7 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServiceZones } from '@/hooks/useServiceZones';
-import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
+import { toLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 
 export function HeroSection() {
   const { t } = useLanguage();

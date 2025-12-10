@@ -12,7 +12,6 @@ import {
   Users,
   Award,
   FileCheck,
-  Languages,
   Building,
   Mail,
   Calendar,
@@ -41,7 +40,7 @@ type CmsAboutContent = CmsJsonContent & {
 };
 
 export default function About() {
-  const { t, language } = useLanguage();
+  const { t: _t, language } = useLanguage();
 
   const { data: cmsContent, isLoading } = useQuery({
     queryKey: ['cms-about'],

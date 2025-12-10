@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { AdminOrgContext, type AdminOrgContextValue, type OrgValue } from './AdminOrgContextBase';
 
 const STORAGE_KEY = 'admin-selected-org';
@@ -9,18 +9,33 @@ interface AdminOrgProviderProps {
   canViewAll: boolean;
 }
 
-const getStoredOrgId = (canViewAll: boolean, fallbackOrgId: string | null): OrgValue => {
+// External store for localStorage to avoid setState in effects
+const storageListeners = new Set<() => void>();
+
+const getStoredValue = (): string | null => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      // Validate stored value
-      if (stored === 'all' && canViewAll) return 'all';
-      if (stored !== 'all') return stored;
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const setStoredValue = (value: OrgValue) => {
+  try {
+    if (value) {
+      localStorage.setItem(STORAGE_KEY, value);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
     }
   } catch {
     // localStorage not available
   }
-  return canViewAll ? 'all' : fallbackOrgId;
+  storageListeners.forEach((listener) => listener());
+};
+
+const subscribeToStorage = (callback: () => void) => {
+  storageListeners.add(callback);
+  return () => storageListeners.delete(callback);
 };
 
 export const AdminOrgProvider = ({
@@ -28,35 +43,24 @@ export const AdminOrgProvider = ({
   organizationId,
   canViewAll,
 }: AdminOrgProviderProps) => {
-  const [selectedOrgId, setSelectedOrgIdState] = useState<OrgValue>(() =>
-    getStoredOrgId(canViewAll, organizationId)
-  );
+  // Use useSyncExternalStore to read from localStorage without setState in effects
+  const storedValue = useSyncExternalStore(subscribeToStorage, getStoredValue, () => null);
 
-  // Wrapper to persist selection
-  const setSelectedOrgId = (orgId: OrgValue) => {
-    setSelectedOrgIdState(orgId);
-    try {
-      if (orgId) {
-        localStorage.setItem(STORAGE_KEY, orgId);
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch {
-      // localStorage not available
-    }
-  };
-
-  // Keep selection in sync with role/org changes (e.g., after login or role swap)
-  useEffect(() => {
-    setSelectedOrgIdState((prev) => {
-      if (canViewAll) {
-        // If user can view all, keep their preference unless it was never set
-        return prev ?? 'all';
-      }
+  // Compute the effective selected org based on props and stored value
+  const selectedOrgId = useMemo<OrgValue>(() => {
+    if (!canViewAll) {
       // Non-superadmins are locked to their org
       return organizationId;
-    });
-  }, [canViewAll, organizationId]);
+    }
+    // Superadmins: use stored value if valid, otherwise default to 'all'
+    if (storedValue === 'all') return 'all';
+    if (storedValue && storedValue !== 'all') return storedValue;
+    return 'all';
+  }, [canViewAll, organizationId, storedValue]);
+
+  const setSelectedOrgId = useCallback((orgId: OrgValue) => {
+    setStoredValue(orgId);
+  }, []);
 
   const value = useMemo<AdminOrgContextValue>(() => {
     const isAllOrganizations = canViewAll && selectedOrgId === 'all';
@@ -67,7 +71,7 @@ export const AdminOrgProvider = ({
       isAllOrganizations,
       canViewAll,
     };
-  }, [canViewAll, selectedOrgId]);
+  }, [canViewAll, selectedOrgId, setSelectedOrgId]);
 
   return <AdminOrgContext.Provider value={value}>{children}</AdminOrgContext.Provider>;
 };

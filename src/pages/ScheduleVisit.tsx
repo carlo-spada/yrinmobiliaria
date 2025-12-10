@@ -21,8 +21,6 @@ import { useProperties } from '@/hooks/useProperties';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
-import { SuccessAnimation } from '@/components/animations/SuccessAnimation';
-import { ProgressSteps } from '@/components/ui/progress-steps';
 
 const scheduleSchema = z.object({
   propertyId: z.string().min(1, 'Selecciona una propiedad'),

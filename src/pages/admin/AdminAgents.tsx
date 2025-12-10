@@ -16,7 +16,7 @@ import { RoleGuard } from "@/components/admin/RoleGuard";
 
 export default function AdminAgents() {
   const { profile } = useAuth();
-  const { t } = useLanguage();
+  const { t: _t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
@@ -73,15 +73,6 @@ export default function AdminAgents() {
     agent.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getLevelBadgeColor = (level: string | null) => {
-    switch (level) {
-      case 'partner': return 'bg-purple-500';
-      case 'senior': return 'bg-blue-500';
-      case 'associate': return 'bg-green-500';
-      case 'junior': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
-  };
 
   return (
     <AdminLayout>

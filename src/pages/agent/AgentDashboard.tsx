@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 
 function AgentDashboardContent() {
   const { profile } = useAuth();
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
   const { data: stats } = useQuery({
     queryKey: ['agent-stats', profile?.id],

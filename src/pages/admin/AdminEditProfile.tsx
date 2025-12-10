@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -41,7 +41,6 @@ function AdminEditProfileContent() {
   const { user, profile } = useAuth();
   const { zones } = useServiceZones();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),

@@ -1,7 +1,7 @@
 import { PageLayout } from '@/components/layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
-import { FileText, Scale, AlertTriangle, ShieldCheck, Loader2 } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +41,6 @@ export default function TermsOfService() {
   const { getSetting } = useSiteSettings();
 
   const companyName = getSetting('company_name', 'YR Inmobiliaria');
-  const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
 
   const { data: cmsContent, isLoading } = useQuery({
     queryKey: ['cms-terms'],

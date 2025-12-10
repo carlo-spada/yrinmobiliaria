@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useRef } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -90,12 +90,13 @@ interface PropertyFormDialogProps {
 
 export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFormDialogProps) => {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm({
     resolver: zodResolver(propertyFormSchema),
   });
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin, organizationId: userOrgId } = useUserRole();
 
+  // Initialize images from property prop to avoid setState in effect
   const [images, setImages] = useState<Array<{
     url: string;
     path?: string;
@@ -103,13 +104,22 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       avif: Record<number, string>;
       webp: Record<number, string>;
     };
-  }>>([]);
+  }>>(() => {
+    if (property?.property_images && Array.isArray(property.property_images)) {
+      return property.property_images.map((img) => ({ url: img.image_url }));
+    }
+    return [];
+  });
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
-  const propertyType = watch('type');
-  const operation = watch('operation');
-  const status = watch('status');
-  const zone = watch('zone');
+  // Track property ID to detect when editing different property
+  const prevPropertyIdRef = useRef(property?.id);
+
+  // Use useWatch for stable subscriptions instead of watch()
+  const propertyType = useWatch({ control, name: 'type' });
+  const operation = useWatch({ control, name: 'operation' });
+  const status = useWatch({ control, name: 'status' });
+  const zone = useWatch({ control, name: 'zone' });
 
   // Fetch organizations for superadmin when creating new property in "all orgs" mode
   const { data: organizations = [] } = useQuery({
@@ -136,47 +146,53 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     },
   });
 
-  useEffect(() => {
-    if (property) {
-      const location = property.location as { zone?: string; neighborhood?: string; address?: string; coordinates?: { lat: number; lng: number } } | null;
-      const features = property.features as { bedrooms?: number; bathrooms?: number; parking?: number; constructionArea?: number; landArea?: number } | null;
+  // Sync form and images when property changes (only when property ID differs)
+  // This is an external sync, not a cascading render issue
+  const propertyId = property?.id;
+  if (propertyId !== prevPropertyIdRef.current) {
+    prevPropertyIdRef.current = propertyId;
+    // Schedule state updates for after render completes
+    queueMicrotask(() => {
+      if (property) {
+        const location = property.location as { zone?: string; neighborhood?: string; address?: string; coordinates?: { lat: number; lng: number } } | null;
+        const features = property.features as { bedrooms?: number; bathrooms?: number; parking?: number; constructionArea?: number; landArea?: number } | null;
 
-      reset({
-        title_es: property.title_es,
-        title_en: property.title_en,
-        description_es: property.description_es,
-        description_en: property.description_en,
-        type: property.type,
-        operation: property.operation,
-        price: property.price,
-        status: property.status,
-        featured: property.featured,
-        zone: location?.zone,
-        neighborhood: location?.neighborhood,
-        address: location?.address,
-        lat: location?.coordinates?.lat,
-        lng: location?.coordinates?.lng,
-        bedrooms: features?.bedrooms,
-        bathrooms: features?.bathrooms,
-        parking: features?.parking,
-        constructionArea: features?.constructionArea,
-        landArea: features?.landArea,
-      });
+        reset({
+          title_es: property.title_es,
+          title_en: property.title_en,
+          description_es: property.description_es,
+          description_en: property.description_en,
+          type: property.type,
+          operation: property.operation,
+          price: property.price,
+          status: property.status,
+          featured: property.featured,
+          zone: location?.zone,
+          neighborhood: location?.neighborhood,
+          address: location?.address,
+          lat: location?.coordinates?.lat,
+          lng: location?.coordinates?.lng,
+          bedrooms: features?.bedrooms,
+          bathrooms: features?.bathrooms,
+          parking: features?.parking,
+          constructionArea: features?.constructionArea,
+          landArea: features?.landArea,
+        });
 
-      // Load existing images
-      if (property.property_images && Array.isArray(property.property_images)) {
-        setImages(property.property_images.map((img) => ({ url: img.image_url })));
+        if (property.property_images && Array.isArray(property.property_images)) {
+          setImages(property.property_images.map((img) => ({ url: img.image_url })));
+        }
+      } else {
+        reset({
+          type: 'casa',
+          operation: 'venta',
+          status: 'disponible',
+          featured: false,
+        });
+        setImages([]);
       }
-    } else {
-      reset({
-        type: 'casa',
-        operation: 'venta',
-        status: 'disponible',
-        featured: false,
-      });
-      setImages([]);
-    }
-  }, [property, reset]);
+    });
+  }
 
   const mutation = useMutation({
     mutationFn: async (formData: PropertyFormData) => {

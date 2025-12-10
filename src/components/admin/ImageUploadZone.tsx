@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadImage, deleteImage, extractPathFromUrl } from '@/utils/imageUpload';
 import { toast } from 'sonner';

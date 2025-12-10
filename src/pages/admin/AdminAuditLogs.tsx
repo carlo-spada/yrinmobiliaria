@@ -45,6 +45,11 @@ export default function AdminAuditLogs() {
         </div>
 
         <div className="border rounded-lg">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-pulse text-muted-foreground">Cargando registros...</div>
+            </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -82,6 +87,7 @@ export default function AdminAuditLogs() {
               )}
             </TableBody>
           </Table>
+          )}
         </div>
 
         <p className="text-sm text-muted-foreground">

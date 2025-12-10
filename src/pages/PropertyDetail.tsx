@@ -110,7 +110,7 @@ export default function PropertyDetail() {
     { name: property.title[language], url: propertyUrl },
   ];
 
-  const handleShare = () => {
+  const _handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast({
       title: language === "es" ? "Enlace copiado" : "Link copied",

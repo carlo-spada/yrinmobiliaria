@@ -62,7 +62,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
           item_id: shareUrl,
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: language === 'es' ? 'Error' : 'Error',
         description: language === 'es' ? 'No se pudo copiar el enlace' : 'Could not copy link',
@@ -117,7 +117,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
             item_id: shareUrl,
           });
         }
-      } catch (error) {
+      } catch {
         // User cancelled or error occurred
       }
     }

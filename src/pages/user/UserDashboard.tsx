@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { PropertyCard } from '@/components/PropertyCard';
-import { AlertCircle, Heart, Mail, Phone, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
+import { AlertCircle, Heart, Mail, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';

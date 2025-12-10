@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
 import { useAdminOrg } from './useAdminOrg';
 
 export const AdminHeader = () => {
@@ -22,7 +21,8 @@ export const AdminHeader = () => {
   const { isSuperadmin } = useUserRole();
   const { selectedOrgId, setSelectedOrgId, canViewAll } = useAdminOrg();
   const navigate = useNavigate();
-  const [selectedOrg, setSelectedOrg] = useState<string>(selectedOrgId ?? 'all');
+  // Derive display value directly from context - no local state needed
+  const selectedOrg = selectedOrgId ?? 'all';
 
   // Always fetch organizations for superadmins - don't filter by is_active to get all
   const { data: organizations, isLoading: orgsLoading } = useQuery({
@@ -54,15 +54,10 @@ export const AdminHeader = () => {
   };
 
   const handleOrgChange = (value: string) => {
-    setSelectedOrg(value);
     setSelectedOrgId(value);
     const orgName = value === 'all' ? 'Todas' : organizations?.find(o => o.id === value)?.name || value;
     toast.info(`Contexto: ${orgName}`);
   };
-
-  useEffect(() => {
-    setSelectedOrg(selectedOrgId ?? 'all');
-  }, [selectedOrgId]);
 
   return (
     <header className="h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 bg-card shrink-0 w-full">

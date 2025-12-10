@@ -4,9 +4,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Bot, Send, Sparkles, CheckCircle2, RefreshCw, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Bot, Sparkles, CheckCircle2, RefreshCw, ChevronRight, ChevronLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 
 interface WizardStep {
   id: string;

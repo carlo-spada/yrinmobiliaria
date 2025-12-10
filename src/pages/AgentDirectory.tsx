@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type SortOption = 'name' | 'properties' | 'experience';
 
 export default function AgentDirectory() {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const { data: agents = [], isLoading: agentsLoading } = usePublicAgents();
   const { data: allProperties = [] } = useProperties();
   const { zones } = useServiceZones();

@@ -82,7 +82,7 @@ export const optimizeImage = (file: File, maxWidth = 1920, maxHeight = 1920, qua
             'image/webp', // Convert to WebP for better compression
             quality
           );
-        } catch (err) {
+        } catch {
           reject(new Error('Error al procesar la imagen. Verifica que el archivo no esté dañado.'));
         }
       };

@@ -32,7 +32,6 @@ import {
   Briefcase,
   ChevronRight,
   Loader2,
-  AlertCircle,
   Navigation,
   Maximize2,
   LandPlot,
@@ -178,7 +177,7 @@ export default function MapView() {
     return filterPropertiesByMap(validProperties, filters, mapBounds);
   }, [validProperties, filters, mapBounds]);
 
-  const zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
+  const _zones = Array.from(new Set(validProperties.map((p) => p.location.zone)));
 
   // Update URL when filters change
   useEffect(() => {
@@ -226,15 +225,31 @@ export default function MapView() {
     }, 100);
   }, []);
 
-  // Center on selected property from URL on mount
-  useEffect(() => {
+  // Compute initial flyTo center for URL property (only computed once when properties load)
+  const initialPropertyCenter = useMemo(() => {
     if (urlPropertyId && filteredProperties.length > 0) {
       const property = filteredProperties.find((p) => p.id === urlPropertyId);
-      if (property) {
-        handlePropertyClick(property);
+      if (property?.location?.coordinates &&
+          isValidCoordinate(property.location.coordinates.lat, property.location.coordinates.lng)) {
+        return [property.location.coordinates.lat, property.location.coordinates.lng] as [number, number];
       }
     }
-  }, [urlPropertyId, filteredProperties, handlePropertyClick]);
+    return null;
+  }, [urlPropertyId, filteredProperties]);
+
+  // Track if we've centered on the initial property (use state, not ref)
+  const [hasInitialCentered, setHasInitialCentered] = useState(false);
+
+  // Derive effective fly-to center: user-triggered flyTo > initial property center (first time only)
+  const effectiveFlyToCenter = useMemo(() => {
+    if (flyToCenter) return flyToCenter;
+    if (!hasInitialCentered && initialPropertyCenter) {
+      // Mark as centered after this render via microtask
+      queueMicrotask(() => setHasInitialCentered(true));
+      return initialPropertyCenter;
+    }
+    return null;
+  }, [flyToCenter, hasInitialCentered, initialPropertyCenter]);
 
   // Get user location
   const handleUseMyLocation = () => {
@@ -685,8 +700,6 @@ export default function MapView() {
                             isSelected ? "ring-2 ring-primary" : ""
                           }`}
                           onClick={() => {
-                            // Find the marker ref for this property
-                            const markerElement = document.querySelector(`[data-property-id="${property.id}"]`);
                             handlePropertyClick(property);
                           }}
                         >
@@ -741,7 +754,7 @@ export default function MapView() {
                 />
 
                 <MapBoundsTracker onBoundsChange={handleBoundsChange} onMapClick={handleMapClick} />
-                <FlyToLocation center={flyToCenter} />
+                <FlyToLocation center={effectiveFlyToCenter} />
 
                 {/* Conditional clustering: only use clustering if >20 properties */}
                 {filteredProperties.length > 20 ? (

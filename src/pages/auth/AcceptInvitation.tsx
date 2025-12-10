@@ -26,7 +26,7 @@ type AgentInvitation = Database['public']['Tables']['agent_invitations']['Row'] 
 export default function AcceptInvitation() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  useAuth(); // Initialize auth context
   const token = searchParams.get("token");
 
   const [invitation, setInvitation] = useState<AgentInvitation | null>(null);

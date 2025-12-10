@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
 import { PageLayout } from '@/components/layout';
 import { PropertyCard } from '@/components/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { PropertyFilters } from '@/components/PropertyFilters';
-import { SaveSearchDialog } from '@/components/SaveSearchDialog';
+import { SaveSearchDialog as _SaveSearchDialog } from '@/components/SaveSearchDialog';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select } from '@/components/ui/select-enhanced';
@@ -13,8 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
-import { EmptyPropertyList } from '@/components/EmptyPropertyList';
-import { Property, PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
+import { EmptyPropertyList as _EmptyPropertyList } from '@/components/EmptyPropertyList';
+import { PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';
 type ViewMode = 'grid' | 'list';
@@ -25,55 +25,78 @@ export default function Properties() {
   const { t, language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState<SortOption>('relevance');
+  const [sortBy, setSortByInternal] = useState<SortOption>('relevance');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
-  
+
   // Fetch properties from database
   const { data: allProperties = [], isLoading } = useProperties();
   const { data: agents = [] } = usePublicAgents();
 
-  // Parse filters from URL
+  // Parse filters from URL (computed, not in effect)
   const filtersFromUrl: PropertyFiltersType = useMemo(() => {
     const filters: PropertyFiltersType = {};
-    
+
     const type = searchParams.get('type');
     if (type) filters.type = type as PropertyType;
-    
+
     const operation = searchParams.get('operation');
     if (operation) filters.operation = operation as 'venta' | 'renta';
-    
+
     const zone = searchParams.get('zone');
     if (zone) filters.zone = zone;
-    
+
     const minPrice = searchParams.get('minPrice');
     if (minPrice) filters.minPrice = Number(minPrice);
-    
+
     const maxPrice = searchParams.get('maxPrice');
     if (maxPrice) filters.maxPrice = Number(maxPrice);
-    
+
     const minBedrooms = searchParams.get('minBedrooms');
     if (minBedrooms) filters.minBedrooms = Number(minBedrooms);
-    
+
     const minBathrooms = searchParams.get('minBathrooms');
     if (minBathrooms) filters.minBathrooms = Number(minBathrooms);
-    
+
     return filters;
   }, [searchParams]);
 
-  // Parse agent filter from URL
-  useEffect(() => {
+  // Parse agent filter from URL (computed, not in effect)
+  const selectedAgentId = useMemo(() => {
     const agentSlug = searchParams.get('agent');
     if (agentSlug && agents.length > 0) {
       const agent = agents.find(
         (a) => a.display_name.toLowerCase().replace(/\s+/g, '-') === agentSlug
       );
-      setSelectedAgentId(agent?.id || null);
+      return agent?.id || null;
     }
+    return null;
   }, [searchParams, agents]);
 
-  const [filters, setFilters] = useState<PropertyFiltersType>(filtersFromUrl);
+  const [filters, setFiltersInternal] = useState<PropertyFiltersType>(filtersFromUrl);
+
+  // Track agent ID to detect changes from URL navigation
+  const prevAgentIdRef = useRef(selectedAgentId);
+
+  // Wrapper functions that also reset page when filters change
+  const setFilters = (newFilters: PropertyFiltersType) => {
+    setFiltersInternal(newFilters);
+    setCurrentPage(1);
+  };
+
+  const setSortBy = (newSortBy: SortOption) => {
+    setSortByInternal(newSortBy);
+    setCurrentPage(1);
+  };
+
+  // Compute effective current page - reset to 1 when agent changes from URL
+  const effectiveCurrentPage = useMemo(() => {
+    if (selectedAgentId !== prevAgentIdRef.current) {
+      prevAgentIdRef.current = selectedAgentId;
+      return 1;
+    }
+    return currentPage;
+  }, [selectedAgentId, currentPage]);
 
   // Update URL when filters change
   useEffect(() => {
@@ -154,17 +177,12 @@ export default function Properties() {
     return filtered;
   }, [filters, sortBy, allProperties, selectedAgentId]);
 
-  // Pagination
+  // Pagination - use effectiveCurrentPage which handles agent URL changes
   const totalPages = Math.ceil(filteredProperties.length / ITEMS_PER_PAGE);
   const paginatedProperties = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const start = (effectiveCurrentPage - 1) * ITEMS_PER_PAGE;
     return filteredProperties.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredProperties, currentPage]);
-
-  // Reset page when filters or agent change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters, sortBy, selectedAgentId]);
+  }, [filteredProperties, effectiveCurrentPage]);
 
   const sortOptions = [
     { value: 'relevance', label: t.properties?.sort?.relevance || 'Relevancia' },
@@ -331,9 +349,6 @@ export default function Properties() {
                         }).format(price);
                       };
                       
-                      // Calculate global index for priority loading (first page, first 6 items)
-                      const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
-
                       return (
                         <PropertyCard
                           key={property.id}
@@ -349,7 +364,7 @@ export default function Properties() {
                           area={property.features.constructionArea}
                           featured={property.featured}
                           status={statusMap[property.operation] || 'sale'}
-                          priority={currentPage === 1 && index < 6}
+                          priority={effectiveCurrentPage === 1 && index < 6}
                           agent={property.agent}
                         />
                       );
@@ -362,16 +377,16 @@ export default function Properties() {
                       <Button
                         variant="outline"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
+                        disabled={effectiveCurrentPage === 1}
                       >
                         {t.properties?.previous || 'Anterior'}
                       </Button>
-                      
+
                       <div className="flex items-center gap-2">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                           <Button
                             key={page}
-                            variant={currentPage === page ? 'default' : 'outline'}
+                            variant={effectiveCurrentPage === page ? 'default' : 'outline'}
                             size="icon"
                             onClick={() => setCurrentPage(page)}
                             className="w-10"
@@ -384,7 +399,7 @@ export default function Properties() {
                       <Button
                         variant="outline"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
+                        disabled={effectiveCurrentPage === totalPages}
                       >
                         {t.properties?.next || 'Siguiente'}
                       </Button>

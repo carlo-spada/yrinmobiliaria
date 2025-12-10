@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ArrowLeft, Trash2, X, AlertCircle, Check } from 'lucide-react';
+import { Heart, ArrowLeft, Trash2, X, AlertCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PropertyCard } from '@/components/PropertyCard';
@@ -25,12 +25,19 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Favorites() {
-  const { language, t } = useLanguage();
+  const { language, t: _t } = useLanguage();
   const { favorites, clearFavorites } = useFavorites();
   const { data: properties = [] } = useProperties();
   const { user } = useAuth();
   const [viewMode] = useState<'grid' | 'list'>('grid');
-  const [showSignupBanner, setShowSignupBanner] = useState(true);
+  // Initialize from localStorage directly in useState to avoid effect
+  const [showSignupBanner, setShowSignupBanner] = useState(() => {
+    try {
+      return !localStorage.getItem('dismissed-favorites-banner');
+    } catch {
+      return true;
+    }
+  });
 
   const favoriteProperties = properties.filter(property =>
     favorites.includes(property.id)
@@ -38,15 +45,12 @@ export default function Favorites() {
 
   const isEmailVerified = user?.email_confirmed_at !== null;
 
-  useEffect(() => {
-    const dismissed = localStorage.getItem('dismissed-favorites-banner');
-    if (dismissed) {
-      setShowSignupBanner(false);
-    }
-  }, []);
-
   const dismissBanner = () => {
-    localStorage.setItem('dismissed-favorites-banner', 'true');
+    try {
+      localStorage.setItem('dismissed-favorites-banner', 'true');
+    } catch {
+      // localStorage not available
+    }
     setShowSignupBanner(false);
   };
 

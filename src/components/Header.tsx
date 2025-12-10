@@ -12,7 +12,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
@@ -38,7 +37,7 @@ export function Header() {
   const navigate = useNavigate();
   const { count: favoritesCount } = useFavorites();
   const { getSetting } = useSiteSettings();
-  const { zones: dbZones } = useServiceZones();
+  const { zones: _dbZones } = useServiceZones();
   const { user, profile, signOut } = useAuth();
   
   const companyName = getSetting('company_name', 'YR Inmobiliaria');
@@ -69,8 +68,6 @@ export function Header() {
     { label: t.propertyTypes.apartments, value: 'departamento', icon: '🏢' },
     { label: t.propertyTypes.commercial, value: 'local', icon: '🏪' },
   ];
-
-  const zones = dbZones;
 
   const isActive = (path: string) => location.pathname === path;
 

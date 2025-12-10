@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { logAuditEvent } from '@/utils/auditLog';
 import { Database } from '@/integrations/supabase/types';
 import { RoleGuard } from '@/components/admin/RoleGuard';
@@ -46,7 +46,8 @@ export default function AdminZones() {
   const [editingZone, setEditingZone] = useState<ServiceZone | null>(null);
   const [zoneImages, setZoneImages] = useState<Array<{ url: string; path?: string }>>([]);
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, setValue, control } = useForm();
+  const activeValue = useWatch({ control, name: 'active', defaultValue: true });
 
   const { data: zones, isLoading } = useQuery({
     queryKey: ['service-zones'],
@@ -172,6 +173,11 @@ export default function AdminZones() {
         </div>
 
         <div className="border rounded-lg">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-pulse text-muted-foreground">Cargando zonas...</div>
+            </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -217,6 +223,7 @@ export default function AdminZones() {
               ))}
             </TableBody>
           </Table>
+          )}
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -273,7 +280,7 @@ export default function AdminZones() {
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="active"
-                    checked={watch('active')}
+                    checked={activeValue}
                     onCheckedChange={(checked) => setValue('active', checked)}
                   />
                   <Label htmlFor="active">Zona Activa</Label>

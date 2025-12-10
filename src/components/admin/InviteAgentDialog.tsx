@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -46,7 +45,7 @@ interface InviteAgentDialogProps {
 
 export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps) {
   const { user, profile } = useAuth();
-  const { t } = useLanguage();
+  const { t: _t } = useLanguage();
   const { zones } = useServiceZones();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
