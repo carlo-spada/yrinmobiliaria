@@ -37,6 +37,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logAuditEvent } from '@/utils/auditLog';
@@ -58,6 +59,7 @@ export default function AdminZones() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [zoneImages, setZoneImages] = useState<Array<{ url: string; path?: string }>>([]);
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const { register, handleSubmit, reset, setValue, control } = useForm<ZoneFormData>();
   const activeValue = useWatch({ control, name: 'active', defaultValue: true });
 
@@ -98,14 +100,14 @@ export default function AdminZones() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-zones'] });
       queryClient.invalidateQueries({ queryKey: ['service-zones-public'] });
-      toast.success(editingZone ? 'Zona actualizada' : 'Zona creada correctamente');
+      toast.success(editingZone ? t.admin.zonesPage.updated : t.admin.zonesPage.created);
       setIsDialogOpen(false);
       setEditingZone(null);
       setZoneImages([]);
       reset();
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Error al guardar';
+      const errorMessage = error instanceof Error ? error.message : t.admin.zonesPage.saveError;
       toast.error('Error: ' + errorMessage);
     },
   });
@@ -126,11 +128,11 @@ export default function AdminZones() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-zones'] });
-      toast.success('Zona eliminada correctamente');
+      toast.success(t.admin.zonesPage.deleted);
       setDeleteId(null);
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Error al eliminar';
+      const errorMessage = error instanceof Error ? error.message : t.admin.zonesPage.deleteError;
       toast.error('Error: ' + errorMessage);
       setDeleteId(null);
     },
@@ -177,29 +179,29 @@ export default function AdminZones() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Zonas de Servicio</h2>
-            <p className="text-muted-foreground">Gestiona las zonas donde se ofrecen servicios</p>
+            <h2 className="text-3xl font-bold tracking-tight">{t.admin.zonesPage.title}</h2>
+            <p className="text-muted-foreground">{t.admin.zonesPage.subtitle}</p>
           </div>
           <Button onClick={handleNew}>
             <Plus className="h-4 w-4 mr-2" />
-            Nueva Zona
+            {t.admin.zonesPage.newZone}
           </Button>
         </div>
 
         <div className="border rounded-lg">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse text-muted-foreground">Cargando zonas...</div>
+              <div className="animate-pulse text-muted-foreground">{t.admin.zonesPage.loadingZones}</div>
             </div>
           ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre (ES)</TableHead>
-                <TableHead>Nombre (EN)</TableHead>
-                <TableHead>Orden</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>{t.admin.zonesPage.tableHeaders.nameEs}</TableHead>
+                <TableHead>{t.admin.zonesPage.tableHeaders.nameEn}</TableHead>
+                <TableHead>{t.admin.zonesPage.tableHeaders.order}</TableHead>
+                <TableHead>{t.admin.zonesPage.tableHeaders.status}</TableHead>
+                <TableHead className="text-right">{t.admin.zonesPage.tableHeaders.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -212,7 +214,7 @@ export default function AdminZones() {
                     <span className={`px-2 py-1 rounded text-xs ${
                       zone.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                     }`}>
-                      {zone.active ? 'Activa' : 'Inactiva'}
+                      {zone.active ? t.admin.common.active : t.admin.common.inactive}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
@@ -228,7 +230,7 @@ export default function AdminZones() {
                         variant="destructive"
                         size="sm"
                         onClick={() => setDeleteId(zone.id)}
-                        aria-label="Eliminar zona"
+                        aria-label={t.admin.actions.delete}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -241,9 +243,9 @@ export default function AdminZones() {
                   <TableCell colSpan={5} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <MapPin className="h-8 w-8" />
-                      <p className="font-medium">No hay zonas de servicio</p>
+                      <p className="font-medium">{t.admin.zonesPage.noZones}</p>
                       <p className="text-sm">
-                        Crea tu primera zona de servicio para organizar las propiedades geográficamente
+                        {t.admin.zonesPage.createFirstZone}
                       </p>
                     </div>
                   </TableCell>
@@ -257,33 +259,33 @@ export default function AdminZones() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{editingZone ? 'Editar Zona' : 'Nueva Zona'}</DialogTitle>
-              <DialogDescription>Completa la información de la zona de servicio</DialogDescription>
+              <DialogTitle>{editingZone ? t.admin.zonesPage.editZone : t.admin.zonesPage.newZone}</DialogTitle>
+              <DialogDescription>{t.admin.zonesPage.subtitle}</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name_es">Nombre (Español)*</Label>
+                  <Label htmlFor="name_es">{t.admin.zonesPage.form.nameEs}*</Label>
                   <Input id="name_es" {...register('name_es')} required />
                 </div>
                 <div>
-                  <Label htmlFor="name_en">Nombre (Inglés)*</Label>
+                  <Label htmlFor="name_en">{t.admin.zonesPage.form.nameEn}*</Label>
                   <Input id="name_en" {...register('name_en')} required />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="description_es">Descripción (Español)</Label>
+                <Label htmlFor="description_es">{t.admin.zonesPage.form.descriptionEs}</Label>
                 <Textarea id="description_es" {...register('description_es')} />
               </div>
 
               <div>
-                <Label htmlFor="description_en">Descripción (Inglés)</Label>
+                <Label htmlFor="description_en">{t.admin.zonesPage.form.descriptionEn}</Label>
                 <Textarea id="description_en" {...register('description_en')} />
               </div>
 
               <div>
-                <Label htmlFor="zone_image">Imagen de la Zona</Label>
+                <Label htmlFor="zone_image">{t.admin.zonesPage.form.zoneImage}</Label>
                 <ImageUploadZone
                   images={zoneImages}
                   onImagesChange={setZoneImages}
@@ -291,18 +293,18 @@ export default function AdminZones() {
                   propertyId={editingZone?.id}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Sube una imagen representativa de la zona (máximo 1 imagen)
+                  {t.admin.zonesPage.form.zoneImageDesc}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="display_order">Orden de Visualización*</Label>
-                  <Input 
-                    id="display_order" 
-                    type="number" 
-                    {...register('display_order')} 
-                    required 
+                  <Label htmlFor="display_order">{t.admin.zonesPage.form.displayOrder}*</Label>
+                  <Input
+                    id="display_order"
+                    type="number"
+                    {...register('display_order')}
+                    required
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -311,16 +313,16 @@ export default function AdminZones() {
                     checked={activeValue}
                     onCheckedChange={(checked) => setValue('active', checked)}
                   />
-                  <Label htmlFor="active">Zona Activa</Label>
+                  <Label htmlFor="active">{t.admin.zonesPage.form.activeZone}</Label>
                 </div>
               </div>
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
+                  {t.admin.actions.cancel}
                 </Button>
                 <Button type="submit" disabled={mutation.isPending}>
-                  {mutation.isPending ? 'Guardando...' : 'Guardar'}
+                  {mutation.isPending ? t.admin.common.loading : t.admin.actions.save}
                 </Button>
               </div>
             </form>
@@ -330,19 +332,18 @@ export default function AdminZones() {
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>¿Eliminar zona de servicio?</AlertDialogTitle>
+              <AlertDialogTitle>{t.admin.zonesPage.deleteConfirmTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acción no se puede deshacer. Se eliminará permanentemente esta zona de servicio.
-                Las propiedades asociadas a esta zona perderán su asignación de zona.
+                {t.admin.zonesPage.deleteConfirmDesc}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>{t.admin.actions.cancel}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteId && deleteMutation.mutate(deleteId)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                {deleteMutation.isPending ? t.admin.deleteConfirm.deleting : t.admin.actions.delete}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

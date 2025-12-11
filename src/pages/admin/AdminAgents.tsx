@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminAgents() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
@@ -62,8 +64,8 @@ export default function AdminAgents() {
   });
 
   const getRoleDisplay = (role: string) => {
-    if (role === 'superadmin') return { label: 'Superadministrador', color: 'bg-red-500' };
-    if (role === 'admin') return { label: 'Administrador', color: 'bg-purple-500' };
+    if (role === 'superadmin') return { label: t.admin.usersPage.roles.superadmin, color: 'bg-red-500' };
+    if (role === 'admin') return { label: t.admin.usersPage.roles.admin, color: 'bg-purple-500' };
     return null;
   };
 
@@ -89,14 +91,14 @@ export default function AdminAgents() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Agentes</h1>
+            <h1 className="text-3xl font-bold">{t.admin.agentsPage.title}</h1>
             <p className="text-muted-foreground">
-              Gestiona tu equipo de agentes inmobiliarios
+              {t.admin.agentsPage.subtitle}
             </p>
           </div>
           <Button onClick={() => setInviteDialogOpen(true)} className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Invitar Agente
+            {t.admin.agentsPage.inviteAgent}
           </Button>
         </div>
 
@@ -104,11 +106,11 @@ export default function AdminAgents() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nombre o correo..."
+            placeholder={t.admin.agentsPage.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={`pl-10 ${searchQuery !== deferredSearch ? 'opacity-80' : ''}`}
-            aria-label="Buscar agentes"
+            aria-label={t.admin.actions.search}
           />
         </div>
 
@@ -170,28 +172,28 @@ export default function AdminAgents() {
                       <Home className="h-3 w-3" />
                     </div>
                     <p className="text-lg font-semibold">{agent.properties?.[0]?.count || 0}</p>
-                    <p className="text-xs text-muted-foreground">Propiedades</p>
+                    <p className="text-xs text-muted-foreground">{t.admin.agentsPage.stats.properties}</p>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
                       <MessageSquare className="h-3 w-3" />
                     </div>
                     <p className="text-lg font-semibold">{agent.inquiries?.[0]?.count || 0}</p>
-                    <p className="text-xs text-muted-foreground">Consultas</p>
+                    <p className="text-xs text-muted-foreground">{t.admin.agentsPage.stats.inquiries}</p>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
                       <Calendar className="h-3 w-3" />
                     </div>
                     <p className="text-lg font-semibold">{agent.visits?.[0]?.count || 0}</p>
-                    <p className="text-xs text-muted-foreground">Visitas</p>
+                    <p className="text-xs text-muted-foreground">{t.admin.agentsPage.stats.visits}</p>
                   </div>
                 </div>
 
                 {/* Status */}
                 {!agent.is_active && (
                   <Badge variant="outline" className="mt-4 w-full justify-center">
-                    Inactivo
+                    {t.admin.common.inactive}
                   </Badge>
                 )}
               </Card>
@@ -203,15 +205,15 @@ export default function AdminAgents() {
               <UserPlus className="h-12 w-12 mx-auto text-muted-foreground" />
               <div>
                 <h3 className="text-lg font-semibold">
-                  No hay agentes todavía
+                  {t.admin.agentsPage.noAgents}
                 </h3>
                 <p className="text-muted-foreground">
-                  Invita a tu primer agente para comenzar
+                  {t.admin.agentsPage.inviteFirst}
                 </p>
               </div>
               <Button onClick={() => setInviteDialogOpen(true)} className="gap-2">
                 <UserPlus className="h-4 w-4" />
-                Invitar Agente
+                {t.admin.agentsPage.inviteAgent}
               </Button>
             </div>
           </Card>

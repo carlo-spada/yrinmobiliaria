@@ -34,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -50,6 +51,7 @@ function InquiriesContent() {
   const queryClient = useQueryClient();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin } = useUserRole();
+  const { t } = useLanguage();
   const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
   const canQuery = isSuperadmin || !!scopedOrg;
 
@@ -90,7 +92,7 @@ function InquiriesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-inquiries'] });
-      toast.success('Estado actualizado');
+      toast.success(t.admin.inquiriesPage.statusUpdated);
     },
   });
 
@@ -110,11 +112,11 @@ function InquiriesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-inquiries'] });
-      toast.success('Consulta eliminada');
+      toast.success(t.admin.inquiriesPage.deleted);
       setDeleteId(null);
     },
     onError: () => {
-      toast.error('Error al eliminar la consulta');
+      toast.error(t.admin.inquiriesPage.deleteError);
       setDeleteId(null);
     },
   });
@@ -124,7 +126,7 @@ function InquiriesContent() {
     return (
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
         <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-          Asigna una organización a tu perfil para ver consultas.
+          {t.admin.common.assignOrg}
         </div>
       </RoleGuard>
     );
@@ -135,13 +137,13 @@ function InquiriesContent() {
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
         <div className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Consultas de Contacto</h2>
-            <p className="text-muted-foreground">Gestiona todas las consultas recibidas</p>
+            <h2 className="text-3xl font-bold tracking-tight">{t.admin.inquiriesPage.title}</h2>
+            <p className="text-muted-foreground">{t.admin.inquiriesPage.subtitle}</p>
           </div>
-          <TableSkeleton 
-            columns={6} 
+          <TableSkeleton
+            columns={6}
             rows={5}
-            headers={['Fecha', 'Nombre', 'Email', 'Propiedad', 'Estado', 'Acciones']}
+            headers={[t.admin.inquiriesPage.tableHeaders.date, t.admin.inquiriesPage.tableHeaders.name, t.admin.inquiriesPage.tableHeaders.email, t.admin.inquiriesPage.tableHeaders.property, t.admin.inquiriesPage.tableHeaders.status, t.admin.inquiriesPage.tableHeaders.actions]}
           />
         </div>
       </RoleGuard>
@@ -152,20 +154,20 @@ function InquiriesContent() {
     <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Consultas de Contacto</h2>
-          <p className="text-muted-foreground">Gestiona todas las consultas recibidas</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t.admin.inquiriesPage.title}</h2>
+          <p className="text-muted-foreground">{t.admin.inquiriesPage.subtitle}</p>
         </div>
 
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Propiedad</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>{t.admin.inquiriesPage.tableHeaders.date}</TableHead>
+                <TableHead>{t.admin.inquiriesPage.tableHeaders.name}</TableHead>
+                <TableHead>{t.admin.inquiriesPage.tableHeaders.email}</TableHead>
+                <TableHead>{t.admin.inquiriesPage.tableHeaders.property}</TableHead>
+                <TableHead>{t.admin.inquiriesPage.tableHeaders.status}</TableHead>
+                <TableHead className="text-right">{t.admin.inquiriesPage.tableHeaders.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,12 +179,12 @@ function InquiriesContent() {
                   <TableCell className="font-medium">{inquiry.name}</TableCell>
                   <TableCell>{inquiry.email}</TableCell>
                   <TableCell>
-                    {inquiry.properties?.title_es || 'Consulta General'}
+                    {inquiry.properties?.title_es || t.admin.inquiriesPage.generalInquiry}
                   </TableCell>
                   <TableCell>
                     <Select
                       value={inquiry.status}
-                      onValueChange={(value) => 
+                      onValueChange={(value) =>
                         updateStatusMutation.mutate({ id: inquiry.id, status: value })
                       }
                     >
@@ -190,10 +192,10 @@ function InquiriesContent() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="new">Nueva</SelectItem>
-                        <SelectItem value="contacted">Contactada</SelectItem>
-                        <SelectItem value="resolved">Resuelta</SelectItem>
-                        <SelectItem value="archived">Archivada</SelectItem>
+                        <SelectItem value="new">{t.admin.inquiriesPage.statuses.new}</SelectItem>
+                        <SelectItem value="contacted">{t.admin.inquiriesPage.statuses.contacted}</SelectItem>
+                        <SelectItem value="resolved">{t.admin.inquiriesPage.statuses.resolved}</SelectItem>
+                        <SelectItem value="archived">{t.admin.inquiriesPage.statuses.archived}</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -210,7 +212,7 @@ function InquiriesContent() {
                         variant="destructive"
                         size="sm"
                         onClick={() => setDeleteId(inquiry.id)}
-                        aria-label="Eliminar consulta"
+                        aria-label={t.admin.actions.delete}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -223,9 +225,9 @@ function InquiriesContent() {
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <MessageSquare className="h-8 w-8" />
-                      <p className="font-medium">No hay consultas de contacto</p>
+                      <p className="font-medium">{t.admin.inquiriesPage.noInquiries}</p>
                       <p className="text-sm">
-                        Las consultas recibidas a través del formulario de contacto aparecerán aquí
+                        {t.admin.inquiriesPage.inquiriesAppearHere}
                       </p>
                     </div>
                   </TableCell>
@@ -238,38 +240,38 @@ function InquiriesContent() {
         <Dialog open={!!selectedInquiry} onOpenChange={() => setSelectedInquiry(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Detalle de Consulta</DialogTitle>
+              <DialogTitle>{t.admin.inquiriesPage.detailTitle}</DialogTitle>
             </DialogHeader>
             {selectedInquiry && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Nombre</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.name}</p>
                     <p>{selectedInquiry.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.email}</p>
                     <p>{selectedInquiry.email}</p>
                   </div>
                   {selectedInquiry.phone && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Teléfono</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t.admin.common.phone}</p>
                       <p>{selectedInquiry.phone}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Fecha</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.date}</p>
                     <p>{formatDateLong(selectedInquiry.created_at)}</p>
                   </div>
                 </div>
                 {selectedInquiry.properties && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Propiedad de Interés</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.inquiriesPage.propertyOfInterest}</p>
                     <p>{selectedInquiry.properties.title_es}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Mensaje</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{t.admin.inquiriesPage.message}</p>
                   <p className="text-sm whitespace-pre-wrap bg-muted p-4 rounded-md">
                     {selectedInquiry.message}
                   </p>
@@ -282,18 +284,18 @@ function InquiriesContent() {
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>¿Eliminar consulta?</AlertDialogTitle>
+              <AlertDialogTitle>{t.admin.inquiriesPage.deleteConfirmTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acción no se puede deshacer. Se eliminará permanentemente esta consulta de contacto.
+                {t.admin.inquiriesPage.deleteConfirmDesc}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>{t.admin.actions.cancel}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteId && deleteMutation.mutate(deleteId)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                {deleteMutation.isPending ? t.admin.deleteConfirm.deleting : t.admin.actions.delete}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

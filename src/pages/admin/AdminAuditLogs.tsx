@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 import { formatDateTimeFull } from '@/utils/dateFormat';
@@ -67,6 +68,7 @@ const sanitizeChanges = (changes: Json): string => {
 };
 
 export default function AdminAuditLogs() {
+  const { t } = useLanguage();
   const { data: logs, isLoading } = useQuery({
     queryKey: ['audit-logs'],
     queryFn: async () => {
@@ -94,24 +96,24 @@ export default function AdminAuditLogs() {
       <RoleGuard allowedRoles={['admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Registro de Actividad</h2>
-          <p className="text-muted-foreground">Historial de acciones administrativas en el sistema</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t.admin.auditLogsPage.title}</h2>
+          <p className="text-muted-foreground">{t.admin.auditLogsPage.subtitle}</p>
         </div>
 
         <div className="border rounded-lg">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse text-muted-foreground">Cargando registros...</div>
+              <div className="animate-pulse text-muted-foreground">{t.admin.auditLogsPage.loadingLogs}</div>
             </div>
           ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Fecha y Hora</TableHead>
-                <TableHead>Acción</TableHead>
-                <TableHead>Tabla</TableHead>
-                <TableHead>ID de Usuario</TableHead>
-                <TableHead>Detalles</TableHead>
+                <TableHead>{t.admin.auditLogsPage.tableHeaders.dateTime}</TableHead>
+                <TableHead>{t.admin.auditLogsPage.tableHeaders.action}</TableHead>
+                <TableHead>{t.admin.auditLogsPage.tableHeaders.table}</TableHead>
+                <TableHead>{t.admin.auditLogsPage.tableHeaders.userId}</TableHead>
+                <TableHead>{t.admin.auditLogsPage.tableHeaders.details}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,7 +131,7 @@ export default function AdminAuditLogs() {
                   <TableCell className="font-mono text-xs">
                     {log.user_id
                       ? `${log.user_id.slice(0, AUDIT_LOG_CONFIG.USER_ID_DISPLAY_LENGTH)}...`
-                      : 'Sistema'}
+                      : t.admin.auditLogsPage.system}
                   </TableCell>
                   <TableCell className="max-w-md">
                     <pre
@@ -144,9 +146,9 @@ export default function AdminAuditLogs() {
                   <TableCell colSpan={5} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <FileText className="h-8 w-8" />
-                      <p className="font-medium">No hay registros de actividad</p>
+                      <p className="font-medium">{t.admin.auditLogsPage.noLogs}</p>
                       <p className="text-sm">
-                        Los cambios realizados en el sistema aparecerán aquí automáticamente
+                        {t.admin.auditLogsPage.logsAppearHere}
                       </p>
                     </div>
                   </TableCell>
@@ -158,7 +160,7 @@ export default function AdminAuditLogs() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Mostrando los últimos {AUDIT_LOG_CONFIG.DEFAULT_LIMIT} registros de actividad
+          {t.admin.auditLogsPage.showingLast} {AUDIT_LOG_CONFIG.DEFAULT_LIMIT} {t.admin.auditLogsPage.title.toLowerCase()}
         </p>
       </div>
       </RoleGuard>

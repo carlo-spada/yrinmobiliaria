@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -55,6 +56,7 @@ function VisitsContent() {
   const queryClient = useQueryClient();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin } = useUserRole();
+  const { t } = useLanguage();
   const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
   const canQuery = isSuperadmin || !!scopedOrg;
 
@@ -95,7 +97,7 @@ function VisitsContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-visits'] });
-      toast.success('Estado actualizado');
+      toast.success(t.admin.visitsPage.statusUpdated);
     },
   });
 
@@ -115,11 +117,11 @@ function VisitsContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-visits'] });
-      toast.success('Visita eliminada');
+      toast.success(t.admin.visitsPage.deleted);
       setDeleteId(null);
     },
     onError: () => {
-      toast.error('Error al eliminar la visita');
+      toast.error(t.admin.visitsPage.deleteError);
       setDeleteId(null);
     },
   });
@@ -129,7 +131,7 @@ function VisitsContent() {
     return (
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
         <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-          Asigna una organización a tu perfil para ver visitas.
+          {t.admin.common.assignOrg}
         </div>
       </RoleGuard>
     );
@@ -140,13 +142,13 @@ function VisitsContent() {
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
         <div className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Visitas Agendadas</h2>
-            <p className="text-muted-foreground">Gestiona todas las visitas programadas</p>
+            <h2 className="text-3xl font-bold tracking-tight">{t.admin.visitsPage.title}</h2>
+            <p className="text-muted-foreground">{t.admin.visitsPage.subtitle}</p>
           </div>
-          <TableSkeleton 
-            columns={7} 
+          <TableSkeleton
+            columns={7}
             rows={5}
-            headers={['Fecha', 'Hora', 'Nombre', 'Email', 'Propiedad', 'Estado', 'Acciones']}
+            headers={[t.admin.visitsPage.tableHeaders.date, t.admin.visitsPage.tableHeaders.time, t.admin.visitsPage.tableHeaders.name, t.admin.visitsPage.tableHeaders.email, t.admin.visitsPage.tableHeaders.property, t.admin.visitsPage.tableHeaders.status, t.admin.visitsPage.tableHeaders.actions]}
           />
         </div>
       </RoleGuard>
@@ -157,21 +159,21 @@ function VisitsContent() {
     <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Visitas Agendadas</h2>
-          <p className="text-muted-foreground">Gestiona todas las visitas programadas</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t.admin.visitsPage.title}</h2>
+          <p className="text-muted-foreground">{t.admin.visitsPage.subtitle}</p>
         </div>
 
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Hora</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Propiedad</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>{t.admin.visitsPage.tableHeaders.date}</TableHead>
+                <TableHead>{t.admin.visitsPage.tableHeaders.time}</TableHead>
+                <TableHead>{t.admin.visitsPage.tableHeaders.name}</TableHead>
+                <TableHead>{t.admin.visitsPage.tableHeaders.email}</TableHead>
+                <TableHead>{t.admin.visitsPage.tableHeaders.property}</TableHead>
+                <TableHead>{t.admin.visitsPage.tableHeaders.status}</TableHead>
+                <TableHead className="text-right">{t.admin.visitsPage.tableHeaders.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -187,7 +189,7 @@ function VisitsContent() {
                   <TableCell>
                     <Select
                       value={visit.status}
-                      onValueChange={(value) => 
+                      onValueChange={(value) =>
                         updateStatusMutation.mutate({ id: visit.id, status: value })
                       }
                     >
@@ -195,10 +197,10 @@ function VisitsContent() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pendiente</SelectItem>
-                        <SelectItem value="confirmed">Confirmada</SelectItem>
-                        <SelectItem value="completed">Completada</SelectItem>
-                        <SelectItem value="cancelled">Cancelada</SelectItem>
+                        <SelectItem value="pending">{t.admin.visitsPage.statuses.pending}</SelectItem>
+                        <SelectItem value="confirmed">{t.admin.visitsPage.statuses.confirmed}</SelectItem>
+                        <SelectItem value="completed">{t.admin.visitsPage.statuses.completed}</SelectItem>
+                        <SelectItem value="cancelled">{t.admin.visitsPage.statuses.cancelled}</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -215,7 +217,7 @@ function VisitsContent() {
                         variant="destructive"
                         size="sm"
                         onClick={() => setDeleteId(visit.id)}
-                        aria-label="Eliminar visita"
+                        aria-label={t.admin.actions.delete}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -228,9 +230,9 @@ function VisitsContent() {
                   <TableCell colSpan={7} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <Calendar className="h-8 w-8" />
-                      <p className="font-medium">No hay visitas agendadas</p>
+                      <p className="font-medium">{t.admin.visitsPage.noVisits}</p>
                       <p className="text-sm">
-                        Las visitas programadas por los clientes aparecerán aquí
+                        {t.admin.visitsPage.visitsAppearHere}
                       </p>
                     </div>
                   </TableCell>
@@ -243,43 +245,43 @@ function VisitsContent() {
         <Dialog open={!!selectedVisit} onOpenChange={() => setSelectedVisit(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Detalle de Visita</DialogTitle>
+              <DialogTitle>{t.admin.visitsPage.detailTitle}</DialogTitle>
             </DialogHeader>
             {selectedVisit && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Nombre</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.name}</p>
                     <p>{selectedVisit.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.email}</p>
                     <p>{selectedVisit.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Teléfono</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.phone}</p>
                     <p>{selectedVisit.phone}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Fecha Preferida</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.visitsPage.preferredDate}</p>
                     <p>{formatDateLong(selectedVisit.preferred_date)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Hora Preferida</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.visitsPage.preferredTime}</p>
                     <p>{selectedVisit.preferred_time}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Estado</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t.admin.common.status}</p>
                     <p className="capitalize">{selectedVisit.status}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Propiedad</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t.admin.common.property}</p>
                   <p>{selectedVisit.properties?.title_es}</p>
                 </div>
                 {selectedVisit.message && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Mensaje Adicional</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">{t.admin.visitsPage.additionalMessage}</p>
                     <p className="text-sm whitespace-pre-wrap bg-muted p-4 rounded-md">
                       {selectedVisit.message}
                     </p>
@@ -293,18 +295,18 @@ function VisitsContent() {
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>¿Eliminar visita?</AlertDialogTitle>
+              <AlertDialogTitle>{t.admin.visitsPage.deleteConfirmTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acción no se puede deshacer. Se eliminará permanentemente esta visita agendada.
+                {t.admin.visitsPage.deleteConfirmDesc}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>{t.admin.actions.cancel}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteId && deleteMutation.mutate(deleteId)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                {deleteMutation.isPending ? t.admin.deleteConfirm.deleting : t.admin.actions.delete}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
