@@ -22,14 +22,34 @@
       "Bash(npm outdated:*)",
       "Bash(npx npm-check-updates:*)",
       "Bash(git checkout:*)",
-      "Bash(while read f)",
-      "Bash(do basename \"$f\" .tsx)",
-      "Bash(done)",
-      "Bash(for component in collapsible breadcrumb radio-group toggle progress-steps)",
-      "Bash(do echo \"=== Checking: $component ===\" grep -r \"$component\" src --include=\"*.tsx\" --include=\"*.ts\")",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(npx bmad-method@alpha install)",
+      "Bash(npm run test:*)",
+      "Bash(.claude/hooks/voice-manager.sh:*)",
+      "Bash(.claude/hooks/piper-download-voices.sh:*)",
+      "Bash(.claude/hooks/play-tts.sh:*)",
+      "mcp__agentvibes__get_config",
+      "Bash(npm show:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 show:*)",
+      "Bash(npx eslint:*)",
+      "Bash(brew install:*)",
+      "Bash(chmod:*)",
+      "Bash(echo:*)",
+      "Bash(open:*)",
+      "Bash(pkill:*)",
+      "Bash(rec:*)",
+      "Bash(killall:*)",
+      "Bash(osascript:*)",
+      "Bash(ffmpeg:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "agentvibes"
+  ]
 }
