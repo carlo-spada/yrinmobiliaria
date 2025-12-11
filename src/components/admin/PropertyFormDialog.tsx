@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef } from 'react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logAuditEvent } from '@/utils/auditLog';
+import { logger } from '@/utils/logger';
 
 import { ImageUploadZone } from './ImageUploadZone';
 import { useAdminOrg } from './useAdminOrg';
@@ -115,14 +116,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   });
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
-  // Track property ID to detect when editing different property
-  const prevPropertyIdRef = useRef(property?.id);
-
   // Use useWatch for stable subscriptions instead of watch()
   const propertyType = useWatch({ control, name: 'type' });
   const operation = useWatch({ control, name: 'operation' });
   const status = useWatch({ control, name: 'status' });
   const zone = useWatch({ control, name: 'zone' });
+  const watchedFeatured = useWatch({ control, name: 'featured' });
 
   // Fetch organizations for superadmin when creating new property in "all orgs" mode
   const { data: organizations = [] } = useQuery({
@@ -149,53 +148,75 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
     },
   });
 
-  // Sync form and images when property changes (only when property ID differs)
-  // This is an external sync, not a cascading render issue
-  const propertyId = property?.id;
-  if (propertyId !== prevPropertyIdRef.current) {
-    prevPropertyIdRef.current = propertyId;
-    // Schedule state updates for after render completes
-    queueMicrotask(() => {
-      if (property) {
-        const location = property.location as { zone?: string; neighborhood?: string; address?: string; coordinates?: { lat: number; lng: number } } | null;
-        const features = property.features as { bedrooms?: number; bathrooms?: number; parking?: number; constructionArea?: number; landArea?: number } | null;
+  // Sync form and images when dialog opens or property changes
+  // Note: setImages in effect is intentional for modal form sync pattern
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+  useEffect(() => {
+    if (!open) return;
 
-        reset({
-          title_es: property.title_es,
-          title_en: property.title_en,
-          description_es: property.description_es ?? undefined,
-          description_en: property.description_en ?? undefined,
-          type: property.type as "casa" | "departamento" | "local" | "oficina" | "terrenos",
-          operation: property.operation as "venta" | "renta",
-          price: property.price.toString(),
-          status: property.status as "disponible" | "vendida" | "rentada" | "pendiente",
-          featured: property.featured ?? false,
-          zone: location?.zone || "",
-          neighborhood: location?.neighborhood || "",
-          address: location?.address || "",
-          lat: location?.coordinates?.lat?.toString() || "",
-          lng: location?.coordinates?.lng?.toString() || "",
-          bedrooms: features?.bedrooms?.toString() || "",
-          bathrooms: features?.bathrooms?.toString() || "",
-          parking: features?.parking?.toString() || "",
-          constructionArea: features?.constructionArea?.toString() || "",
-          landArea: features?.landArea?.toString() || "",
-        });
+    if (property) {
+      const location = property.location as { zone?: string; neighborhood?: string; address?: string; coordinates?: { lat: number; lng: number } } | null;
+      const features = property.features as { bedrooms?: number; bathrooms?: number; parking?: number; constructionArea?: number; landArea?: number } | null;
 
-        if (property.property_images && Array.isArray(property.property_images)) {
-          setImages(property.property_images.map((img) => ({ url: img.image_url })));
-        }
-      } else {
-        reset({
-          type: 'casa',
-          operation: 'venta',
-          status: 'disponible',
-          featured: false,
-        });
-        setImages([]);
+      reset({
+        title_es: property.title_es,
+        title_en: property.title_en,
+        description_es: property.description_es ?? undefined,
+        description_en: property.description_en ?? undefined,
+        type: property.type as "casa" | "departamento" | "local" | "oficina" | "terrenos",
+        operation: property.operation as "venta" | "renta",
+        price: property.price.toString(),
+        status: property.status as "disponible" | "vendida" | "rentada" | "pendiente",
+        featured: property.featured ?? false,
+        zone: location?.zone || "",
+        neighborhood: location?.neighborhood || "",
+        address: location?.address || "",
+        lat: location?.coordinates?.lat?.toString() || "",
+        lng: location?.coordinates?.lng?.toString() || "",
+        bedrooms: features?.bedrooms?.toString() || "",
+        bathrooms: features?.bathrooms?.toString() || "",
+        parking: features?.parking?.toString() || "",
+        constructionArea: features?.constructionArea?.toString() || "",
+        landArea: features?.landArea?.toString() || "",
+      });
+
+      if (property.property_images && Array.isArray(property.property_images)) {
+        setImages(property.property_images.map((img) => ({ url: img.image_url })));
       }
-    });
-  }
+    } else {
+      reset({
+        type: 'casa',
+        operation: 'venta',
+        status: 'disponible',
+        featured: false,
+      });
+      setImages([]);
+    }
+  }, [open, property?.id, reset]);
+  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
+  // Determine if form can be submitted (org validation for superadmin)
+  const canSubmit = useMemo(() => {
+    if (!property && isSuperadmin && isAllOrganizations && !selectedOrgId) {
+      return false;
+    }
+    return true;
+  }, [property, isSuperadmin, isAllOrganizations, selectedOrgId]);
+
+  // Reset form state when dialog closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      reset({
+        type: 'casa',
+        operation: 'venta',
+        status: 'disponible',
+        featured: false,
+      });
+      setImages([]);
+      setSelectedOrgId(null);
+    }
+    onOpenChange(newOpen);
+  };
 
   const mutation = useMutation({
     mutationFn: async (formData: PropertyFormData) => {
@@ -226,7 +247,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         .maybeSingle();
 
       if (zoneError) {
-        console.error("[Property Save] Zone validation error:", zoneError);
+        logger.error('[Property Save] Zone validation error', zoneError);
         throw new Error('Error al validar la zona');
       }
 
@@ -310,7 +331,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         // console.log("[Property Save] Update response:", { result, error });
 
         if (error) {
-          console.error("[Property Save] Update RLS/DB error:", {
+          logger.error('[Property Save] Update RLS/DB error', {
             code: error.code,
             message: error.message,
             details: error.details,
@@ -320,7 +341,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         }
 
         if (!result || result.length === 0) {
-          console.warn("[Property Save] No rows updated - possible RLS issue");
+          logger.warn('[Property Save] No rows updated - possible RLS issue');
           throw new Error('No se pudo actualizar la propiedad. Verifica tus permisos.');
         }
       } else {
@@ -334,7 +355,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         // console.log("[Property Save] Insert response:", { data, error });
 
         if (error) {
-          console.error("[Property Save] Insert RLS/DB error:", {
+          logger.error('[Property Save] Insert RLS/DB error', {
             code: error.code,
             message: error.message,
             details: error.details,
@@ -354,7 +375,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           .eq('property_id', property.id);
 
         if (deleteError) {
-          console.error("[Property Save] Image delete error:", deleteError);
+          logger.error('[Property Save] Image delete error', deleteError);
         }
       }
 
@@ -374,7 +395,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           .insert(imageRecords);
 
         if (error) {
-          console.error("[Property Save] Image insert error:", error);
+          logger.error('[Property Save] Image insert error', error);
           throw error;
         }
       }
@@ -403,7 +424,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       setImages([]);
     },
     onError: (error) => {
-      console.error("[Property Save] onError triggered:", error);
+      logger.error('[Property Save] onError triggered', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       toast.error('Error: ' + errorMessage);
     },
@@ -414,7 +435,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -428,10 +449,10 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Organization selector for superadmin creating new property with "all orgs" mode */}
           {!property && isSuperadmin && isAllOrganizations && (
-            <div className="p-4 bg-muted/50 rounded-lg border">
+            <div className={`p-4 rounded-lg border ${!selectedOrgId ? 'bg-destructive/10 border-destructive/50' : 'bg-muted/50'}`}>
               <Label className="text-sm font-medium mb-2 block">Organización *</Label>
               <Select value={selectedOrgId || ''} onValueChange={setSelectedOrgId}>
-                <SelectTrigger>
+                <SelectTrigger className={!selectedOrgId ? 'border-destructive' : ''}>
                   <SelectValue placeholder="Selecciona una organización" />
                 </SelectTrigger>
                 <SelectContent>
@@ -442,6 +463,9 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
                   ))}
                 </SelectContent>
               </Select>
+              {!selectedOrgId && (
+                <p className="text-sm text-destructive mt-2">Debes seleccionar una organización antes de crear la propiedad</p>
+              )}
             </div>
           )}
           <div className="grid grid-cols-2 gap-4">
@@ -521,13 +545,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
               {errors.price && <p className="text-sm text-destructive">{errors.price.message as string}</p>}
             </div>
             <div className="flex items-center space-x-2 pt-8">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="featured"
-                {...register('featured')}
-                className="h-4 w-4"
+                checked={watchedFeatured ?? false}
+                onCheckedChange={(checked) => setValue('featured', !!checked)}
               />
-              <Label htmlFor="featured">Destacada</Label>
+              <Label htmlFor="featured" className="cursor-pointer">Destacada</Label>
             </div>
           </div>
 
@@ -637,12 +660,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             )}
 
             <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || !canSubmit}
               >
                 {mutation.isPending ? 'Guardando...' : property ? 'Actualizar' : 'Crear'}
               </Button>

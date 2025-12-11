@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { FAVORITES_STORAGE_KEY, getLocalFavorites, persistLocalFavorites } from '@/utils/favoritesStorage';
@@ -13,17 +13,19 @@ export function useFavorites() {
   const { toast } = useToast();
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
+  // Use ref for isSyncing to avoid circular dependency in useCallback
+  const isSyncingRef = useRef(false);
 
   // Helper: Sync localStorage favorites to database when user logs in
   const syncLocalFavoritesToDatabase = useCallback(async (localFavorites: string[], dbFavorites: string[]) => {
-    if (!user || isSyncing) return;
-    
-    setIsSyncing(true);
+    if (!user || isSyncingRef.current) return;
+
+    isSyncingRef.current = true;
     try {
       // Find favorites that are in localStorage but not in database
-      const favoritesToSync = localFavorites.filter(id => !dbFavorites.includes(id));
-      
+      const dbFavoritesSet = new Set(dbFavorites);
+      const favoritesToSync = localFavorites.filter(id => !dbFavoritesSet.has(id));
+
       if (favoritesToSync.length > 0) {
         const { error } = await supabase
           .from('user_favorites')
@@ -38,16 +40,16 @@ export function useFavorites() {
 
         // Update state with merged favorites
         setFavorites([...dbFavorites, ...favoritesToSync]);
-        
+
         // Clear localStorage after successful sync
         localStorage.removeItem(FAVORITES_STORAGE_KEY);
       }
     } catch (error) {
       logger.error('Error syncing favorites to database', error);
     } finally {
-      setIsSyncing(false);
+      isSyncingRef.current = false;
     }
-  }, [user, isSyncing]);
+  }, [user]); // Removed isSyncing from deps - using ref now
 
   // Load favorites from localStorage (for guests) or Supabase (for authenticated users)
   useEffect(() => {
@@ -183,9 +185,12 @@ export function useFavorites() {
     }
   }, [favorites, addFavorite, removeFavorite]);
 
+  // Use Set for O(1) lookup performance
+  const favoritesSet = useMemo(() => new Set(favorites), [favorites]);
+
   const isFavorite = useCallback((propertyId: string) => {
-    return favorites.includes(propertyId);
-  }, [favorites]);
+    return favoritesSet.has(propertyId);
+  }, [favoritesSet]);
 
   const clearFavorites = useCallback(async () => {
     if (user) {
@@ -197,7 +202,7 @@ export function useFavorites() {
 
         if (error) throw error;
       } catch (error) {
-        console.error('Error clearing favorites:', error);
+        logger.error('Error clearing favorites', error);
         toast({
           title: 'Error',
           description: 'No se pudieron limpiar los favoritos',
