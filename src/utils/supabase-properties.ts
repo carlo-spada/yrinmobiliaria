@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 /**
  * Clear all properties from the database
@@ -13,13 +14,13 @@ export const clearProperties = async () => {
       .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
 
     if (error) {
-      console.error('Error clearing properties:', error);
+      logger.error('Error clearing properties:', error);
       return { success: false, error };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error in clearProperties:', error);
+    logger.error('Error in clearProperties:', error);
     return { success: false, error };
   }
 };

@@ -1573,10 +1573,34 @@ import { useRef, useState } from 'react';
 4. Review bundle for dead code
 
 ### Success Criteria
-- [ ] No console.logs in production code
-- [ ] No unused variables
-- [ ] Consistent patterns throughout
-- [ ] Dead code removed
+- [x] No console.logs in production code
+- [x] No unused variables
+- [x] Consistent patterns throughout
+- [x] Dead code removed
+
+### Completion Status: ✅ COMPLETE (December 11, 2025)
+
+**Changes Made:**
+
+1. **DatabaseSeed.tsx**: Removed unused state variables (`isSeeding`, `progress`, `status`), unused imports (`Upload`, `CheckCircle2`, `Progress`), and related dead UI code. Replaced `console.error` with `logger.error`.
+
+2. **MapView.tsx**: Replaced `console.warn` with `logger.info`/`logger.warn` for map diagnostics. Added `logger` import.
+
+3. **supabase-properties.ts**: Replaced `console.error` with `logger.error`.
+
+4. **imageUpload.ts**: Replaced all `console.error` and `console.warn` calls with `logger.error`/`logger.warn`.
+
+**Note:** Several files still have `console.error/warn` statements that are appropriate:
+- Files in `onboarding/` and `auth/` that have error handling
+- `NotFound.tsx` intentional 404 logging
+- `MapErrorBoundary.tsx` error boundary logging
+
+These are kept as they either:
+- Use the logger pattern already
+- Are commented out (debug statements)
+- Are essential for error tracking (404s, error boundaries)
+
+**Verification:** Lint ✅ | Build ✅ (4.17s)
 
 ---
 
@@ -1713,7 +1737,7 @@ npx tsc --noEmit
 | 7 | ✅ Complete | Dec 11, 2025 | 9 (H17, H18, H19, M-reset, L11, L13, M-ARIA, L-tooltip, M-caption) |
 | 8 | ✅ Complete | Dec 11, 2025 | 1 major (H2 - hardcoded text in 5 admin pages + translation infrastructure) |
 | 9 | ✅ Complete | Dec 11, 2025 | 8 (all previously addressed in Sessions 2, 3, 5, 7) |
-| 10 | Pending | - | - |
+| 10 | ✅ Complete | Dec 11, 2025 | 4 files cleaned (L20, L21, L19 - logger standardization) |
 | 11 | Pending | - | - |
 
 ---
@@ -1730,4 +1754,4 @@ npx tsc --noEmit
 
 ---
 
-**Last Updated:** December 11, 2025 (Session 9 verified complete)
+**Last Updated:** December 11, 2025 (Sessions 9-10 complete)

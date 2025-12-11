@@ -36,6 +36,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { Property, PropertyType } from "@/types/property";
+import { logger } from "@/utils/logger";
 import { filterPropertiesByMap, isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
 import { toLogPrice, fromLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from "@/utils/priceSliderHelpers";
 
@@ -175,11 +176,11 @@ export default function MapView() {
     );
   }, [allProperties]);
 
-  // Diagnostics: Log property counts
+  // Diagnostics: Log property counts (only in development)
   useEffect(() => {
-    console.warn(`[Map Diagnostics] Total properties: ${allProperties.length}, Valid coords: ${validProperties.length}`);
+    logger.info(`[Map Diagnostics] Total properties: ${allProperties.length}, Valid coords: ${validProperties.length}`);
     if (allProperties.length > validProperties.length) {
-      console.warn(`[Map Diagnostics] ${allProperties.length - validProperties.length} properties have invalid/missing coordinates`);
+      logger.warn(`[Map Diagnostics] ${allProperties.length - validProperties.length} properties have invalid/missing coordinates`);
     }
   }, [allProperties.length, validProperties.length]);
 
@@ -271,7 +272,7 @@ export default function MapView() {
           setFlyToCenter(coords);
         },
         (error) => {
-          console.error("Error getting location:", error);
+          logger.error("Error getting location:", error);
         }
       );
     }

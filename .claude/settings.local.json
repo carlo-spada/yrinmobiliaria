@@ -44,7 +44,12 @@
       "Bash(rec:*)",
       "Bash(killall:*)",
       "Bash(osascript:*)",
-      "Bash(ffmpeg:*)"
+      "Bash(ffmpeg:*)",
+      "Bash(system_profiler:*)",
+      "Bash(whisper-cli:*)",
+      "Bash(ps:*)",
+      "mcp__agentvibes__get_background_music_status",
+      "mcp__agentvibes__set_background_music_volume"
     ],
     "deny": [],
     "ask": []

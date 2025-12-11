@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 const BUCKET_NAME = 'property-images';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -188,7 +189,7 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
       });
 
     if (error) {
-      console.error('Supabase storage error:', error);
+      logger.error('Supabase storage error:', error);
       throw new Error(getStorageErrorMessage(error));
     }
 
@@ -213,12 +214,12 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
         );
 
         if (variantsError) {
-          console.warn('Failed to generate variants, will use transform fallback:', variantsError);
+          logger.warn('Failed to generate variants, will use transform fallback:', variantsError);
         } else if (variantsData?.variants) {
           variants = variantsData.variants;
         }
       } catch (err) {
-        console.warn('Error calling optimization function, will use transform fallback:', err);
+        logger.warn('Error calling optimization function, will use transform fallback:', err);
       }
     }
 
@@ -234,7 +235,7 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
     }
 
     // For unexpected errors, log and provide generic message
-    console.error('Unexpected error uploading image:', error);
+    logger.error('Unexpected error uploading image:', error);
     throw new Error('Error inesperado al subir la imagen. Por favor intenta de nuevo o contacta al administrador.');
   }
 };
@@ -250,7 +251,7 @@ export const deleteImage = async (path: string): Promise<void> => {
 
     if (error) throw error;
   } catch (error) {
-    console.error('Error deleting image:', error);
+    logger.error('Error deleting image:', error);
     throw new Error('Error al eliminar la imagen');
   }
 };
@@ -266,7 +267,7 @@ export const deleteImages = async (paths: string[]): Promise<void> => {
 
     if (error) throw error;
   } catch (error) {
-    console.error('Error deleting images:', error);
+    logger.error('Error deleting images:', error);
     throw new Error('Error al eliminar las imágenes');
   }
 };

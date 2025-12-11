@@ -1,4 +1,4 @@
-import { AlertCircle, Database, Trash2, Upload, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Database, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -17,15 +17,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 import { clearProperties } from '@/utils/supabase-properties';
 
 export default function DatabaseSeed() {
-  const [isSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
-  const [progress] = useState(0);
-  const [status] = useState<'idle' | 'success' | 'error'>('idle');
   const { toast } = useToast();
 
   const handleSeed = async () => {
@@ -51,7 +48,7 @@ export default function DatabaseSeed() {
         throw new Error('Clear failed');
       }
     } catch (error) {
-      console.error('Error clearing database:', error);
+      logger.error('Error clearing database:', error);
       toast({
         title: '✗ Error al limpiar',
         description: 'Ocurrió un error. Revisa la consola.',
@@ -96,53 +93,22 @@ export default function DatabaseSeed() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {isSeeding && (
-              <div className="space-y-2">
-                <Progress value={progress} className="w-full" />
-                <p className="text-sm text-muted-foreground text-center">
-                  {progress < 100 ? 'Agregando propiedades...' : 'Completado'}
-                </p>
-              </div>
-            )}
-
-            {status === 'success' && (
-              <Alert>
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertTitle>¡Éxito!</AlertTitle>
-                <AlertDescription>
-                  La base de datos ha sido poblada correctamente. Visita la página de propiedades
-                  para ver los resultados.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {status === 'error' && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  Ocurrió un error al poblar la base de datos. Revisa la consola del navegador
-                  para más detalles.
-                </AlertDescription>
-              </Alert>
-            )}
-
             <div className="flex gap-3">
               <Button
                 onClick={handleSeed}
-                disabled={isSeeding || isClearing}
+                disabled={isClearing}
                 className="flex-1"
                 size="lg"
               >
                 <Database className="mr-2 h-4 w-4" />
-                {isSeeding ? 'Poblando...' : 'Poblar Base de Datos'}
+                Poblar Base de Datos
               </Button>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
-                    disabled={isSeeding || isClearing}
+                    disabled={isClearing}
                     size="lg"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
