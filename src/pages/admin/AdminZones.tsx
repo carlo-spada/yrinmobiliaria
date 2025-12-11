@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -7,6 +7,16 @@ import { toast } from 'sonner';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { ImageUploadZone } from '@/components/admin/ImageUploadZone';
 import { RoleGuard } from '@/components/admin/RoleGuard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -45,6 +55,7 @@ interface ZoneFormData {
 export default function AdminZones() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingZone, setEditingZone] = useState<ServiceZone | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [zoneImages, setZoneImages] = useState<Array<{ url: string; path?: string }>>([]);
   const queryClient = useQueryClient();
   const { register, handleSubmit, reset, setValue, control } = useForm<ZoneFormData>();
@@ -116,10 +127,12 @@ export default function AdminZones() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-zones'] });
       toast.success('Zona eliminada correctamente');
+      setDeleteId(null);
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : 'Error al eliminar';
       toast.error('Error: ' + errorMessage);
+      setDeleteId(null);
     },
   });
 
@@ -214,7 +227,8 @@ export default function AdminZones() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => deleteMutation.mutate(zone.id)}
+                        onClick={() => setDeleteId(zone.id)}
+                        aria-label="Eliminar zona"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -222,6 +236,19 @@ export default function AdminZones() {
                   </TableCell>
                 </TableRow>
               ))}
+              {(!zones || zones.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <MapPin className="h-8 w-8" />
+                      <p className="font-medium">No hay zonas de servicio</p>
+                      <p className="text-sm">
+                        Crea tu primera zona de servicio para organizar las propiedades geográficamente
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
           )}
@@ -299,6 +326,27 @@ export default function AdminZones() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar zona de servicio?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente esta zona de servicio.
+                Las propiedades asociadas a esta zona perderán su asignación de zona.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
       </RoleGuard>
     </AdminLayout>

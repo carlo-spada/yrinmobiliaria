@@ -960,10 +960,22 @@ export const formatRelative = (date: string | Date) =>
 5. Verify no XSS in audit logs
 
 ### Success Criteria
-- [ ] All deletes require confirmation
-- [ ] Audit log sanitizes sensitive data
-- [ ] Pagination works smoothly
-- [ ] Date formatting is consistent
+- [x] All deletes require confirmation
+- [x] Audit log sanitizes sensitive data
+- [x] Pagination works smoothly
+- [x] Date formatting is consistent
+
+### Completion Status: ✅ COMPLETE (December 11, 2025)
+
+**Changes Made:**
+1. `AdminInquiries.tsx`: Added AlertDialog for delete confirmation, used formatDate/formatDateLong, added contextual empty state with MessageSquare icon
+2. `AdminVisits.tsx`: Added AlertDialog for delete confirmation, used formatDate/formatDateLong, added contextual empty state with Calendar icon
+3. `AdminZones.tsx`: Added AlertDialog for delete confirmation, added contextual empty state with MapPin icon
+4. `AdminAuditLogs.tsx`: Fixed null check for user_id, added sanitizeChanges function with XSS protection and sensitive field redaction (password, token, secret, etc.), extracted magic numbers to AUDIT_LOG_CONFIG, added contextual empty state with FileText icon, used formatDateTimeFull
+5. `AdminDashboard.tsx`: Replaced manual toLocaleDateString with formatDate utility
+6. `src/utils/dateFormat.ts`: Created new utility with formatDate, formatDateLong, formatDateTime, formatDateTimeFull, formatRelative, formatTime functions supporting Spanish/English locales
+
+**Verification:** Lint ✅ | Build ✅
 
 ---
 
@@ -1657,7 +1669,7 @@ npx tsc --noEmit
 | 3 | ✅ Complete | Dec 11, 2025 | 14 (C5, C9, H9, H10, H13, H14, M3, M4, M8, M16, M17, L20, L22, L23) |
 | 4 | ✅ Complete | Dec 11, 2025 | 8 (C2, C6, C7, C10, C11, M5, M9, L-enum) |
 | 5 | ✅ Complete | Dec 11, 2025 | 10 (C8, H1, H8, M10, M12, M13, M15, L25, M-phone) |
-| 6 | Pending | - | - |
+| 6 | ✅ Complete | Dec 11, 2025 | 10 (H4, H7, H20, M16, M19, L22, L28, L39, M-XSS, L-empty) |
 | 7 | Pending | - | - |
 | 8 | Pending | - | - |
 | 9 | Pending | - | - |

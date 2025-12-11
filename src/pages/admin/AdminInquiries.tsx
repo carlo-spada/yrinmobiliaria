@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -9,6 +7,16 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { TableSkeleton } from '@/components/admin/TableSkeleton';
 import { useAdminOrg } from '@/components/admin/useAdminOrg';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -30,6 +38,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logAuditEvent } from '@/utils/auditLog';
+import { formatDate, formatDateLong } from '@/utils/dateFormat';
 
 type ContactInquiry = Database['public']['Tables']['contact_inquiries']['Row'] & {
   properties?: { title_es: string } | null;
@@ -37,6 +46,7 @@ type ContactInquiry = Database['public']['Tables']['contact_inquiries']['Row'] &
 
 function InquiriesContent() {
   const [selectedInquiry, setSelectedInquiry] = useState<ContactInquiry | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin } = useUserRole();
@@ -101,6 +111,11 @@ function InquiriesContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-inquiries'] });
       toast.success('Consulta eliminada');
+      setDeleteId(null);
+    },
+    onError: () => {
+      toast.error('Error al eliminar la consulta');
+      setDeleteId(null);
     },
   });
 
@@ -157,7 +172,7 @@ function InquiriesContent() {
               {inquiries?.map((inquiry) => (
                 <TableRow key={inquiry.id}>
                   <TableCell>
-                    {format(new Date(inquiry.created_at), 'dd/MM/yyyy', { locale: es })}
+                    {formatDate(inquiry.created_at)}
                   </TableCell>
                   <TableCell className="font-medium">{inquiry.name}</TableCell>
                   <TableCell>{inquiry.email}</TableCell>
@@ -194,7 +209,8 @@ function InquiriesContent() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => deleteMutation.mutate(inquiry.id)}
+                        onClick={() => setDeleteId(inquiry.id)}
+                        aria-label="Eliminar consulta"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -202,6 +218,19 @@ function InquiriesContent() {
                   </TableCell>
                 </TableRow>
               ))}
+              {(!inquiries || inquiries.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <MessageSquare className="h-8 w-8" />
+                      <p className="font-medium">No hay consultas de contacto</p>
+                      <p className="text-sm">
+                        Las consultas recibidas a través del formulario de contacto aparecerán aquí
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
@@ -230,7 +259,7 @@ function InquiriesContent() {
                   )}
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Fecha</p>
-                    <p>{format(new Date(selectedInquiry.created_at), "dd 'de' MMMM, yyyy", { locale: es })}</p>
+                    <p>{formatDateLong(selectedInquiry.created_at)}</p>
                   </div>
                 </div>
                 {selectedInquiry.properties && (
@@ -249,6 +278,26 @@ function InquiriesContent() {
             )}
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar consulta?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente esta consulta de contacto.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </RoleGuard>
   );

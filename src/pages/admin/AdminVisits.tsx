@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -9,6 +7,16 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { TableSkeleton } from '@/components/admin/TableSkeleton';
 import { useAdminOrg } from '@/components/admin/useAdminOrg';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,6 +43,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logAuditEvent } from '@/utils/auditLog';
+import { formatDate, formatDateLong } from '@/utils/dateFormat';
 
 type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & {
   properties?: { title_es: string } | null;
@@ -42,6 +51,7 @@ type ScheduledVisit = Database['public']['Tables']['scheduled_visits']['Row'] & 
 
 function VisitsContent() {
   const [selectedVisit, setSelectedVisit] = useState<ScheduledVisit | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
   const { isSuperadmin } = useUserRole();
@@ -106,6 +116,11 @@ function VisitsContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-visits'] });
       toast.success('Visita eliminada');
+      setDeleteId(null);
+    },
+    onError: () => {
+      toast.error('Error al eliminar la visita');
+      setDeleteId(null);
     },
   });
 
@@ -163,7 +178,7 @@ function VisitsContent() {
               {visits?.map((visit) => (
                 <TableRow key={visit.id}>
                   <TableCell>
-                    {format(new Date(visit.preferred_date), 'dd/MM/yyyy', { locale: es })}
+                    {formatDate(visit.preferred_date)}
                   </TableCell>
                   <TableCell>{visit.preferred_time}</TableCell>
                   <TableCell className="font-medium">{visit.name}</TableCell>
@@ -199,7 +214,8 @@ function VisitsContent() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => deleteMutation.mutate(visit.id)}
+                        onClick={() => setDeleteId(visit.id)}
+                        aria-label="Eliminar visita"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -207,6 +223,19 @@ function VisitsContent() {
                   </TableCell>
                 </TableRow>
               ))}
+              {(!visits || visits.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-8 w-8" />
+                      <p className="font-medium">No hay visitas agendadas</p>
+                      <p className="text-sm">
+                        Las visitas programadas por los clientes aparecerán aquí
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
@@ -233,7 +262,7 @@ function VisitsContent() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Fecha Preferida</p>
-                    <p>{format(new Date(selectedVisit.preferred_date), "dd 'de' MMMM, yyyy", { locale: es })}</p>
+                    <p>{formatDateLong(selectedVisit.preferred_date)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Hora Preferida</p>
@@ -260,6 +289,26 @@ function VisitsContent() {
             )}
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar visita?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente esta visita agendada.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </RoleGuard>
   );

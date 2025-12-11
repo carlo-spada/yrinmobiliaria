@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { FileText } from 'lucide-react';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
@@ -14,6 +13,58 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
+import { formatDateTimeFull } from '@/utils/dateFormat';
+
+// Configuration constants
+const AUDIT_LOG_CONFIG = {
+  DEFAULT_LIMIT: 100,
+  USER_ID_DISPLAY_LENGTH: 8,
+} as const;
+
+// Sensitive fields that should be redacted in audit logs
+const SENSITIVE_FIELDS = [
+  'password',
+  'token',
+  'secret',
+  'api_key',
+  'apiKey',
+  'credential',
+  'auth',
+  'session',
+  'cookie',
+  'private_key',
+  'privateKey',
+] as const;
+
+/**
+ * Sanitize audit log changes by redacting sensitive fields
+ * Prevents XSS by escaping HTML and handles potential security issues
+ */
+const sanitizeChanges = (changes: Json): string => {
+  if (!changes || typeof changes !== 'object') return '-';
+  if (Array.isArray(changes)) return JSON.stringify(changes);
+
+  const sanitized = { ...changes as Record<string, unknown> };
+
+  // Redact sensitive fields (case-insensitive check)
+  Object.keys(sanitized).forEach(key => {
+    const lowerKey = key.toLowerCase();
+    if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field.toLowerCase()))) {
+      sanitized[key] = '[REDACTED]';
+    }
+  });
+
+  // Escape HTML entities to prevent XSS when rendering
+  const escaped = JSON.stringify(sanitized, null, 2)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+  return escaped;
+};
 
 export default function AdminAuditLogs() {
   const { data: logs, isLoading } = useQuery({
@@ -23,10 +74,12 @@ export default function AdminAuditLogs() {
         .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(AUDIT_LOG_CONFIG.DEFAULT_LIMIT);
       if (error) throw error;
       return data;
     },
+    staleTime: 60 * 1000, // 1 minute
+    retry: 2,
   });
 
   const getActionColor = (action: string) => {
@@ -65,24 +118,37 @@ export default function AdminAuditLogs() {
               {logs?.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell className="text-sm">
-                    {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: es })}
+                    {formatDateTimeFull(log.created_at)}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getActionColor(log.action)}>
                       {log.action.replace(/_/g, ' ')}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{log.table_name || '-'}</TableCell>
-                  <TableCell className="font-mono text-xs">{log.user_id.slice(0, 8)}...</TableCell>
-                  <TableCell className="max-w-xs truncate text-xs">
-                    {log.changes ? JSON.stringify(log.changes) : '-'}
+                  <TableCell className="font-mono text-xs">{log.table_name ?? '-'}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {log.user_id
+                      ? `${log.user_id.slice(0, AUDIT_LOG_CONFIG.USER_ID_DISPLAY_LENGTH)}...`
+                      : 'Sistema'}
+                  </TableCell>
+                  <TableCell className="max-w-md">
+                    <pre
+                      className="whitespace-pre-wrap text-xs font-mono bg-muted p-2 rounded max-h-24 overflow-auto"
+                      dangerouslySetInnerHTML={{ __html: sanitizeChanges(log.changes) }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
               {(!logs || logs.length === 0) && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No hay registros de actividad
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <FileText className="h-8 w-8" />
+                      <p className="font-medium">No hay registros de actividad</p>
+                      <p className="text-sm">
+                        Los cambios realizados en el sistema aparecerán aquí automáticamente
+                      </p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -92,7 +158,7 @@ export default function AdminAuditLogs() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Mostrando los últimos 100 registros de actividad
+          Mostrando los últimos {AUDIT_LOG_CONFIG.DEFAULT_LIMIT} registros de actividad
         </p>
       </div>
       </RoleGuard>

@@ -7,6 +7,7 @@ import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDate } from '@/utils/dateFormat';
 
 function DashboardContent() {
   const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
@@ -208,7 +209,7 @@ function DashboardContent() {
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(visit.preferred_date).toLocaleDateString('es-MX')} - {visit.preferred_time}
+                      {formatDate(visit.preferred_date)} - {visit.preferred_time}
                     </p>
                     {visit.properties && (
                       <p className="text-xs text-muted-foreground">
