@@ -47,6 +47,15 @@ export function ReassignPropertyDialog({
 
   const { data: agents, isLoading: loadingAgents } = useAgents(organizationId);
 
+  // Handle dialog open/close with state reset
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Reset state when dialog closes
+      setSelectedAgentId('');
+    }
+    onOpenChange(newOpen);
+  };
+
   const reassignMutation = useMutation({
     mutationFn: async (newAgentId: string) => {
       const { error } = await supabase
@@ -76,8 +85,7 @@ export function ReassignPropertyDialog({
     onSuccess: (newAgent) => {
       queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
       toast.success(`Propiedad reasignada a ${newAgent?.display_name}`);
-      onOpenChange(false);
-      setSelectedAgentId('');
+      handleOpenChange(false);
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
@@ -100,7 +108,7 @@ export function ReassignPropertyDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Reasignar Propiedad</DialogTitle>
@@ -146,10 +154,7 @@ export function ReassignPropertyDialog({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => {
-              onOpenChange(false);
-              setSelectedAgentId('');
-            }}
+            onClick={() => handleOpenChange(false)}
             disabled={reassignMutation.isPending}
           >
             Cancelar

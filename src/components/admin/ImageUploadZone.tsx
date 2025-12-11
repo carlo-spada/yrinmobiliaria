@@ -3,7 +3,28 @@ import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { uploadImage, deleteImage, extractPathFromUrl } from '@/utils/imageUpload';
+import { logger } from '@/utils/logger';
+
+/** Upload result tracking for better error reporting */
+interface UploadAttempt {
+  file: File;
+  success: boolean;
+  result?: {
+    url: string;
+    path: string;
+    variants?: {
+      avif: Record<number, string>;
+      webp: Record<number, string>;
+    };
+  };
+  error?: string;
+}
 
 
 interface ImageUploadZoneProps {
@@ -47,32 +68,60 @@ export const ImageUploadZone = ({
     }
 
     setUploading(true);
-    const uploadedImages: Array<{
-      url: string;
-      path: string;
-      variants?: {
-        avif: Record<number, string>;
-        webp: Record<number, string>;
-      };
-    }> = [];
+    const attempts: UploadAttempt[] = [];
 
     try {
       // Upload files sequentially to avoid overwhelming the server
+      // Continues even if individual uploads fail (graceful degradation)
       for (const file of fileArray) {
         try {
           const result = await uploadImage(file, propertyId);
-          uploadedImages.push(result);
+          attempts.push({ file, success: true, result });
         } catch (error) {
-          toast.error(
-            `Error al subir ${file.name}: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-            { duration: 10000 }
-          );
+          attempts.push({
+            file,
+            success: false,
+            error: error instanceof Error ? error.message : 'Error desconocido',
+          });
         }
       }
 
-      if (uploadedImages.length > 0) {
-        onImagesChange([...images, ...uploadedImages]);
-        toast.success(`${uploadedImages.length} imagen(es) subida(s) correctamente`);
+      // Collect successful uploads
+      const successfulUploads = attempts
+        .filter((a): a is UploadAttempt & { result: NonNullable<UploadAttempt['result']> } =>
+          a.success && !!a.result
+        )
+        .map(a => a.result);
+
+      // Update state with successful uploads
+      if (successfulUploads.length > 0) {
+        onImagesChange([...images, ...successfulUploads]);
+      }
+
+      // Show comprehensive feedback
+      const failedAttempts = attempts.filter(a => !a.success);
+
+      if (failedAttempts.length > 0 && successfulUploads.length > 0) {
+        // Partial success
+        toast.warning(
+          `${successfulUploads.length} imagen(es) subida(s), ${failedAttempts.length} fallida(s)`,
+          {
+            duration: 10000,
+            description: failedAttempts.map(f => `${f.file.name}: ${f.error}`).join('\n'),
+          }
+        );
+      } else if (failedAttempts.length > 0) {
+        // All failed
+        toast.error(
+          `Error al subir ${failedAttempts.length} imagen(es)`,
+          {
+            duration: 10000,
+            description: failedAttempts.map(f => `${f.file.name}: ${f.error}`).join('\n'),
+          }
+        );
+      } else if (successfulUploads.length > 0) {
+        // All succeeded
+        toast.success(`${successfulUploads.length} imagen(es) subida(s) correctamente`);
       }
     } finally {
       setUploading(false);
@@ -122,7 +171,7 @@ export const ImageUploadZone = ({
       toast.success('Imagen eliminada');
     } catch (error) {
       toast.error('Error al eliminar la imagen', { duration: 10000 });
-      console.error(error);
+      logger.error('Failed to delete image:', error);
     }
   };
 
@@ -192,18 +241,24 @@ export const ImageUploadZone = ({
 
               {/* Overlay with delete button */}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveImage(index);
-                  }}
-                  className="shadow-lg"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveImage(index);
+                      }}
+                      className="shadow-lg"
+                      aria-label={`Eliminar imagen ${index + 1}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Eliminar imagen</TooltipContent>
+                </Tooltip>
               </div>
 
               {/* Image number badge */}

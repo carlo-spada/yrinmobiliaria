@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2, UserCog } from 'lucide-react';
+import { Pencil, Trash2, UserCog, Home } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -22,6 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -127,6 +132,9 @@ export const PropertiesTable = () => {
     <>
       <div className="border rounded-lg">
         <Table>
+          <caption className="sr-only">
+            Lista de propiedades del sistema con opciones para editar, reasignar agente y eliminar
+          </caption>
           <TableHeader>
             <TableRow>
               <TableHead>Título</TableHead>
@@ -153,38 +161,59 @@ export const PropertiesTable = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingProperty(property)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingProperty(property)}
+                          aria-label={`Editar ${property.title_es}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Editar propiedad</TooltipContent>
+                    </Tooltip>
                     {isAdmin && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setReassigningProperty(property)}
-                        title="Reasignar agente"
-                      >
-                        <UserCog className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setReassigningProperty(property)}
+                            aria-label={`Reasignar agente de ${property.title_es}`}
+                          >
+                            <UserCog className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Reasignar agente</TooltipContent>
+                      </Tooltip>
                     )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setDeletingPropertyId(property.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeletingPropertyId(property.id)}
+                          aria-label={`Eliminar ${property.title_es}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Eliminar propiedad</TooltipContent>
+                    </Tooltip>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
             {!properties?.length && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  No hay propiedades. Crea una nueva para comenzar.
+                <TableCell colSpan={7} className="h-32 text-center">
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Home className="h-8 w-8" />
+                    <p className="font-medium">No hay propiedades</p>
+                    <p className="text-sm">Crea una nueva propiedad para comenzar</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

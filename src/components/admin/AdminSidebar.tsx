@@ -15,6 +15,7 @@ import {
   Building2,
   X,
 } from 'lucide-react';
+import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { NavLink } from '@/components/NavLink';
@@ -222,14 +223,18 @@ export function AdminSidebar() {
     return roles.includes(role as AllowedRole);
   };
 
-  // Filter groups and their items based on user role
-  const visibleGroups = menuGroups
-    .filter(group => hasAccess(group.roles))
-    .map(group => ({
-      ...group,
-      items: group.items.filter(item => hasAccess(item.roles)),
-    }))
-    .filter(group => group.items.length > 0);
+  // Filter groups and their items based on user role (memoized for performance)
+  const visibleGroups = useMemo(() =>
+    menuGroups
+      .filter(group => hasAccess(group.roles))
+      .map(group => ({
+        ...group,
+        items: group.items.filter(item => hasAccess(item.roles)),
+      }))
+      .filter(group => group.items.length > 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [role] // Only recompute when role changes
+  );
 
   return (
     <Sidebar collapsible="icon">
@@ -245,7 +250,14 @@ export function AdminSidebar() {
               variant="ghost"
               size="icon"
               onClick={() => setOpenMobile(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setOpenMobile(false);
+                }
+              }}
               className="h-8 w-8"
+              aria-label="Cerrar menú de navegación"
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Cerrar menú</span>

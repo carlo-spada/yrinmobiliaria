@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ interface RoleGuardProps {
 
 export const RoleGuard = ({ allowedRoles, children }: RoleGuardProps) => {
   const { role } = useUserRole();
+  const navigate = useNavigate();
 
   if (allowedRoles.includes(role)) {
     return <>{children}</>;
@@ -34,10 +36,10 @@ export const RoleGuard = ({ allowedRoles, children }: RoleGuardProps) => {
             Contacta a un administrador si consideras que esto es un error.
           </p>
           <div className="flex gap-2">
-            <Button onClick={() => window.location.href = '/admin'} variant="default">
+            <Button onClick={() => navigate('/admin')} variant="default">
               Ir al dashboard
             </Button>
-            <Button onClick={() => window.location.href = '/'} variant="outline">
+            <Button onClick={() => navigate('/')} variant="outline">
               Ir al inicio
             </Button>
           </div>

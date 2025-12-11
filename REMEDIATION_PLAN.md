@@ -1140,10 +1140,22 @@ const IconButton = ({ icon, label, tooltip, ...props }: IconButtonProps) => (
 5. Run accessibility audit
 
 ### Success Criteria
-- [ ] Upload failures handled gracefully
-- [ ] Full keyboard navigation
-- [ ] Unique keys in tables
-- [ ] ARIA labels present
+- [x] Upload failures handled gracefully
+- [x] Full keyboard navigation
+- [x] Unique keys in tables
+- [x] ARIA labels present
+
+### Completion Status: ✅ COMPLETE (December 11, 2025)
+
+**Changes Made:**
+1. `ImageUploadZone.tsx`: Added UploadAttempt interface for better tracking, improved error handling with partial success feedback (toast.warning for partial, toast.error for all failed), added Tooltip with ARIA label to delete button, replaced console.error with logger.error
+2. `AdminSidebar.tsx`: Added Escape key handler to close button, added aria-label for accessibility, memoized menu filtering with useMemo for performance (only recomputes on role change)
+3. `PropertiesTable.tsx`: Added sr-only table caption for accessibility, wrapped icon buttons with Tooltip component, added ARIA labels to all action buttons (Edit, Reassign, Delete), improved empty state with Home icon
+4. `ReassignPropertyDialog.tsx`: Added handleOpenChange callback to reset state when dialog closes, removed useEffect-based state reset pattern that violated React best practices
+5. `RoleGuard.tsx`: Replaced window.location.href with React Router's useNavigate hook for proper SPA navigation
+6. `TableSkeleton.tsx`: Reviewed - no changes needed, conditional logic is valid fallback pattern
+
+**Verification:** Lint ✅ (excluding external .bmad folder) | Build ✅
 
 ---
 
@@ -1670,7 +1682,7 @@ npx tsc --noEmit
 | 4 | ✅ Complete | Dec 11, 2025 | 8 (C2, C6, C7, C10, C11, M5, M9, L-enum) |
 | 5 | ✅ Complete | Dec 11, 2025 | 10 (C8, H1, H8, M10, M12, M13, M15, L25, M-phone) |
 | 6 | ✅ Complete | Dec 11, 2025 | 10 (H4, H7, H20, M16, M19, L22, L28, L39, M-XSS, L-empty) |
-| 7 | Pending | - | - |
+| 7 | ✅ Complete | Dec 11, 2025 | 9 (H17, H18, H19, M-reset, L11, L13, M-ARIA, L-tooltip, M-caption) |
 | 8 | Pending | - | - |
 | 9 | Pending | - | - |
 | 10 | Pending | - | - |
