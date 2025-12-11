@@ -615,10 +615,22 @@ const location = isPropertyLocation(row.location)
 4. Test invitation flow
 
 ### Success Criteria
-- [ ] UserRole type documented and consistent
-- [ ] ErrorBoundary catches and displays errors gracefully
-- [ ] Audit logging never silently fails
-- [ ] InviteAgentDialog cleans up properly
+- [x] UserRole type documented and consistent
+- [x] ErrorBoundary catches and displays errors gracefully
+- [x] Audit logging never silently fails
+- [x] InviteAgentDialog cleans up properly
+
+### Completion Status: ✅ COMPLETE (December 11, 2025)
+
+**Changes Made:**
+1. `AuthContextBase.ts`: Added DatabaseRole, InferredRole types with documentation explaining role derivation from DB enum
+2. `ErrorBoundary.tsx`: Created new generic error boundary with reset, reload, custom fallback support
+3. `auditLog.ts`: Added AuditLogResult return type, returns success/error status instead of void
+4. `InviteAgentDialog.tsx`: Added AbortController for request cancellation, cleanup effects, form reset on close
+5. `types.ts`: Created type guards (isPropertyLocation, isPropertyFeatures) and parsing utilities
+6. `AdminLayout.tsx`: Wrapped content with ErrorBoundary for graceful error handling
+
+**Verification:** Lint ✅ | Build ✅
 
 ---
 
@@ -1633,7 +1645,7 @@ npx tsc --noEmit
 | 1 | ✅ Complete | Dec 11, 2025 | 7 (C3, C3b, C4, H12, M14, L19) |
 | 2 | ✅ Complete | Dec 11, 2025 | 9 (C1, H5, H16, L20, L26, L34, L36) |
 | 3 | ✅ Complete | Dec 11, 2025 | 14 (C5, C9, H9, H10, H13, H14, M3, M4, M8, M16, M17, L20, L22, L23) |
-| 4 | Pending | - | - |
+| 4 | ✅ Complete | Dec 11, 2025 | 8 (C2, C6, C7, C10, C11, M5, M9, L-enum) |
 | 5 | Pending | - | - |
 | 6 | Pending | - | - |
 | 7 | Pending | - | - |

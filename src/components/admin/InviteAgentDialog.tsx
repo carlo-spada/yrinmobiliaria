@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -28,9 +28,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
-
-
-
+import { logger } from "@/utils/logger";
 
 const inviteSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -52,6 +50,9 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
 
+  // Abort controller ref for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const form = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
     defaultValues: {
@@ -62,8 +63,37 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
     },
   });
 
+  // Cleanup on unmount or dialog close
+  useEffect(() => {
+    return () => {
+      // Abort any pending requests when component unmounts
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      // Cancel any pending operations
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = null;
+
+      // Reset form state after a small delay to allow animation
+      const timer = setTimeout(() => {
+        form.reset();
+        setIsSubmitting(false);
+      }, 150);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open, form]);
+
   const onSubmit = async (data: InviteFormData) => {
     if (!user || !profile?.organization_id) return;
+
+    // Create new abort controller for this submission
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
 
     setIsSubmitting(true);
     try {
@@ -72,12 +102,16 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
         .from('profiles')
         .select('id')
         .eq('email', data.email)
+        .abortSignal(signal)
         .single();
 
       if (existingProfile) {
         toast.error("Este correo ya está registrado");
         return;
       }
+
+      // Check if aborted
+      if (signal.aborted) return;
 
       // Check if already invited
       const { data: existingInvite } = await supabase
@@ -86,12 +120,16 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
         .eq('email', data.email)
         .eq('organization_id', profile.organization_id)
         .is('accepted_at', null)
+        .abortSignal(signal)
         .single();
 
       if (existingInvite) {
         toast.error("Ya existe una invitación pendiente para este correo");
         return;
       }
+
+      // Check if aborted
+      if (signal.aborted) return;
 
       // Create invitation
       const { data: invitation, error: inviteError } = await supabase
@@ -105,9 +143,13 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
           invited_by: user.id,
         })
         .select()
+        .abortSignal(signal)
         .single();
 
       if (inviteError) throw inviteError;
+
+      // Check if aborted
+      if (signal.aborted) return;
 
       // Send invitation email
       const { error: emailError } = await supabase.functions.invoke('send-agent-invitation', {
@@ -115,7 +157,7 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
       });
 
       if (emailError) {
-        console.error("Error sending email:", emailError);
+        logger.error("Error sending invitation email:", emailError);
         toast.error("Invitación creada pero hubo un error al enviar el correo");
       } else {
         toast.success(`Invitación enviada a ${data.email}`);
@@ -128,10 +170,17 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error creating invitation:", error);
+      // Ignore abort errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+      logger.error("Error creating invitation:", error);
       toast.error("Error al crear la invitación");
     } finally {
-      setIsSubmitting(false);
+      // Only update state if not aborted
+      if (!signal.aborted) {
+        setIsSubmitting(false);
+      }
     }
   };
 

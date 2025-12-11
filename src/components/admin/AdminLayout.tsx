@@ -3,6 +3,7 @@ import { ReactNode, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -119,23 +120,25 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <ProfileCompletionGuard>
-      <AdminOrgProvider organizationId={profile?.organization_id ?? null} canViewAll={isSuperadmin}>
-        <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
-          <AdminLayoutContent>
-            {showOrgWarning && (
-              <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Falta organización</AlertTitle>
-                <AlertDescription>
-                  No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
-                  Contacta a un administrador para asignarte a una organización.
-                </AlertDescription>
-              </Alert>
-            )}
-            {children}
-          </AdminLayoutContent>
-        </SidebarProvider>
-      </AdminOrgProvider>
+      <ErrorBoundary>
+        <AdminOrgProvider organizationId={profile?.organization_id ?? null} canViewAll={isSuperadmin}>
+          <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
+            <AdminLayoutContent>
+              {showOrgWarning && (
+                <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Falta organización</AlertTitle>
+                  <AlertDescription>
+                    No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
+                    Contacta a un administrador para asignarte a una organización.
+                  </AlertDescription>
+                </Alert>
+              )}
+              {children}
+            </AdminLayoutContent>
+          </SidebarProvider>
+        </AdminOrgProvider>
+      </ErrorBoundary>
     </ProfileCompletionGuard>
   );
 };
