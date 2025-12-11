@@ -373,10 +373,22 @@ export function parseCoordinates(location: unknown): { lat: number; lng: number 
 4. Test property list doesn't refetch unnecessarily
 
 ### Success Criteria
-- [ ] useAgentBySlug uses direct query (no N+1)
-- [ ] All hooks have appropriate staleTime
-- [ ] Error handling is consistent
-- [ ] Type safety for enums
+- [x] useAgentBySlug uses direct query (no N+1)
+- [x] All hooks have appropriate staleTime
+- [x] Error handling is consistent
+- [x] Type safety for enums
+
+### Completion Status: ✅ COMPLETE (December 11, 2025)
+
+**Changes Made:**
+1. `useAgentBySlug.ts`: Fixed N+1 by checking cached data first, added hierarchical query key, staleTime/gcTime/retry
+2. `usePublicAgents.ts`: Added Promise.allSettled for resilient stats fetching, AgentLevel type from DB enum, staleTime/retry
+3. `useProperties.ts`: Added type guards for JSON parsing, parseCoordinates utility, fixed error handling to throw consistently, AgentLevel type
+4. `useAgents.ts`: Added AgentLevel type from DB enum, staleTime/retry, removed unnecessary `enabled: true`
+5. `useServiceZones.ts`: Added staleTime/gcTime/retry, memoized zone mapping with useMemo
+6. `useSiteSettings.ts`: Added mutationKey for update mutation
+
+**Verification:** Lint ✅ | Build ✅
 
 ---
 
@@ -1620,7 +1632,7 @@ npx tsc --noEmit
 |---------|--------|------|--------------|
 | 1 | ✅ Complete | Dec 11, 2025 | 7 (C3, C3b, C4, H12, M14, L19) |
 | 2 | ✅ Complete | Dec 11, 2025 | 9 (C1, H5, H16, L20, L26, L34, L36) |
-| 3 | Pending | - | - |
+| 3 | ✅ Complete | Dec 11, 2025 | 14 (C5, C9, H9, H10, H13, H14, M3, M4, M8, M16, M17, L20, L22, L23) |
 | 4 | Pending | - | - |
 | 5 | Pending | - | - |
 | 6 | Pending | - | - |

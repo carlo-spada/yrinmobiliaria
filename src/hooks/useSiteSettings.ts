@@ -49,6 +49,7 @@ export function useSiteSettings() {
   }, {} as SiteSettingsMap) || {};
 
   const updateSettingMutation = useMutation({
+    mutationKey: ['site-settings', 'update'],
     mutationFn: async ({ key, value }: { key: string; value: SettingValue }) => {
       const { data, error } = await supabase
         .from('site_settings')
