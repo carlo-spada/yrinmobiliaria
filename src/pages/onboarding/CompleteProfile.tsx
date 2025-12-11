@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 
 const profileSchema = z.object({
@@ -91,7 +92,7 @@ export default function CompleteProfile() {
       toast.success("¡Perfil completado exitosamente!");
       navigate("/agent/dashboard");
     } catch (error) {
-      console.error("Error updating profile:", error);
+      logger.error("Error updating profile:", error);
       toast.error("Error al completar el perfil");
     } finally {
       setIsSubmitting(false);
@@ -131,7 +132,7 @@ export default function CompleteProfile() {
       setValue("photo_url", publicUrl);
       toast.success("Foto subida exitosamente");
     } catch (error) {
-      console.error("Error uploading photo:", error);
+      logger.error("Error uploading photo:", error);
       toast.error("Error al subir la foto", { duration: 10000 });
     }
   };

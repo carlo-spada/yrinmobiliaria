@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import { PropertyFilters } from '@/types/property';
+import { logger } from '@/utils/logger';
 
 export interface SavedSearch {
   id: string;
@@ -25,7 +26,7 @@ export function useSavedSearches() {
     try {
       localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(savedSearches));
     } catch (error) {
-      console.error('Error saving searches:', error);
+      logger.error('Error saving searches:', error);
     }
   }, [savedSearches]);
 

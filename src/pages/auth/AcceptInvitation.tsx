@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { logger } from "@/utils/logger";
 
 const passwordSchema = z.string()
   .min(12, "La contraseña debe tener al menos 12 caracteres")
@@ -66,7 +67,7 @@ export default function AcceptInvitation() {
 
       setInvitation(data);
     } catch (err) {
-      console.error("Error validating invitation:", err);
+      logger.error("Error validating invitation:", err);
       setError("Error al validar la invitación");
     } finally {
       setIsLoading(false);
@@ -143,7 +144,7 @@ export default function AcceptInvitation() {
       toast.success("¡Invitación aceptada! Completa tu perfil para comenzar.");
       navigate("/onboarding/complete-profile");
     } catch (err) {
-      console.error("Error accepting invitation:", err);
+      logger.error("Error accepting invitation:", err);
       const errorMessage = err instanceof Error ? err.message : "Error al aceptar la invitación";
       toast.error(errorMessage);
     } finally {

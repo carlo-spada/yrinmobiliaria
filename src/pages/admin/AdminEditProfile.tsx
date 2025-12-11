@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 
 const profileSchema = z.object({
@@ -93,7 +94,7 @@ function AdminEditProfileContent() {
       // console.log("[Profile Update] Supabase response:", { result, error });
 
       if (error) {
-        console.error("[Profile Update] RLS or DB error:", {
+        logger.error("[Profile Update] RLS or DB error:", {
           code: error.code,
           message: error.message,
           details: error.details,
@@ -103,7 +104,7 @@ function AdminEditProfileContent() {
       }
 
       if (!result || result.length === 0) {
-        console.warn("[Profile Update] No rows updated - possible RLS issue");
+        logger.warn("[Profile Update] No rows updated - possible RLS issue");
         toast.error("No se pudo actualizar el perfil. Verifica tus permisos.");
         return;
       }
@@ -112,7 +113,7 @@ function AdminEditProfileContent() {
       toast.success("Perfil actualizado exitosamente");
       navigate("/admin");
     } catch (error) {
-      console.error("[Profile Update] Exception:", error);
+      logger.error("[Profile Update] Exception:", error);
       toast.error("Error al actualizar el perfil");
     }
   };
@@ -138,7 +139,7 @@ function AdminEditProfileContent() {
       setValue("photo_url", publicUrl);
       toast.success("Foto subida exitosamente");
     } catch (error) {
-      console.error("Error uploading photo:", error);
+      logger.error("Error uploading photo:", error);
       toast.error("Error al subir la foto", { duration: 10000 });
     }
   };

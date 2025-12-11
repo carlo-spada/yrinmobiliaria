@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 
 interface ProfileCompletionGuardProps {
@@ -26,7 +27,7 @@ export function ProfileCompletionGuard({ children }: ProfileCompletionGuardProps
         .single();
 
       if (error) {
-        console.error("Error fetching profile:", error);
+        logger.error("Error fetching profile:", error);
         return null;
       }
 
