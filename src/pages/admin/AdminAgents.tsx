@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { UserPlus, Search, Star, Home, MessageSquare, Calendar, Mail, Phone } from "lucide-react";
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { InviteAgentDialog } from "@/components/admin/InviteAgentDialog";
@@ -67,10 +67,19 @@ export default function AdminAgents() {
     return null;
   };
 
-  const filteredAgents = agents?.filter(agent =>
-    agent.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    agent.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Debounce search using useDeferredValue for smooth UI
+  const deferredSearch = useDeferredValue(searchQuery);
+
+  const filteredAgents = useMemo(() => {
+    if (!agents) return [];
+    if (!deferredSearch) return agents;
+
+    const query = deferredSearch.toLowerCase();
+    return agents.filter(agent =>
+      agent.display_name?.toLowerCase().includes(query) ||
+      agent.email?.toLowerCase().includes(query)
+    );
+  }, [agents, deferredSearch]);
 
 
   return (
@@ -91,14 +100,15 @@ export default function AdminAgents() {
           </Button>
         </div>
 
-        {/* Search */}
+        {/* Search with deferred filtering */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre o correo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className={`pl-10 ${searchQuery !== deferredSearch ? 'opacity-80' : ''}`}
+            aria-label="Buscar agentes"
           />
         </div>
 
@@ -117,7 +127,7 @@ export default function AdminAgents() {
               </Card>
             ))}
           </div>
-        ) : filteredAgents && filteredAgents.length > 0 ? (
+        ) : filteredAgents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAgents.map((agent) => (
               <Card key={agent.id} className="p-6 hover:shadow-lg transition-shadow">

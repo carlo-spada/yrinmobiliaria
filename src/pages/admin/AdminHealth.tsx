@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Activity, 
-  Database, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Activity,
+  Database,
+  CheckCircle2,
+  XCircle,
   Clock,
   RefreshCw,
   AlertTriangle,
@@ -11,7 +11,7 @@ import {
   Shield,
   Zap
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
@@ -21,6 +21,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
+
+// Health check thresholds and configuration
+const HEALTH_CHECK_CONFIG = {
+  DB_RESPONSE_HEALTHY_MS: 1000,
+  REFRESH_COOLDOWN_MS: 500,
+  STORAGE_CLEANUP_MAX_RETRIES: 3,
+  STORAGE_CLEANUP_RETRY_DELAY_MS: 500,
+} as const;
 
 interface HealthCheck {
   name: string;
@@ -33,6 +41,7 @@ interface HealthCheck {
 export default function AdminHealth() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { isSuperadmin } = useUserRole();
+  const lastRefreshRef = useRef<number>(0);
 
   const { data: healthChecks, refetch, isFetching } = useQuery({
     queryKey: ['admin-health'],
@@ -58,10 +67,10 @@ export default function AdminHealth() {
         } else {
           checks.push({
             name: 'Database Connection',
-            status: dbTime < 1000 ? 'healthy' : 'degraded',
-            message: `Connected successfully. ${count} properties in database.`,
+            status: dbTime < HEALTH_CHECK_CONFIG.DB_RESPONSE_HEALTHY_MS ? 'healthy' : 'degraded',
+            message: `Connected successfully. ${count ?? 0} properties in database.`,
             responseTime: dbTime,
-            details: { propertyCount: count },
+            details: { propertyCount: count ?? 0 },
           });
         }
       } catch (error) {
@@ -162,7 +171,7 @@ export default function AdminHealth() {
         });
       }
 
-      // 5. Storage RLS Upload/Delete (tiny object) always attempt to surface precise error
+      // 5. Storage RLS Upload/Delete (tiny object) with retry mechanism for cleanup
       const storageRlsStart = Date.now();
       try {
         const testPath = `health-check/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
@@ -178,25 +187,40 @@ export default function AdminHealth() {
           checks.push({
             name: 'Storage Upload (RLS)',
             status: 'unhealthy',
-            message: uploadError?.message 
+            message: uploadError?.message
               ? `Upload blocked: ${uploadError.message}`
               : 'Upload blocked: no path returned',
             responseTime: uploadTime,
           });
         } else {
-          // Attempt cleanup; do not fail the check if delete fails, just mark degraded
-          const { error: deleteError } = await supabase.storage
-            .from('property-images')
-            .remove([uploadData.path]);
+          // Retry cleanup up to 3 times with delay
+          let cleanupSuccess = false;
+          let lastDeleteError: Error | null = null;
+
+          for (let attempt = 0; attempt < HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_MAX_RETRIES && !cleanupSuccess; attempt++) {
+            const { error: deleteError } = await supabase.storage
+              .from('property-images')
+              .remove([uploadData.path]);
+
+            if (!deleteError) {
+              cleanupSuccess = true;
+            } else {
+              lastDeleteError = deleteError;
+              // Wait before retry (except on last attempt)
+              if (attempt < HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_MAX_RETRIES - 1) {
+                await new Promise(r => setTimeout(r, HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_RETRY_DELAY_MS));
+              }
+            }
+          }
 
           checks.push({
             name: 'Storage Upload (RLS)',
-            status: deleteError ? 'degraded' : 'healthy',
-            message: deleteError
-              ? `Uploaded test file pero cleanup falló: ${deleteError.message}`
-              : 'Upload & delete permitidos (RLS ok)',
+            status: cleanupSuccess ? 'healthy' : 'degraded',
+            message: cleanupSuccess
+              ? 'Upload & delete permitidos (RLS ok)'
+              : `Upload OK, cleanup failed after ${HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_MAX_RETRIES} retries: ${lastDeleteError?.message ?? 'Unknown error'}`,
             responseTime: uploadTime,
-            details: { path: uploadData.path },
+            details: cleanupSuccess ? undefined : { orphanedPath: uploadData.path },
           });
         }
       } catch (error) {
@@ -241,9 +265,17 @@ export default function AdminHealth() {
 
   const handleRefresh = async () => {
     if (!isSuperadmin) return;
+
+    // Rate limiting: prevent rapid refreshes
+    const now = Date.now();
+    if (now - lastRefreshRef.current < HEALTH_CHECK_CONFIG.REFRESH_COOLDOWN_MS) {
+      return;
+    }
+    lastRefreshRef.current = now;
+
     setIsRefreshing(true);
     await refetch();
-    setTimeout(() => setIsRefreshing(false), 500);
+    setTimeout(() => setIsRefreshing(false), HEALTH_CHECK_CONFIG.REFRESH_COOLDOWN_MS);
   };
 
   const getStatusIcon = (status: HealthCheck['status']) => {

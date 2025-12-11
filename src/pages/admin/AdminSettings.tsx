@@ -1,6 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+
+// Improved validation patterns
+const VALIDATION_PATTERNS = {
+  // More comprehensive email regex that follows RFC 5322 loosely
+  EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+  // URL validation
+  URL: /^https?:\/\/.+/,
+  // WhatsApp: Mexican format (country code 52 + 10 digit number)
+  WHATSAPP: /^52[1-9]\d{9}$/,
+  // General phone: international format with optional + and 10-15 digits
+  PHONE: /^\+?[1-9]\d{9,14}$/,
+} as const;
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionsMatrix } from '@/components/admin/PermissionsMatrix';
@@ -72,16 +84,16 @@ const SettingEditor = ({
 
   const handleSave = () => {
     // Validate based on setting type
-    if (settingKey.includes('email') && !editValue.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    if (settingKey.includes('email') && editValue && !VALIDATION_PATTERNS.EMAIL.test(editValue)) {
       toast({
         title: 'Email inválido',
-        description: 'Por favor ingresa un correo electrónico válido',
+        description: 'Por favor ingresa un correo electrónico válido (ej: nombre@dominio.com)',
         variant: 'destructive',
       });
       return;
     }
 
-    if (settingKey.includes('url') && !editValue.match(/^https?:\/\/.+/)) {
+    if (settingKey.includes('url') && editValue && !VALIDATION_PATTERNS.URL.test(editValue)) {
       toast({
         title: 'URL inválida',
         description: 'La URL debe comenzar con http:// o https://',
@@ -90,10 +102,19 @@ const SettingEditor = ({
       return;
     }
 
-    if (settingKey === 'whatsapp_number' && !editValue.match(/^\d{10,15}$/)) {
+    if (settingKey === 'whatsapp_number' && editValue && !VALIDATION_PATTERNS.WHATSAPP.test(editValue)) {
       toast({
-        title: 'Número inválido',
-        description: 'Ingresa el número sin espacios ni símbolos (solo dígitos)',
+        title: 'Número de WhatsApp inválido',
+        description: 'Formato: 52 + 10 dígitos (ej: 5219511234567)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (settingKey === 'company_phone' && editValue && !VALIDATION_PATTERNS.PHONE.test(editValue.replace(/[\s()-]/g, ''))) {
+      toast({
+        title: 'Teléfono inválido',
+        description: 'Ingresa un número válido de 10-15 dígitos',
         variant: 'destructive',
       });
       return;
@@ -279,6 +300,17 @@ export default function AdminSettings() {
     setIsOrgDialogOpen(true);
   };
 
+  // Reset mutation state and form when dialog closes
+  const handleCloseOrgDialog = useCallback(() => {
+    setIsOrgDialogOpen(false);
+    // Reset mutation state after dialog animation
+    setTimeout(() => {
+      saveOrgMutation.reset();
+      setEditingOrg(null);
+      setOrgFormData({ name: '', slug: '', contact_email: '', phone: '', domain: '' });
+    }, 150);
+  }, [saveOrgMutation]);
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -462,7 +494,7 @@ export default function AdminSettings() {
         </Tabs>
 
         {/* Organization Dialog */}
-        <Dialog open={isOrgDialogOpen} onOpenChange={setIsOrgDialogOpen}>
+        <Dialog open={isOrgDialogOpen} onOpenChange={(open) => !open && handleCloseOrgDialog()}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingOrg ? 'Editar Organización' : 'Nueva Organización'}</DialogTitle>
@@ -519,7 +551,7 @@ export default function AdminSettings() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsOrgDialogOpen(false)}>
+              <Button variant="outline" onClick={handleCloseOrgDialog}>
                 Cancelar
               </Button>
               <Button

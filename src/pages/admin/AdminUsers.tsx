@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Shield, Mail, User, Building2 } from 'lucide-react';
-import { useState } from 'react';
+import { Pencil, Shield, Mail, User, Building2, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -70,6 +70,7 @@ function UsersContent() {
 
   const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [orgSearchQuery, setOrgSearchQuery] = useState('');
 
   // Form state for editing
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -95,6 +96,18 @@ function UsersContent() {
       return data || [];
     },
   });
+
+  // Filter organizations for searchable dropdown
+  const filteredOrganizations = useMemo(() => {
+    if (!organizations) return [];
+    if (!orgSearchQuery) return organizations;
+
+    const query = orgSearchQuery.toLowerCase();
+    return organizations.filter(org =>
+      org.name?.toLowerCase().includes(query) ||
+      org.slug?.toLowerCase().includes(query)
+    );
+  }, [organizations, orgSearchQuery]);
 
   const { data: userProfiles, isLoading } = useQuery({
     queryKey: ['users-list', scopedOrgId],
@@ -278,16 +291,26 @@ function UsersContent() {
 
   const handleEditClick = (user: UserListItem) => {
     setSelectedUser(user);
-    setSelectedRole(user.role as 'superadmin' | 'admin' | 'user');
+    setSelectedRole(user.role ?? 'user');
     setSelectedOrgId(user.organization_id);
+    setOrgSearchQuery(''); // Reset org search
     setFormData({
-      bio_es: user.bio_es || '',
-      job_title: user.job_title || '',
-      languages: user.languages?.join(', ') || '',
-      professional_email: user.professional_email || '',
-      email_preference: user.email_preference || 'forward_to_personal'
+      bio_es: user.bio_es ?? '',
+      job_title: user.job_title ?? '',
+      languages: user.languages?.join(', ') ?? '',
+      professional_email: user.professional_email ?? '',
+      email_preference: user.email_preference ?? 'forward_to_personal'
     });
     setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    // Reset state after animation
+    setTimeout(() => {
+      setSelectedUser(null);
+      setOrgSearchQuery('');
+    }, 150);
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -360,7 +383,7 @@ function UsersContent() {
           </div>
         </div>
 
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <Dialog open={isEditDialogOpen} onOpenChange={(open) => !open && handleCloseEditDialog()}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Editar Perfil de Usuario</DialogTitle>
@@ -488,18 +511,37 @@ function UsersContent() {
                             onValueChange={(val) => {
                               const orgId = val === 'none' ? null : val;
                               setSelectedOrgId(orgId);
+                              setOrgSearchQuery(''); // Reset search on selection
                             }}
                           >
                             <SelectTrigger className="flex-1">
                               <SelectValue placeholder="Seleccionar organización" />
                             </SelectTrigger>
                             <SelectContent>
+                              {/* Search input for organizations */}
+                              <div className="px-2 pb-2">
+                                <div className="relative">
+                                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                  <Input
+                                    placeholder="Buscar organización..."
+                                    value={orgSearchQuery}
+                                    onChange={(e) => setOrgSearchQuery(e.target.value)}
+                                    className="pl-8 h-8"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
                               <SelectItem value="none">Sin organización</SelectItem>
-                              {organizations?.map((org) => (
+                              {filteredOrganizations.map((org) => (
                                 <SelectItem key={org.id} value={org.id}>
                                   {org.name}
                                 </SelectItem>
                               ))}
+                              {filteredOrganizations.length === 0 && orgSearchQuery && (
+                                <div className="px-2 py-1 text-sm text-muted-foreground">
+                                  No se encontraron organizaciones
+                                </div>
+                              )}
                             </SelectContent>
                           </Select>
                           <Button
@@ -518,7 +560,7 @@ function UsersContent() {
                           </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Organización actual: {selectedUser?.organization?.name || 'Ninguna'}
+                          Organización actual: {selectedUser?.organization?.name ?? 'Ninguna'}
                         </p>
                       </>
                     ) : (
@@ -532,8 +574,10 @@ function UsersContent() {
             </Tabs>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={() => updateProfileMutation.mutate(formData)}>Guardar Cambios</Button>
+              <Button variant="outline" onClick={handleCloseEditDialog}>Cancelar</Button>
+              <Button onClick={() => updateProfileMutation.mutate(formData)} disabled={updateProfileMutation.isPending}>
+                Guardar Cambios
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
