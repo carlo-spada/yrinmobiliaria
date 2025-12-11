@@ -49,7 +49,9 @@
       "Bash(whisper-cli:*)",
       "Bash(ps:*)",
       "mcp__agentvibes__get_background_music_status",
-      "mcp__agentvibes__set_background_music_volume"
+      "mcp__agentvibes__set_background_music_volume",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp remove:*)"
     ],
     "deny": [],
     "ask": []

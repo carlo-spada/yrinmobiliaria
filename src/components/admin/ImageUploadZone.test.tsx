@@ -79,9 +79,13 @@ describe('ImageUploadZone', () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => expect(mockedToast.error).toHaveBeenCalled());
+    // Toast format: generic title with error details in description
     expect(mockedToast.error).toHaveBeenCalledWith(
-      expect.stringContaining('No tienes permisos'),
-      expect.objectContaining({ duration: 10000 })
+      expect.stringContaining('Error al subir'),
+      expect.objectContaining({
+        duration: 10000,
+        description: expect.stringContaining('No tienes permisos')
+      })
     );
   });
 });
