@@ -8,73 +8,110 @@ import { useToast } from './use-toast';
 import { useAuth } from './useAuth';
 
 
+// Rate limiting configuration
+const RATE_LIMIT_MS = 500; // Minimum time between operations per property
+
 export function useFavorites() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // Use ref for isSyncing to avoid circular dependency in useCallback
-  const isSyncingRef = useRef(false);
 
-  // Helper: Sync localStorage favorites to database when user logs in
-  const syncLocalFavoritesToDatabase = useCallback(async (localFavorites: string[], dbFavorites: string[]) => {
-    if (!user || isSyncingRef.current) return;
+  // AbortController ref to cancel pending operations on user change
+  const abortControllerRef = useRef<AbortController | null>(null);
+  // Track current user ID to prevent stale updates
+  const currentUserIdRef = useRef<string | null>(null);
+  // Rate limiting: track last operation time per property
+  const lastOperationTimeRef = useRef<Map<string, number>>(new Map());
+  // Pending operations to debounce rapid toggles
+  const pendingOperationsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-    isSyncingRef.current = true;
-    try {
-      // Find favorites that are in localStorage but not in database
-      const dbFavoritesSet = new Set(dbFavorites);
-      const favoritesToSync = localFavorites.filter(id => !dbFavoritesSet.has(id));
+  // Load favorites from localStorage (for guests) or Supabase (for authenticated users)
+  // With proper cancellation to prevent race conditions
+  useEffect(() => {
+    const loadFavorites = async () => {
+      // Cancel any pending operation
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-      if (favoritesToSync.length > 0) {
-        const { error } = await supabase
+      // Create new abort controller for this operation
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      const userId = user?.id ?? null;
+      currentUserIdRef.current = userId;
+
+      setIsLoading(true);
+
+      try {
+        if (!userId) {
+          // Anonymous user - use localStorage only
+          if (!abortController.signal.aborted) {
+            setFavorites(getLocalFavorites());
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        // Step 1: Load from database first
+        const { data, error } = await supabase
           .from('user_favorites')
-          .insert(
-            favoritesToSync.map(propertyId => ({
-              user_id: user.id,
-              property_id: propertyId,
-            }))
-          );
+          .select('property_id')
+          .eq('user_id', userId);
+
+        // Check if operation was cancelled
+        if (abortController.signal.aborted || currentUserIdRef.current !== userId) {
+          return;
+        }
 
         if (error) throw error;
 
-        // Update state with merged favorites
-        setFavorites([...dbFavorites, ...favoritesToSync]);
+        const dbFavorites = data?.map(fav => fav.property_id) || [];
 
-        // Clear localStorage after successful sync
-        localStorage.removeItem(FAVORITES_STORAGE_KEY);
-      }
-    } catch (error) {
-      logger.error('Error syncing favorites to database', error);
-    } finally {
-      isSyncingRef.current = false;
-    }
-  }, [user]); // Removed isSyncing from deps - using ref now
+        // Step 2: Check for local favorites to sync
+        const localFavorites = getLocalFavorites();
 
-  // Load favorites from localStorage (for guests) or Supabase (for authenticated users)
-  useEffect(() => {
-    const loadFavorites = async () => {
-      setIsLoading(true);
+        if (localFavorites.length > 0) {
+          // Find favorites that are in localStorage but not in database
+          const dbFavoritesSet = new Set(dbFavorites);
+          const favoritesToSync = localFavorites.filter(id => !dbFavoritesSet.has(id));
 
-      if (user) {
-        // Load from Supabase for authenticated users
-        try {
-          const { data, error } = await supabase
-            .from('user_favorites')
-            .select('property_id')
-            .eq('user_id', user.id);
+          if (favoritesToSync.length > 0) {
+            const { error: syncError } = await supabase
+              .from('user_favorites')
+              .insert(
+                favoritesToSync.map(propertyId => ({
+                  user_id: userId,
+                  property_id: propertyId,
+                }))
+              );
 
-          if (error) throw error;
+            // Check if operation was cancelled
+            if (abortController.signal.aborted || currentUserIdRef.current !== userId) {
+              return;
+            }
 
-          const propertyIds = data?.map(fav => fav.property_id) || [];
-          setFavorites(propertyIds);
-
-          // Sync any localStorage favorites to database on login
-          const localFavorites = getLocalFavorites();
-          if (localFavorites.length > 0) {
-            await syncLocalFavoritesToDatabase(localFavorites, propertyIds);
+            if (syncError) {
+              logger.error('Error syncing favorites to database', syncError);
+            } else {
+              // Clear localStorage after successful sync
+              localStorage.removeItem(FAVORITES_STORAGE_KEY);
+              // Update state with merged favorites
+              setFavorites([...dbFavorites, ...favoritesToSync]);
+              setIsLoading(false);
+              return;
+            }
           }
-        } catch (error) {
+        }
+
+        // Final check before updating state
+        if (!abortController.signal.aborted && currentUserIdRef.current === userId) {
+          setFavorites(dbFavorites);
+        }
+      } catch (error) {
+        // Only show error if operation wasn't cancelled
+        if (!abortController.signal.aborted && currentUserIdRef.current === (user?.id ?? null)) {
           logger.error('Error loading favorites from database', error);
           toast({
             title: 'Error',
@@ -82,16 +119,23 @@ export function useFavorites() {
             variant: 'destructive',
           });
         }
-      } else {
-        // Load from localStorage for guests
-        setFavorites(getLocalFavorites());
+      } finally {
+        // Only update loading state if operation wasn't cancelled
+        if (!abortController.signal.aborted && currentUserIdRef.current === (user?.id ?? null)) {
+          setIsLoading(false);
+        }
       }
-
-      setIsLoading(false);
     };
 
     loadFavorites();
-  }, [user, toast, syncLocalFavoritesToDatabase]);
+
+    // Cleanup function - cancel pending operation on unmount or user change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [user?.id, toast]);
 
   // Save to localStorage for guests
   useEffect(() => {
@@ -103,77 +147,139 @@ export function useFavorites() {
   const addFavorite = useCallback(async (propertyId: string) => {
     if (favorites.includes(propertyId)) return;
 
-    // Optimistic update
-    setFavorites(prev => [...prev, propertyId]);
+    // Rate limiting check
+    const now = Date.now();
+    const lastOp = lastOperationTimeRef.current.get(propertyId) || 0;
+    const timeSinceLastOp = now - lastOp;
 
-    if (user) {
-      // Save to database
-      try {
-        const { error } = await supabase
-          .from('user_favorites')
-          .insert({
-            user_id: user.id,
-            property_id: propertyId,
-          });
-
-        if (error) throw error;
-      } catch (error) {
-        // Revert on error
-        setFavorites(prev => prev.filter(id => id !== propertyId));
-        logger.error('Error adding favorite', error);
-        toast({
-          title: 'Error',
-          description: 'No se pudo agregar a favoritos',
-          variant: 'destructive',
-        });
-        return;
-      }
+    // Clear any pending operation for this property
+    const pendingOp = pendingOperationsRef.current.get(propertyId);
+    if (pendingOp) {
+      clearTimeout(pendingOp);
+      pendingOperationsRef.current.delete(propertyId);
     }
 
-    // Analytics event
-    if (window.gtag) {
-      window.gtag('event', 'add_to_favorites', {
-        content_type: 'property',
-        item_id: propertyId,
-      });
+    // If rate limited, debounce the operation
+    if (timeSinceLastOp < RATE_LIMIT_MS) {
+      const delay = RATE_LIMIT_MS - timeSinceLastOp;
+      const timeoutId = setTimeout(() => {
+        pendingOperationsRef.current.delete(propertyId);
+        lastOperationTimeRef.current.set(propertyId, Date.now());
+        performAddFavorite(propertyId);
+      }, delay);
+      pendingOperationsRef.current.set(propertyId, timeoutId);
+      // Still do optimistic update for UI responsiveness
+      setFavorites(prev => prev.includes(propertyId) ? prev : [...prev, propertyId]);
+      return;
+    }
+
+    lastOperationTimeRef.current.set(propertyId, now);
+    await performAddFavorite(propertyId);
+
+    async function performAddFavorite(propId: string) {
+      // Optimistic update
+      setFavorites(prev => prev.includes(propId) ? prev : [...prev, propId]);
+
+      if (user) {
+        // Save to database
+        try {
+          const { error } = await supabase
+            .from('user_favorites')
+            .insert({
+              user_id: user.id,
+              property_id: propId,
+            });
+
+          if (error) throw error;
+        } catch (error) {
+          // Revert on error
+          setFavorites(prev => prev.filter(id => id !== propId));
+          logger.error('Error adding favorite', error);
+          toast({
+            title: 'Error',
+            description: 'No se pudo agregar a favoritos',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      // Analytics event
+      if (window.gtag) {
+        window.gtag('event', 'add_to_favorites', {
+          content_type: 'property',
+          item_id: propId,
+        });
+      }
     }
   }, [favorites, user, toast]);
 
   const removeFavorite = useCallback(async (propertyId: string) => {
     if (!favorites.includes(propertyId)) return;
 
-    // Optimistic update
-    setFavorites(prev => prev.filter(id => id !== propertyId));
+    // Rate limiting check
+    const now = Date.now();
+    const lastOp = lastOperationTimeRef.current.get(propertyId) || 0;
+    const timeSinceLastOp = now - lastOp;
 
-    if (user) {
-      // Remove from database
-      try {
-        const { error } = await supabase
-          .from('user_favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('property_id', propertyId);
-
-        if (error) throw error;
-      } catch (error) {
-        // Revert on error
-        setFavorites(prev => [...prev, propertyId]);
-        logger.error('Error removing favorite', error);
-        toast({
-          title: 'Error',
-          description: 'No se pudo eliminar de favoritos',
-          variant: 'destructive',
-        });
-        return;
-      }
+    // Clear any pending operation for this property
+    const pendingOp = pendingOperationsRef.current.get(propertyId);
+    if (pendingOp) {
+      clearTimeout(pendingOp);
+      pendingOperationsRef.current.delete(propertyId);
     }
 
-    // Analytics event
-    if (window.gtag) {
-      window.gtag('event', 'remove_from_favorites', {
-        content_type: 'property',
-        item_id: propertyId,
-      });
+    // If rate limited, debounce the operation
+    if (timeSinceLastOp < RATE_LIMIT_MS) {
+      const delay = RATE_LIMIT_MS - timeSinceLastOp;
+      const timeoutId = setTimeout(() => {
+        pendingOperationsRef.current.delete(propertyId);
+        lastOperationTimeRef.current.set(propertyId, Date.now());
+        performRemoveFavorite(propertyId);
+      }, delay);
+      pendingOperationsRef.current.set(propertyId, timeoutId);
+      // Still do optimistic update for UI responsiveness
+      setFavorites(prev => prev.filter(id => id !== propertyId));
+      return;
+    }
+
+    lastOperationTimeRef.current.set(propertyId, now);
+    await performRemoveFavorite(propertyId);
+
+    async function performRemoveFavorite(propId: string) {
+      // Optimistic update
+      setFavorites(prev => prev.filter(id => id !== propId));
+
+      if (user) {
+        // Remove from database
+        try {
+          const { error } = await supabase
+            .from('user_favorites')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('property_id', propId);
+
+          if (error) throw error;
+        } catch (error) {
+          // Revert on error
+          setFavorites(prev => [...prev, propId]);
+          logger.error('Error removing favorite', error);
+          toast({
+            title: 'Error',
+            description: 'No se pudo eliminar de favoritos',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      // Analytics event
+      if (window.gtag) {
+        window.gtag('event', 'remove_from_favorites', {
+          content_type: 'property',
+          item_id: propId,
+        });
+      }
     }
   }, [favorites, user, toast]);
 

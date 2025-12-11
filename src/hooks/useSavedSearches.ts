@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { z } from 'zod';
 
 import { PropertyFilters } from '@/types/property';
 import { logger } from '@/utils/logger';
@@ -12,15 +13,42 @@ export interface SavedSearch {
 
 const SAVED_SEARCHES_KEY = 'yr-inmobiliaria-saved-searches';
 
-export function useSavedSearches() {
-  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>(() => {
-    try {
-      const stored = localStorage.getItem(SAVED_SEARCHES_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
+// Validation schema for saved searches
+const SavedSearchSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  filters: z.record(z.unknown()), // PropertyFilters is a flexible record type
+  createdAt: z.string(),
+});
+
+const SavedSearchesSchema = z.array(SavedSearchSchema);
+
+/**
+ * Load and validate saved searches from localStorage
+ */
+const loadSavedSearches = (): SavedSearch[] => {
+  try {
+    const stored = localStorage.getItem(SAVED_SEARCHES_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    const validated = SavedSearchesSchema.safeParse(parsed);
+
+    if (!validated.success) {
+      logger.warn('Invalid saved searches in localStorage, clearing');
+      localStorage.removeItem(SAVED_SEARCHES_KEY);
       return [];
     }
-  });
+
+    return validated.data as SavedSearch[];
+  } catch {
+    logger.warn('Failed to parse saved searches from localStorage');
+    return [];
+  }
+};
+
+export function useSavedSearches() {
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>(loadSavedSearches);
 
   useEffect(() => {
     try {

@@ -20,8 +20,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAgents } from '@/hooks/useAgents';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { logAuditEvent } from '@/utils/auditLog';
+
+import { useAdminOrg } from './useAdminOrg';
 
 interface ReassignPropertyDialogProps {
   open: boolean;
@@ -44,6 +47,8 @@ export function ReassignPropertyDialog({
 }: ReassignPropertyDialogProps) {
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const queryClient = useQueryClient();
+  const { isSuperadmin } = useUserRole();
+  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
 
   const { data: agents, isLoading: loadingAgents } = useAgents(organizationId);
 
@@ -83,7 +88,12 @@ export function ReassignPropertyDialog({
       return newAgent;
     },
     onSuccess: (newAgent) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
+      // Scope invalidation to match PropertiesTable query key
+      const scopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+      queryClient.invalidateQueries({
+        queryKey: ['admin-properties', scopedOrgId],
+        exact: true
+      });
       toast.success(`Propiedad reasignada a ${newAgent?.display_name}`);
       handleOpenChange(false);
     },

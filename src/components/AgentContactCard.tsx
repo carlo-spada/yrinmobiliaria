@@ -1,5 +1,5 @@
 import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,7 @@ const levelLabels = {
 
 export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const slug = generateSlug(agent.display_name);
   const bio = language === 'es' ? agent.bio_es : agent.bio_en;
   const truncatedBio = bio ? (bio.length > 150 ? bio.substring(0, 150) + '...' : bio) : null;
@@ -90,8 +91,10 @@ export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
             variant="default"
             className="w-full"
             onClick={() => {
-              // TODO: Open contact form dialog with agent pre-filled
-              window.location.href = `/contacto?agent=${agent.id}${propertyId ? `&property=${propertyId}` : ''}`;
+              const params = new URLSearchParams();
+              params.set('agent', agent.id);
+              if (propertyId) params.set('property', propertyId);
+              navigate(`/contacto?${params.toString()}`);
             }}
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -103,7 +106,7 @@ export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
               variant="outline"
               className="w-full"
               onClick={() => {
-                window.location.href = `/agendar?property=${propertyId}`;
+                navigate(`/agendar?property=${propertyId}`);
               }}
             >
               <MessageCircle className="mr-2 h-4 w-4" />

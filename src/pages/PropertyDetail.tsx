@@ -10,6 +10,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -48,6 +49,7 @@ export default function PropertyDetail() {
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -61,6 +63,29 @@ export default function PropertyDetail() {
       navigate('/404', { replace: true });
     }
   }, [id, navigate]);
+
+  // Global keyboard navigation for gallery (ArrowLeft, ArrowRight, Escape)
+  // Must be called before early returns to satisfy React hooks rules
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle keyboard events when lightbox is open and property exists
+      if (!isLightboxOpen || !property) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setSelectedImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setSelectedImageIndex((prev) => (prev + 1) % property.images.length);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsLightboxOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, property]);
 
   // Return null for invalid UUID (navigation happens in useEffect)
   if (id && !isValidUUID(id)) {
@@ -125,10 +150,33 @@ export default function PropertyDetail() {
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // console.log("Contact form:", formData);
-    alert(language === "es" ? "Mensaje enviado" : "Message sent");
+    setIsSubmitting(true);
+
+    try {
+      // Simulate form submission delay (replace with actual API call)
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      toast({
+        title: language === "es" ? "Mensaje enviado" : "Message sent",
+        description: language === "es"
+          ? "Nos pondremos en contacto pronto"
+          : "We'll get back to you soon",
+      });
+      // Reset form after successful submission
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch {
+      toast({
+        title: language === "es" ? "Error" : "Error",
+        description: language === "es"
+          ? "No se pudo enviar el mensaje. Intenta de nuevo."
+          : "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const nextImage = () => {
@@ -466,8 +514,15 @@ export default function PropertyDetail() {
                         rows={4}
                       />
                     </div>
-                    <Button type="submit" variant="primary" className="w-full">
-                      {language === "es" ? "Enviar mensaje" : "Send message"}
+                    <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {language === "es" ? "Enviando..." : "Sending..."}
+                        </>
+                      ) : (
+                        language === "es" ? "Enviar mensaje" : "Send message"
+                      )}
                     </Button>
                   </form>
 

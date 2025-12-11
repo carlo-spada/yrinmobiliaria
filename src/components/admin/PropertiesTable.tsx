@@ -99,7 +99,11 @@ export const PropertiesTable = () => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
+      // Scope invalidation to the current organization
+      queryClient.invalidateQueries({
+        queryKey: ['admin-properties', scopedOrgId],
+        exact: true
+      });
       toast.success('Propiedad eliminada correctamente');
       setDeletingPropertyId(null);
     },

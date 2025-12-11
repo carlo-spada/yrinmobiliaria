@@ -416,8 +416,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       // console.log("[Property Save] Mutation completed successfully");
     },
     onSuccess: () => {
-      // console.log("[Property Save] onSuccess triggered");
-      queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
+      // Scope invalidation to match PropertiesTable query key
+      const queryScopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
+      queryClient.invalidateQueries({
+        queryKey: ['admin-properties', queryScopedOrgId],
+        exact: true
+      });
       toast.success(property ? 'Propiedad actualizada' : 'Propiedad creada correctamente');
       onOpenChange(false);
       reset();

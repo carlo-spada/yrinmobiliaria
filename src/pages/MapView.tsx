@@ -50,6 +50,8 @@ const propertyColors: Record<PropertyType, string> = {
 };
 
 // Pre-compute icons for each property type and selection state to avoid btoa() on every render
+// Bounded cache size to prevent memory leaks (10 entries = 5 types * 2 selection states)
+const MAX_ICON_CACHE_SIZE = 20;
 const iconCache = new Map<string, Icon>();
 
 function getPropertyIcon(type: PropertyType, selected: boolean = false): Icon {
@@ -57,6 +59,14 @@ function getPropertyIcon(type: PropertyType, selected: boolean = false): Icon {
   let icon = iconCache.get(cacheKey);
 
   if (!icon) {
+    // Clear oldest entries if cache is full (should rarely happen with bounded type/state combinations)
+    if (iconCache.size >= MAX_ICON_CACHE_SIZE) {
+      const firstKey = iconCache.keys().next().value;
+      if (firstKey) {
+        iconCache.delete(firstKey);
+      }
+    }
+
     const color = propertyColors[type];
     const scale = selected ? 1.3 : 1;
     icon = new Icon({
@@ -278,15 +288,30 @@ export default function MapView() {
     }
   };
 
-  // Debounced bounds change handler
+  // Debounced bounds change handler with proper cleanup
   const debounceRef = useRef<number | undefined>(undefined);
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount to prevent state updates on unmounted component
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
   const handleBoundsChange = useCallback((bounds: LatLngBounds): void => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     // Debounce to avoid excessive re-renders during pan/zoom
     debounceRef.current = window.setTimeout(() => {
-      setMapBounds(bounds);
+      if (isMountedRef.current) {
+        setMapBounds(bounds);
+      }
     }, 400);
   }, []);
 
@@ -301,15 +326,25 @@ export default function MapView() {
 
   // Handle reset view to show all properties
   const handleResetView = useCallback(() => {
-    if (filteredProperties.length > 0) {
-      const bounds = new LatLngBounds(
-        filteredProperties.map(p => [
-          normalizeCoord(p.location.coordinates.lat)!,
-          normalizeCoord(p.location.coordinates.lng)!
-        ])
-      );
-      setFlyToCenter([bounds.getCenter().lat, bounds.getCenter().lng]);
+    if (filteredProperties.length === 0) return;
+
+    // Filter to only properties with valid coordinates
+    const validCoords = filteredProperties
+      .map(p => {
+        const lat = normalizeCoord(p.location.coordinates.lat);
+        const lng = normalizeCoord(p.location.coordinates.lng);
+        return lat !== null && lng !== null ? [lat, lng] as [number, number] : null;
+      })
+      .filter((coord): coord is [number, number] => coord !== null);
+
+    if (validCoords.length === 0) {
+      // Fallback to Oaxaca center if no valid coordinates
+      setFlyToCenter([17.0732, -96.7266]);
+      return;
     }
+
+    const bounds = new LatLngBounds(validCoords);
+    setFlyToCenter([bounds.getCenter().lat, bounds.getCenter().lng]);
   }, [filteredProperties]);
 
   // Clear specific filter
