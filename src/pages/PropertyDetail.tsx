@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { AgentContactCard } from "@/components/AgentContactCard";
@@ -32,6 +32,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/lib/schema-helpers";
+
+const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
 
 // UUID validation helper
 const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -437,16 +439,24 @@ export default function PropertyDetail() {
               {property.location.coordinates &&
                 property.location.coordinates.lat !== 0 &&
                 property.location.coordinates.lng !== 0 ? (
-                <div className="h-[300px] bg-muted rounded-lg relative overflow-hidden">
-                  <iframe
-                    title={language === "es" ? "Mapa de ubicación de la propiedad" : "Property location map"}
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${property.location.coordinates.lng - 0.01},${property.location.coordinates.lat - 0.01},${property.location.coordinates.lng + 0.01},${property.location.coordinates.lat + 0.01}&layer=mapnik&marker=${property.location.coordinates.lat},${property.location.coordinates.lng}`}
-                    width="100%"
-                    height="100%"
-                    className="border-0"
-                    loading="lazy"
+                <Suspense
+                  fallback={
+                    <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <MapPin className="h-12 w-12 text-primary mx-auto mb-2 animate-pulse" />
+                        <p className="text-muted-foreground">
+                          {language === "es" ? "Cargando mapa..." : "Loading map..."}
+                        </p>
+                      </div>
+                    </div>
+                  }
+                >
+                  <PropertyMiniMap
+                    lat={property.location.coordinates.lat}
+                    lng={property.location.coordinates.lng}
+                    zone={property.location.zone}
                   />
-                </div>
+                </Suspense>
               ) : (
                 <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
                   <div className="text-center">

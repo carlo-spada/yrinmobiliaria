@@ -218,7 +218,7 @@ export default function Properties() {
                     {t.properties?.title || 'Propiedades'}
                   </h1>
                   <p className="text-muted-foreground">
-                    {filteredProperties.length} {t.properties?.results || 'resultados encontrados'}
+                    {language === 'es' ? 'Mostrando' : 'Showing'} {filteredProperties.length} {language === 'es' ? 'de' : 'of'} {allProperties.length} {t.properties?.results || 'propiedades'}
                   </p>
                 </div>
 
@@ -286,6 +286,88 @@ export default function Properties() {
                   )}
                 </div>
               </div>
+
+              {(filters.type || filters.operation || filters.zone || filters.minPrice || filters.maxPrice || filters.minBedrooms || filters.minBathrooms) && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {filters.type && (
+                    <Badge variant="secondary" className="gap-1">
+                      {t.properties?.types?.[filters.type] || filters.type}
+                      <button
+                        onClick={() => setFilters({ ...filters, type: undefined })}
+                        aria-label={language === 'es' ? 'Quitar filtro de tipo' : 'Remove type filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {filters.operation && (
+                    <Badge variant="secondary" className="gap-1">
+                      {t.properties?.operations?.[filters.operation] || filters.operation}
+                      <button
+                        onClick={() => setFilters({ ...filters, operation: undefined })}
+                        aria-label={language === 'es' ? 'Quitar filtro de operación' : 'Remove operation filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {filters.zone && (
+                    <Badge variant="secondary" className="gap-1">
+                      {filters.zone}
+                      <button
+                        onClick={() => setFilters({ ...filters, zone: undefined })}
+                        aria-label={language === 'es' ? 'Quitar filtro de zona' : 'Remove zone filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {(filters.minPrice || filters.maxPrice) && (
+                    <Badge variant="secondary" className="gap-1">
+                      {formatPrice(filters.minPrice || 0)} - {formatPrice(filters.maxPrice || 10000000)}
+                      <button
+                        onClick={() => setFilters({ ...filters, minPrice: undefined, maxPrice: undefined })}
+                        aria-label={language === 'es' ? 'Quitar filtro de precio' : 'Remove price filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {filters.minBedrooms && (
+                    <Badge variant="secondary" className="gap-1">
+                      {filters.minBedrooms}+ {language === 'es' ? 'habitaciones' : 'bedrooms'}
+                      <button
+                        onClick={() => setFilters({ ...filters, minBedrooms: undefined })}
+                        aria-label={language === 'es' ? 'Quitar filtro de habitaciones' : 'Remove bedrooms filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {filters.minBathrooms && (
+                    <Badge variant="secondary" className="gap-1">
+                      {filters.minBathrooms}+ {language === 'es' ? 'baños' : 'bathrooms'}
+                      <button
+                        onClick={() => setFilters({ ...filters, minBathrooms: undefined })}
+                        aria-label={language === 'es' ? 'Quitar filtro de baños' : 'Remove bathrooms filter'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFilters({});
+                      setSearchParams({}, { replace: true });
+                    }}
+                    className="h-7"
+                  >
+                    {t.properties?.clearFilters || (language === 'es' ? 'Limpiar filtros' : 'Clear filters')}
+                  </Button>
+                </div>
+              )}
 
               {/* Controls */}
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
