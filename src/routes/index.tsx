@@ -1,7 +1,12 @@
 import { Suspense, lazy, type ComponentType, type ReactElement } from "react";
 import { Route, Routes } from "react-router-dom";
 
+import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
+import { RequireAuth, RequireRole } from "@/components/auth/RouteAccessGuard";
+import { AuthenticatedAppShell } from "@/components/layout/AuthenticatedAppShell";
+import { PublicAppShell } from "@/components/layout/PublicAppShell";
 import { PageLoader } from "@/components/ui/page-loader";
+import type { UserRole } from "@/hooks/useUserRole";
 
 type LazyComponent = () => Promise<{ default: ComponentType<unknown> }>;
 
@@ -14,6 +19,22 @@ type AppRoute = {
   path: string;
   element: ReactElement;
 };
+
+const withAuth = (element: ReactElement): ReactElement => <RequireAuth>{element}</RequireAuth>;
+
+const withRole = (
+  element: ReactElement,
+  allowedRoles: UserRole[],
+  options?: { requireCompletedProfile?: boolean }
+): ReactElement => (
+  <RequireRole allowedRoles={allowedRoles}>
+    {options?.requireCompletedProfile ? (
+      <ProfileCompletionGuard>{element}</ProfileCompletionGuard>
+    ) : (
+      element
+    )}
+  </RequireRole>
+);
 
 const publicRoutes: AppRoute[] = [
   { path: "/", element: lazyPage(() => import("@/pages/Index")) },
@@ -30,19 +51,26 @@ const publicRoutes: AppRoute[] = [
   { path: "/agentes/:slug", element: lazyPage(() => import("@/pages/AgentProfile")) },
 ];
 
-const authRoutes: AppRoute[] = [
+const authenticatedRoutes: AppRoute[] = [
   { path: "/auth", element: lazyPage(() => import("@/pages/Auth")) },
   { path: "/auth/accept-invitation", element: lazyPage(() => import("@/pages/auth/AcceptInvitation")) },
-  { path: "/onboarding/complete-profile", element: lazyPage(() => import("@/pages/onboarding/CompleteProfile")) },
+  {
+    path: "/onboarding/complete-profile",
+    element: withAuth(lazyPage(() => import("@/pages/onboarding/CompleteProfile"))),
+  },
   { path: "/cuenta", element: lazyPage(() => import("@/pages/user/UserDashboard")) },
-];
-
-const agentRoutes: AppRoute[] = [
-  { path: "/agent/dashboard", element: lazyPage(() => import("@/pages/agent/AgentDashboard")) },
-  { path: "/agent/profile/edit", element: lazyPage(() => import("@/pages/agent/EditProfile")) },
-];
-
-const adminRoutes: AppRoute[] = [
+  {
+    path: "/agent/dashboard",
+    element: withRole(lazyPage(() => import("@/pages/agent/AgentDashboard")), ['agent', 'admin', 'superadmin'], {
+      requireCompletedProfile: true,
+    }),
+  },
+  {
+    path: "/agent/profile/edit",
+    element: withRole(lazyPage(() => import("@/pages/agent/EditProfile")), ['agent', 'admin', 'superadmin'], {
+      requireCompletedProfile: true,
+    }),
+  },
   { path: "/admin", element: lazyPage(() => import("@/pages/admin/AdminDashboard")) },
   { path: "/admin/profile", element: lazyPage(() => import("@/pages/admin/AdminEditProfile")) },
   { path: "/admin/properties", element: lazyPage(() => import("@/pages/admin/AdminProperties")) },
@@ -59,25 +87,21 @@ const adminRoutes: AppRoute[] = [
   { path: "/admin/schema-builder", element: lazyPage(() => import("@/pages/admin/SchemaBuilder")) },
 ];
 
-const fallbackRoutes: AppRoute[] = [
-  { path: "*", element: lazyPage(() => import("@/pages/NotFound")) },
-];
-
-const routes: AppRoute[] = [
-  ...publicRoutes,
-  ...authRoutes,
-  ...agentRoutes,
-  ...adminRoutes,
-  ...fallbackRoutes,
-];
-
 export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {routes.map(({ path, element }) => (
-          <Route key={path} path={path} element={element} />
-        ))}
+        <Route element={<PublicAppShell />}>
+          {publicRoutes.map(({ path, element }) => (
+            <Route key={path} path={path} element={element} />
+          ))}
+        </Route>
+        <Route element={<AuthenticatedAppShell />}>
+          {authenticatedRoutes.map(({ path, element }) => (
+            <Route key={path} path={path} element={element} />
+          ))}
+        </Route>
+        <Route path="*" element={lazyPage(() => import("@/pages/NotFound"))} />
       </Routes>
     </Suspense>
   );

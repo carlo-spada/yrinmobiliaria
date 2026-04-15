@@ -16,19 +16,34 @@ if (!window.matchMedia) {
 }
 
 // Silence scrollTo warnings in jsdom
-if (!window.scrollTo) {
-  window.scrollTo = vi.fn();
-}
+window.scrollTo = vi.fn();
 
-// Basic localStorage mock for Supabase auth client in tests
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+const createLocalStorageMock = (): Storage => {
+  let store: Record<string, string> = {};
+
+  return {
+    get length() {
+      return Object.keys(store).length;
+    },
+    clear() {
+      store = {};
+    },
+    getItem(key: string) {
+      return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
+    },
+    key(index: number) {
+      return Object.keys(store)[index] ?? null;
+    },
+    removeItem(key: string) {
+      delete store[key];
+    },
+    setItem(key: string, value: string) {
+      store[key] = String(value);
+    },
+  };
 };
 
 Object.defineProperty(globalThis, 'localStorage', {
-  value: localStorageMock,
+  value: createLocalStorageMock(),
   writable: true,
 });

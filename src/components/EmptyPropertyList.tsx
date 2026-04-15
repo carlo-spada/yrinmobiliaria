@@ -4,16 +4,17 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
-
 
 interface EmptyPropertyListProps {
   message?: string;
+  showAdminAction?: boolean;
 }
 
-export function EmptyPropertyList({ message }: EmptyPropertyListProps) {
+export function EmptyPropertyList({
+  message,
+  showAdminAction = false,
+}: EmptyPropertyListProps) {
   const { t } = useLanguage();
-  const { isAdmin } = useAuth();
 
   const content = {
     es: {
@@ -49,10 +50,10 @@ export function EmptyPropertyList({ message }: EmptyPropertyListProps) {
         </h3>
         
         <p className="text-muted-foreground mb-6 max-w-sm">
-          {isAdmin ? text.adminDescription : text.publicDescription}
+          {showAdminAction ? text.adminDescription : text.publicDescription}
         </p>
 
-        {isAdmin && (
+        {showAdminAction && (
           <div className="flex gap-3">
             <Link to="/admin/properties">
               <Button className="gap-2">

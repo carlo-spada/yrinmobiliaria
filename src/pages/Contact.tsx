@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 
@@ -31,7 +31,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export default function Contact() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { getSetting } = useSiteSettings();
+  const { getSetting } = usePublicSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get dynamic settings with fallbacks

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 
 interface WhatsAppButtonProps {
   message?: string;
@@ -11,7 +11,7 @@ interface WhatsAppButtonProps {
 
 export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
   const { language } = useLanguage();
-  const { getSetting } = useSiteSettings();
+  const { getSetting } = usePublicSiteSettings();
   
   const defaultMessage = language === 'es' 
     ? 'Hola, me interesa una propiedad de YR Inmobiliaria' 

@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select-enhanced';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateSlug } from '@/hooks/useAgentBySlug';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
@@ -60,28 +61,44 @@ export default function Properties() {
     return filters;
   }, [searchParams]);
 
-  // Parse agent filter from URL (computed, not in effect)
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const filters = filtersFromUrl;
 
-  useEffect(() => {
+  const selectedAgentId = useMemo(() => {
     const agentSlug = searchParams.get('agent');
-    if (agentSlug && agents.length > 0) {
-      const agent = agents.find(
-        (a) => a.display_name.toLowerCase().replace(/\s+/g, '-') === agentSlug
-      );
-      if (agent) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedAgentId(agent.id);
-        setCurrentPage(1);
-      }
+    if (!agentSlug) {
+      return null;
     }
-  }, [searchParams, agents]);
 
-  const [filters, setFiltersInternal] = useState<PropertyFiltersType>(filtersFromUrl);
+    return agents.find((agent) => generateSlug(agent.display_name) === agentSlug)?.id ?? null;
+  }, [agents, searchParams]);
+
+  const buildSearchParams = useCallback(
+    (nextFilters: PropertyFiltersType, nextAgentId: string | null) => {
+      const params = new URLSearchParams();
+
+      if (nextFilters.type) params.set('type', nextFilters.type);
+      if (nextFilters.operation) params.set('operation', nextFilters.operation);
+      if (nextFilters.zone) params.set('zone', nextFilters.zone);
+      if (nextFilters.minPrice) params.set('minPrice', nextFilters.minPrice.toString());
+      if (nextFilters.maxPrice) params.set('maxPrice', nextFilters.maxPrice.toString());
+      if (nextFilters.minBedrooms) params.set('minBedrooms', nextFilters.minBedrooms.toString());
+      if (nextFilters.minBathrooms) params.set('minBathrooms', nextFilters.minBathrooms.toString());
+      if (nextAgentId) {
+        const agent = agents.find((candidate) => candidate.id === nextAgentId);
+        if (agent) {
+          params.set('agent', generateSlug(agent.display_name));
+        }
+      }
+
+      return params;
+    },
+    [agents]
+  );
 
   // Wrapper functions that also reset page when filters change
   const setFilters = (newFilters: PropertyFiltersType) => {
-    setFiltersInternal(newFilters);
+    const params = buildSearchParams(newFilters, selectedAgentId);
+    setSearchParams(params, { replace: true });
     setCurrentPage(1);
   };
 
@@ -92,26 +109,12 @@ export default function Properties() {
 
 
 
-  // Update URL when filters change
   useEffect(() => {
-    const params = new URLSearchParams();
-
-    if (filters.type) params.set('type', filters.type);
-    if (filters.operation) params.set('operation', filters.operation);
-    if (filters.zone) params.set('zone', filters.zone);
-    if (filters.minPrice) params.set('minPrice', filters.minPrice.toString());
-    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice.toString());
-    if (filters.minBedrooms) params.set('minBedrooms', filters.minBedrooms.toString());
-    if (filters.minBathrooms) params.set('minBathrooms', filters.minBathrooms.toString());
-    if (selectedAgentId) {
-      const agent = agents.find((a) => a.id === selectedAgentId);
-      if (agent) {
-        params.set('agent', agent.display_name.toLowerCase().replace(/\s+/g, '-'));
-      }
+    if (searchParams.get('agent') && agents.length > 0 && !selectedAgentId) {
+      const params = buildSearchParams(filters, null);
+      setSearchParams(params, { replace: true });
     }
-
-    setSearchParams(params, { replace: true });
-  }, [filters, selectedAgentId, agents, setSearchParams]);
+  }, [agents.length, buildSearchParams, filters, searchParams, selectedAgentId, setSearchParams]);
 
   // Filter and sort properties
   const filteredProperties = useMemo(() => {
@@ -185,14 +188,17 @@ export default function Properties() {
     { value: 'newest', label: t.properties?.sort?.newest || 'Más recientes' },
   ];
 
-  // Memoize price formatter to avoid creating new Intl.NumberFormat on every render
-  const formatPrice = useCallback((price: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 0,
-    }).format(price);
-  }, []);
+  const priceFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 0,
+      }),
+    []
+  );
+
+  const formatPrice = useCallback((price: number) => priceFormatter.format(price), [priceFormatter]);
 
   return (
     <PageLayout>
@@ -262,7 +268,9 @@ export default function Properties() {
                     ]}
                     value={selectedAgentId || 'all'}
                     onChange={(e) => {
-                      setSelectedAgentId(e.target.value === 'all' ? null : e.target.value);
+                      const nextAgentId = e.target.value === 'all' ? null : e.target.value;
+                      const params = buildSearchParams(filters, nextAgentId);
+                      setSearchParams(params, { replace: true });
                       setCurrentPage(1);
                     }}
                     className="w-full sm:w-64"
@@ -274,7 +282,8 @@ export default function Properties() {
                       {agents.find((a) => a.id === selectedAgentId)?.display_name}
                       <button
                         onClick={() => {
-                          setSelectedAgentId(null);
+                          const params = buildSearchParams(filters, null);
+                          setSearchParams(params, { replace: true });
                           setCurrentPage(1);
                         }}
                         className="hover:bg-background/50 rounded-full"

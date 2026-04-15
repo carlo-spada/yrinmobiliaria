@@ -21,15 +21,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
+import { usePublicSession } from '@/hooks/usePublicSession';
 
 export default function Favorites() {
   const { language } = useLanguage();
   const { favorites, clearFavorites } = useFavorites();
   const { data: properties = [] } = useProperties();
-  const { user } = useAuth();
+  const { user, loading: sessionLoading } = usePublicSession();
   const [viewMode] = useState<'grid' | 'list'>('grid');
   // Initialize from localStorage directly in useState to avoid effect
   const [showSignupBanner, setShowSignupBanner] = useState(() => {
@@ -116,7 +116,7 @@ export default function Favorites() {
         </FadeIn>
 
         {/* Signup/Verification Banners */}
-        {showSignupBanner && (
+        {showSignupBanner && !sessionLoading && (
           <section className="py-4">
             <div className="container mx-auto px-4">
               {!user ? (

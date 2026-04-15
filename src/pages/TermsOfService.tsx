@@ -4,7 +4,7 @@ import { FileText, Loader2 } from 'lucide-react';
 import { PageLayout } from '@/components/layout';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import type { Language } from '@/types';
@@ -40,7 +40,7 @@ type TermsCmsContent = Record<
 
 export default function TermsOfService() {
   const { language } = useLanguage();
-  const { getSetting } = useSiteSettings();
+  const { getSetting } = usePublicSiteSettings();
 
   const companyName = getSetting('company_name', 'YR Inmobiliaria');
 

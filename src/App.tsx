@@ -8,8 +8,6 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppRoutes } from "@/routes";
 
@@ -41,22 +39,19 @@ function RouteProgressTracker() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <LanguageProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <RouteProgressTracker />
-            <ScrollToTop />
-            <PageTransition>
-              <AppRoutes />
-            </PageTransition>
-            <WhatsAppButton />
-          </BrowserRouter>
-        </LanguageProvider>
-      </TooltipProvider>
-    </AuthProvider>
+    <TooltipProvider>
+      <LanguageProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <RouteProgressTracker />
+          <ScrollToTop />
+          <PageTransition>
+            <AppRoutes />
+          </PageTransition>
+        </BrowserRouter>
+      </LanguageProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

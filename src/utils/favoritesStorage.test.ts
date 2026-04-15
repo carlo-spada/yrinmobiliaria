@@ -8,21 +8,8 @@ const VALID_UUID_2 = "987fcdeb-51a2-34e8-9f01-234567890abc";
 
 describe("favoritesStorage", () => {
   beforeEach(() => {
-    const store: Record<string, string> = {};
-    vi.stubGlobal("localStorage", {
-      getItem: (key: string) => store[key] ?? null,
-      setItem: (key: string, value: string) => {
-        store[key] = value;
-      },
-      removeItem: (key: string) => delete store[key],
-      clear: () => Object.keys(store).forEach((k) => delete store[k]),
-      key: () => null,
-      length: 0,
-    });
-    vi.stubGlobal("window", {
-      dispatchEvent: vi.fn(),
-      localStorage: globalThis.localStorage,
-    } as unknown as Window);
+    window.localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   it("returns an empty array when localStorage is empty or invalid JSON", () => {

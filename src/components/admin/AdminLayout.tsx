@@ -1,6 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { ReactNode, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -41,6 +41,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user, loading: authLoading, profile } = useAuth();
   const { isStaff, role, loading: roleLoading, isSuperadmin } = useUserRole();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Persist sidebar open state - use useState with initializer
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -101,10 +102,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               Si crees que deberías tener acceso, contacta al administrador principal.
             </p>
             <div className="flex gap-2">
-              <Button onClick={() => window.location.href = '/'} variant="default">
+              <Button onClick={() => navigate('/')} variant="default">
                 Ir al Inicio
               </Button>
-              <Button onClick={() => window.location.href = '/cuenta'} variant="outline">
+              <Button onClick={() => navigate('/cuenta')} variant="outline">
                 Mi Cuenta
               </Button>
             </div>

@@ -4,7 +4,7 @@ import { es } from 'date-fns/locale';
 import { CalendarIcon, Check, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 
 import { Footer } from '@/components/Footer';
@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
-import { useProperties } from '@/hooks/useProperties';
+import { useSchedulableProperties } from '@/hooks/useProperties';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
@@ -41,7 +41,8 @@ export default function ScheduleVisit() {
   const [searchParams] = useSearchParams();
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const { data: properties = [] } = useProperties();
+  const navigate = useNavigate();
+  const { data: properties = [] } = useSchedulableProperties();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [confirmedData, setConfirmedData] = useState<ScheduleFormData | null>(null);
@@ -202,7 +203,7 @@ export default function ScheduleVisit() {
                   <CalendarIcon className="w-5 h-5" />
                   {t.schedule?.addToCalendar || 'Agregar a Google Calendar'}
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => window.location.href = '/propiedades'}>
+                <Button variant="outline" size="lg" onClick={() => navigate('/propiedades')}>
                   {t.schedule?.backToProperties || 'Ver más propiedades'}
                 </Button>
               </div>
@@ -257,7 +258,7 @@ export default function ScheduleVisit() {
                       <SelectContent>
                         {properties.map((property) => (
                           <SelectItem key={property.id} value={property.id}>
-                            {property.title[language]} - {property.location.zone}
+                            {property.title[language]} - {property.zone}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -269,14 +270,18 @@ export default function ScheduleVisit() {
 
                   {selectedProperty && (
                     <div className="flex gap-4 p-4 bg-secondary/20 rounded-lg border border-border">
-                      <img
-                        src={selectedProperty.images[0]}
-                        alt={selectedProperty.title[language]}
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
+                      {selectedProperty.image ? (
+                        <img
+                          src={selectedProperty.image}
+                          alt={selectedProperty.title[language]}
+                          className="w-24 h-24 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-lg bg-muted" aria-hidden="true" />
+                      )}
                       <div className="flex-1 space-y-1">
                         <h3 className="font-semibold text-foreground">{selectedProperty.title[language]}</h3>
-                        <p className="text-sm text-muted-foreground">{selectedProperty.location.zone}</p>
+                        <p className="text-sm text-muted-foreground">{selectedProperty.zone}</p>
                         <p className="text-lg font-bold text-primary">${selectedProperty.price.toLocaleString('es-MX')}</p>
                       </div>
                     </div>

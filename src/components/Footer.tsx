@@ -5,12 +5,12 @@ import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 
 export function Footer() {
   const { t, language } = useLanguage();
-  const { getSetting, isLoading } = useSiteSettings();
+  const { getSetting, isLoading } = usePublicSiteSettings();
   const currentYear = new Date().getFullYear();
 
   // Get dynamic settings with fallbacks

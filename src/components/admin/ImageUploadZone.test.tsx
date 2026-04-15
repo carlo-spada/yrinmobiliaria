@@ -22,19 +22,6 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
-
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-
-Object.defineProperty(globalThis, 'localStorage', {
-  value: localStorageMock,
-  writable: true,
-});
-
 const mockedUploadImage = uploadImage as unknown as ReturnType<typeof vi.fn>;
 const mockedToast = toast as unknown as { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
 

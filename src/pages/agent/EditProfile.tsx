@@ -2,13 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as z from "zod";
 
 import { ImageUploadZone } from "@/components/admin/ImageUploadZone";
-import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -98,32 +96,6 @@ function EditProfileContent() {
     }
   };
 
-  const handleImageUpload = async (files: File[]) => {
-    if (files.length === 0) return;
-
-    try {
-      const file = files[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("property-images")
-        .upload(`agent-photos/${fileName}`, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("property-images")
-        .getPublicUrl(`agent-photos/${fileName}`);
-
-      setValue("photo_url", publicUrl);
-      toast.success("Foto subida exitosamente");
-    } catch (error) {
-      logger.error("Error uploading photo:", error);
-      toast.error("Error al subir la foto", { duration: 10000 });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-12 px-4">
       <div className="max-w-3xl mx-auto">
@@ -148,11 +120,13 @@ function EditProfileContent() {
                 </Avatar>
                 <ImageUploadZone 
                   images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
-                  onImagesChange={(imgs) => {
-                    if (imgs.length > 0) {
-                      handleImageUpload([new File([], imgs[0].url)]);
-                    }
-                  }}
+                  maxImages={1}
+                  onImagesChange={(imgs) =>
+                    setValue("photo_url", imgs[0]?.url ?? "", {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                 />
               </div>
               {errors.photo_url && (
@@ -298,9 +272,5 @@ function EditProfileContent() {
 }
 
 export default function EditProfile() {
-  return (
-    <ProfileCompletionGuard>
-      <EditProfileContent />
-    </ProfileCompletionGuard>
-  );
+  return <EditProfileContent />;
 }

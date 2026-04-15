@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageLoader } from "@/components/ui/page-loader";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
 
@@ -13,12 +17,22 @@ interface ProfileCompletionGuardProps {
 }
 
 export function ProfileCompletionGuard({ children }: ProfileCompletionGuardProps) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
+  const location = useLocation();
+  const shouldEnforceCompletion = !!user && role === "agent";
 
-  const { data: profile, isLoading } = useQuery({
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['profile-completion', user?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user) {
+        return null;
+      }
       
       const { data, error } = await supabase
         .from('profiles')
@@ -28,24 +42,56 @@ export function ProfileCompletionGuard({ children }: ProfileCompletionGuardProps
 
       if (error) {
         logger.error("Error fetching profile:", error);
-        return null;
+        throw error;
       }
 
       return data;
     },
-    enabled: !!user,
+    enabled: shouldEnforceCompletion,
+    retry: false,
   });
 
-  if (isLoading) {
+  if (authLoading || roleLoading || (shouldEnforceCompletion && isLoading)) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <Navigate
+        to={`/auth?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`}
+        replace
+      />
+    );
+  }
+
+  if (!shouldEnforceCompletion) {
+    return <>{children}</>;
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <CardTitle>No pudimos validar tu perfil</CardTitle>
+            </div>
+            <CardDescription>
+              La validación del perfil falló. Reintenta antes de continuar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button onClick={() => void refetch()} className="w-full">
+              Reintentar
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  // If profile exists but is not complete, redirect to onboarding
-  if (profile && !profile.is_complete) {
+  if (!profile?.is_complete) {
     return <Navigate to="/onboarding/complete-profile" replace />;
   }
 

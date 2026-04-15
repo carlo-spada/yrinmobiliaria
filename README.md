@@ -2,7 +2,7 @@
 
 A modern, bilingual (Spanish/English) real estate website for YR Inmobiliaria, showcasing properties in Oaxaca, Mexico.
 
-**Last Updated:** December 9, 2025
+**Last Updated:** April 15, 2026
 
 ---
 
@@ -102,6 +102,25 @@ npm test             # Run tests
 - **[AGENTS.md](AGENTS.md)** — AI agent guidelines
 - **[GEMINI.md](GEMINI.md)** — Gemini-specific guidance
 - **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** — Launch readiness
+
+## BMAD Workflow
+
+Major features, refactors, and architecture-sensitive work now follow the BMAD method.
+
+- **Canonical runtime:** `_bmad/` + `.agents/skills/`
+- **Brownfield knowledge:** [docs/index.md](docs/index.md)
+- **Agent context artifact:** `vault/bmad-output/project-context.md`
+- **Planning artifacts:** `vault/bmad-output/planning-artifacts/`
+- **Implementation artifacts:** `vault/bmad-output/implementation-artifacts/`
+- **Test artifacts:** `vault/bmad-output/test-artifacts/`
+
+Default path for major work:
+1. Refresh brownfield context with `bmad-document-project`
+2. Refine agent rules with `bmad-generate-project-context`
+3. Run planning flow: brief or PRFAQ -> PRD -> UX -> architecture -> epics and stories
+4. Run readiness and execution flow: implementation readiness -> sprint planning -> story cycle (`bmad-create-story`, `bmad-dev-story`, `bmad-code-review`)
+
+Small bug fixes can still use the direct repo workflow when the change does not justify the full BMAD path.
 
 ---
 

@@ -33,6 +33,29 @@ interface PropertyWithRelations extends PropertyRow {
   agent?: AgentInfo | null;
 }
 
+interface SchedulablePropertyRow {
+  id: string;
+  title_es: string | null;
+  title_en: string | null;
+  price: number | null;
+  location: Json;
+  property_images?: {
+    image_url: string;
+    display_order: number;
+  }[];
+}
+
+export interface SchedulableProperty {
+  id: string;
+  title: {
+    es: string;
+    en: string;
+  };
+  zone: string;
+  price: number;
+  image: string | null;
+}
+
 // Type guards for safe JSON parsing
 function isPropertyLocation(obj: Json): obj is Record<string, unknown> & PropertyLocation {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
@@ -105,6 +128,7 @@ const transformProperty = (row: PropertyWithRelations): Property => {
     status: row.status,
     featured: row.featured ?? false,
     publishedDate: row.published_date ?? '',
+    agent_id: row.agent_id ?? undefined,
     agent: agentData
       ? {
           id: agentData.id,
@@ -239,5 +263,50 @@ export const useProperty = (id: string) => {
       }
       return failureCount < 2;
     },
+  });
+};
+
+export const useSchedulableProperties = () => {
+  return useQuery({
+    queryKey: ['schedulable-properties'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          id,
+          title_es,
+          title_en,
+          price,
+          location,
+          property_images (
+            image_url,
+            display_order
+          )
+        `)
+        .eq('status', 'disponible')
+        .order('published_date', { ascending: false });
+
+      if (error) {
+        logger.error('Error fetching schedulable properties', error);
+        throw error;
+      }
+
+      return (data as SchedulablePropertyRow[] | null)?.map((property) => {
+        const location = isPropertyLocation(property.location) ? property.location : null;
+
+        return {
+          id: property.id,
+          title: {
+            es: property.title_es || '',
+            en: property.title_en || '',
+          },
+          zone: (location?.zone as string) || '',
+          price: Number(property.price) || 0,
+          image: property.property_images?.[0]?.image_url || null,
+        };
+      }) ?? [];
+    },
+    staleTime: PROPERTIES_STALE_TIME,
+    retry: 2,
   });
 };

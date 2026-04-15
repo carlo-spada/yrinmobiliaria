@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProperty, useProperties } from "@/hooks/useProperties";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/lib/schema-helpers";
 
 const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
@@ -42,7 +42,7 @@ export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
-  const { getSetting } = useSiteSettings();
+  const { getSetting } = usePublicSiteSettings();
   const { toast } = useToast();
 
   // All hooks must be called before any conditional returns

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Home, MessageSquare, Calendar, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -154,9 +153,5 @@ function AgentDashboardContent() {
 }
 
 export default function AgentDashboard() {
-  return (
-    <ProfileCompletionGuard>
-      <AgentDashboardContent />
-    </ProfileCompletionGuard>
-  );
+  return <AgentDashboardContent />;
 }

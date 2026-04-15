@@ -1,10 +1,47 @@
 import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
+
+const authState = vi.hoisted(() => ({
+  user: null as { id: string } | null,
+  loading: false,
+  session: null,
+  isAdmin: false,
+  profile: null,
+  signIn: vi.fn(),
+  signUp: vi.fn(),
+  signOut: vi.fn(),
+}));
+
+const roleState = vi.hoisted(() => ({
+  role: "user",
+  loading: false,
+  isStaff: false,
+  isSuperadmin: false,
+  isAdmin: false,
+  isAgent: false,
+  organizationId: null,
+}));
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => authState,
+}));
+
+vi.mock("@/hooks/useUserRole", () => ({
+  useUserRole: () => roleState,
+}));
+
+vi.mock("@/components/auth/ProfileCompletionGuard", () => ({
+  ProfileCompletionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
 vi.mock("@/pages/MapView", () => ({ default: () => <div>MapViewMock</div> }));
 vi.mock("@/pages/Favorites", () => ({ default: () => <div>FavoritesMock</div> }));
 vi.mock("@/pages/Auth", () => ({ default: () => <div>AuthMock</div> }));
+vi.mock("@/pages/Index", () => ({ default: () => <div>IndexMock</div> }));
 vi.mock("@/pages/admin/AdminDashboard", () => ({ default: () => <div>AdminDashboardMock</div> }));
+vi.mock("@/pages/onboarding/CompleteProfile", () => ({ default: () => <div>CompleteProfileMock</div> }));
+vi.mock("@/pages/agent/AgentDashboard", () => ({ default: () => <div>AgentDashboardMock</div> }));
+vi.mock("@/pages/agent/EditProfile", () => ({ default: () => <div>EditProfileMock</div> }));
 vi.mock("@/components/WhatsAppButton", () => ({
   WhatsAppButton: () => <div aria-label="whatsapp-button" />,
 }));
@@ -16,24 +53,57 @@ const renderRoute = (path: string) => {
   render(<App />);
 };
 
-describe("App routing smoke tests", () => {
-  it("renders the map route", async () => {
+describe("App route protection", () => {
+  beforeEach(() => {
+    authState.user = null;
+    authState.loading = false;
+    authState.profile = null;
+
+    roleState.role = "user";
+    roleState.loading = false;
+    roleState.isStaff = false;
+    roleState.isSuperadmin = false;
+    roleState.isAdmin = false;
+    roleState.isAgent = false;
+    roleState.organizationId = null;
+  });
+
+  it("renders public routes", async () => {
     renderRoute("/mapa");
     expect(await screen.findByText("MapViewMock")).toBeInTheDocument();
   });
 
-  it("renders the favorites route", async () => {
-    renderRoute("/favoritos");
-    expect(await screen.findByText("FavoritesMock")).toBeInTheDocument();
-  });
-
-  it("renders the auth route", async () => {
-    renderRoute("/auth");
+  it("redirects anonymous users away from the agent dashboard", async () => {
+    renderRoute("/agent/dashboard");
     expect(await screen.findByText("AuthMock")).toBeInTheDocument();
   });
 
-  it("renders the admin dashboard route", async () => {
-    renderRoute("/admin");
-    expect(await screen.findByText("AdminDashboardMock")).toBeInTheDocument();
+  it("redirects authenticated non-staff users away from agent routes", async () => {
+    authState.user = { id: "user-1" };
+
+    renderRoute("/agent/profile/edit");
+    expect(await screen.findByText("IndexMock")).toBeInTheDocument();
+  });
+
+  it("renders agent-only routes for authorized staff", async () => {
+    authState.user = { id: "agent-1" };
+    roleState.role = "agent";
+    roleState.isStaff = true;
+    roleState.isAgent = true;
+
+    renderRoute("/agent/dashboard");
+    expect(await screen.findByText("AgentDashboardMock")).toBeInTheDocument();
+  });
+
+  it("redirects anonymous users away from onboarding", async () => {
+    renderRoute("/onboarding/complete-profile");
+    expect(await screen.findByText("AuthMock")).toBeInTheDocument();
+  });
+
+  it("renders onboarding for authenticated users", async () => {
+    authState.user = { id: "agent-1" };
+
+    renderRoute("/onboarding/complete-profile");
+    expect(await screen.findByText("CompleteProfileMock")).toBeInTheDocument();
   });
 });

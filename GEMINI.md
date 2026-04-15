@@ -2,7 +2,7 @@
 
 > AI-assisted development guide for Gemini. See `CLAUDE.md` for complete project philosophy.
 
-**Last Updated:** December 9, 2025
+**Last Updated:** April 15, 2026
 
 ---
 
@@ -96,6 +96,21 @@ Include `<MetaTags />` and `<StructuredData />` on new pages.
 ### Environment
 - Secrets managed via Lovable Cloud, not `.env` files in repo
 - Never commit API keys or credentials
+
+---
+
+## BMAD Delivery Path
+
+- **Canonical BMAD runtime:** `_bmad/` + `.agents/skills/`
+- **Brownfield knowledge:** `docs/index.md`
+- **Agent context:** `vault/bmad-output/project-context.md`
+- **Planning artifacts:** `vault/bmad-output/planning-artifacts/`
+- **Implementation artifacts:** `vault/bmad-output/implementation-artifacts/`
+- **Test artifacts:** `vault/bmad-output/test-artifacts/`
+
+Use the BMAD workflow for major work: `bmad-document-project` -> `bmad-generate-project-context` -> brief/PRFAQ -> PRD -> UX -> architecture -> epics/stories -> readiness -> sprint planning -> story cycle.
+
+Small fixes can still use the direct repo workflow, but do not recreate the legacy BMAD prompt trees under `.claude/commands/bmad` or `.codex/prompts/bmad-*`.
 
 ---
 

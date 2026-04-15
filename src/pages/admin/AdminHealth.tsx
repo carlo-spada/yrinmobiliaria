@@ -20,23 +20,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserRole } from '@/hooks/useUserRole';
-import { supabase } from '@/integrations/supabase/client';
 
-// Health check thresholds and configuration
-const HEALTH_CHECK_CONFIG = {
-  DB_RESPONSE_HEALTHY_MS: 1000,
-  REFRESH_COOLDOWN_MS: 500,
-  STORAGE_CLEANUP_MAX_RETRIES: 3,
-  STORAGE_CLEANUP_RETRY_DELAY_MS: 500,
-} as const;
+import { HealthCheck, runAdminHealthChecks } from './adminHealthChecks';
 
-interface HealthCheck {
-  name: string;
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  message: string;
-  responseTime?: number;
-  details?: Record<string, unknown>;
-}
+const REFRESH_COOLDOWN_MS = 500;
 
 export default function AdminHealth() {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -45,221 +32,7 @@ export default function AdminHealth() {
 
   const { data: healthChecks, refetch, isFetching } = useQuery({
     queryKey: ['admin-health'],
-    queryFn: async () => {
-      const checks: HealthCheck[] = [];
-      
-      // 1. Database Connectivity
-      const dbStart = Date.now();
-      try {
-        const { error: dbError, count } = await supabase
-          .from('properties')
-          .select('id', { count: 'exact', head: true });
-        
-        const dbTime = Date.now() - dbStart;
-        
-        if (dbError) {
-          checks.push({
-            name: 'Database Connection',
-            status: 'unhealthy',
-            message: `Error: ${dbError.message}`,
-            responseTime: dbTime,
-          });
-        } else {
-          checks.push({
-            name: 'Database Connection',
-            status: dbTime < HEALTH_CHECK_CONFIG.DB_RESPONSE_HEALTHY_MS ? 'healthy' : 'degraded',
-            message: `Connected successfully. ${count ?? 0} properties in database.`,
-            responseTime: dbTime,
-            details: { propertyCount: count ?? 0 },
-          });
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        checks.push({
-          name: 'Database Connection',
-          status: 'unhealthy',
-          message: `Connection failed: ${errorMessage}`,
-          responseTime: Date.now() - dbStart,
-        });
-      }
-
-      // 2. Authentication Service
-      const authStart = Date.now();
-      try {
-        const { data: session } = await supabase.auth.getSession();
-        const authTime = Date.now() - authStart;
-        
-        checks.push({
-          name: 'Authentication Service',
-          status: 'healthy',
-          message: session.session ? 'User authenticated' : 'Service operational (no active session)',
-          responseTime: authTime,
-          details: { authenticated: !!session.session },
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        checks.push({
-          name: 'Authentication Service',
-          status: 'unhealthy',
-          message: `Auth check failed: ${errorMessage}`,
-          responseTime: Date.now() - authStart,
-        });
-      }
-
-      // 3. RLS Policies Check
-      const rlsStart = Date.now();
-      try {
-        // Try to query profiles (requires auth)
-        const { error: rlsError } = await supabase
-          .from('profiles')
-          .select('id')
-          .limit(1);
-        
-        const rlsTime = Date.now() - rlsStart;
-        
-        checks.push({
-          name: 'Row Level Security',
-          status: rlsError ? 'degraded' : 'healthy',
-          message: rlsError 
-            ? `RLS active but query restricted: ${rlsError.message}`
-            : 'RLS policies functioning correctly',
-          responseTime: rlsTime,
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        checks.push({
-          name: 'Row Level Security',
-          status: 'unhealthy',
-          message: `RLS check failed: ${errorMessage}`,
-          responseTime: Date.now() - rlsStart,
-        });
-      }
-
-      // 4. Storage Bucket Access (direct check on property-images)
-      const storageStart = Date.now();
-      try {
-        const { data: bucketList, error: bucketError } = await supabase.storage
-          .from('property-images')
-          .list('', { limit: 1 });
-        const storageTime = Date.now() - storageStart;
-
-        if (bucketError) {
-          checks.push({
-            name: 'Storage Service',
-            status: 'unhealthy',
-            message: `property-images inaccesible: ${bucketError.message}`,
-            responseTime: storageTime,
-          });
-        } else {
-          checks.push({
-            name: 'Storage Service',
-            status: 'healthy',
-            message: bucketList && bucketList.length > 0
-              ? `Bucket accesible • ${bucketList.length} item(s) visibles`
-              : 'Bucket accesible',
-            responseTime: storageTime,
-            details: { visibleItems: bucketList?.length ?? 0 },
-          });
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        checks.push({
-          name: 'Storage Service',
-          status: 'unhealthy',
-          message: `Storage check failed: ${errorMessage}`,
-          responseTime: Date.now() - storageStart,
-        });
-      }
-
-      // 5. Storage RLS Upload/Delete (tiny object) with retry mechanism for cleanup
-      const storageRlsStart = Date.now();
-      try {
-        const testPath = `health-check/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
-        const testBlob = new Blob([new Uint8Array([0x52, 0x49, 0x46, 0x46])], { type: 'image/webp' });
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('property-images')
-          .upload(testPath, testBlob, { cacheControl: '0', upsert: false, contentType: 'image/webp' });
-
-        const uploadTime = Date.now() - storageRlsStart;
-
-        if (uploadError || !uploadData?.path) {
-          checks.push({
-            name: 'Storage Upload (RLS)',
-            status: 'unhealthy',
-            message: uploadError?.message
-              ? `Upload blocked: ${uploadError.message}`
-              : 'Upload blocked: no path returned',
-            responseTime: uploadTime,
-          });
-        } else {
-          // Retry cleanup up to 3 times with delay
-          let cleanupSuccess = false;
-          let lastDeleteError: Error | null = null;
-
-          for (let attempt = 0; attempt < HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_MAX_RETRIES && !cleanupSuccess; attempt++) {
-            const { error: deleteError } = await supabase.storage
-              .from('property-images')
-              .remove([uploadData.path]);
-
-            if (!deleteError) {
-              cleanupSuccess = true;
-            } else {
-              lastDeleteError = deleteError;
-              // Wait before retry (except on last attempt)
-              if (attempt < HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_MAX_RETRIES - 1) {
-                await new Promise(r => setTimeout(r, HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_RETRY_DELAY_MS));
-              }
-            }
-          }
-
-          checks.push({
-            name: 'Storage Upload (RLS)',
-            status: cleanupSuccess ? 'healthy' : 'degraded',
-            message: cleanupSuccess
-              ? 'Upload & delete permitidos (RLS ok)'
-              : `Upload OK, cleanup failed after ${HEALTH_CHECK_CONFIG.STORAGE_CLEANUP_MAX_RETRIES} retries: ${lastDeleteError?.message ?? 'Unknown error'}`,
-            responseTime: uploadTime,
-            details: cleanupSuccess ? undefined : { orphanedPath: uploadData.path },
-          });
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        checks.push({
-          name: 'Storage Upload (RLS)',
-          status: 'unhealthy',
-          message: `Upload test failed: ${errorMessage}`,
-          responseTime: Date.now() - storageRlsStart,
-        });
-      }
-
-      // 6. Realtime Connection
-      const realtimeStart = Date.now();
-      try {
-        const channel = supabase.channel('health-check');
-        const realtimeTime = Date.now() - realtimeStart;
-        
-        checks.push({
-          name: 'Realtime Service',
-          status: 'healthy',
-          message: 'Realtime channels available',
-          responseTime: realtimeTime,
-        });
-        
-        // Clean up channel
-        await supabase.removeChannel(channel);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        checks.push({
-          name: 'Realtime Service',
-          status: 'degraded',
-          message: `Realtime check inconclusive: ${errorMessage}`,
-          responseTime: Date.now() - realtimeStart,
-        });
-      }
-
-      return checks;
-    },
+    queryFn: runAdminHealthChecks,
     enabled: false,
   });
 
@@ -268,14 +41,14 @@ export default function AdminHealth() {
 
     // Rate limiting: prevent rapid refreshes
     const now = Date.now();
-    if (now - lastRefreshRef.current < HEALTH_CHECK_CONFIG.REFRESH_COOLDOWN_MS) {
+    if (now - lastRefreshRef.current < REFRESH_COOLDOWN_MS) {
       return;
     }
     lastRefreshRef.current = now;
 
     setIsRefreshing(true);
     await refetch();
-    setTimeout(() => setIsRefreshing(false), HEALTH_CHECK_CONFIG.REFRESH_COOLDOWN_MS);
+    setTimeout(() => setIsRefreshing(false), REFRESH_COOLDOWN_MS);
   };
 
   const getStatusIcon = (status: HealthCheck['status']) => {

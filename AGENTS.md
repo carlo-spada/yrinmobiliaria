@@ -2,7 +2,7 @@
 
 > **Primary Reference:** See `CLAUDE.md` for complete project philosophy and workflow.
 
-**Last Updated:** December 9, 2025
+**Last Updated:** April 15, 2026
 
 ---
 
@@ -25,7 +25,7 @@ git stash push -m "WIP before sync" && git pull origin main
 
 ## Documentation Discipline
 
-**ABSOLUTE LIMITS:** Maximum 5 files, maximum 500 lines per file.
+**ABSOLUTE LIMITS:** Maximum 5 root documentation files, maximum 500 lines per file.
 
 **Before creating ANY new document:**
 - Can this be added to existing docs?
@@ -39,12 +39,14 @@ git stash push -m "WIP before sync" && git pull origin main
 - Synthesize and consolidate ruthlessly
 - Remove transient status updates
 
-**Current Docs (4/5 slots):**
+**Current Root Docs (5/5 slots):**
 1. README.md — Project overview
 2. CLAUDE.md — Workflow & philosophy
 3. AGENTS.md — This file
 4. GEMINI.md — Gemini-specific guidance
 5. PRODUCTION_CHECKLIST.md — Launch checklist
+
+**BMAD exception:** Brownfield knowledge belongs in `docs/`, and BMAD workflow artifacts belong in `vault/bmad-output/`. Do not create extra root docs for process artifacts.
 
 ---
 
@@ -66,6 +68,40 @@ git stash push -m "WIP before sync" && git pull origin main
 - Create `supabase/migrations/` or `supabase/functions/`
 - Commit secrets or environment variables
 - Work on stale code without syncing first
+
+---
+
+## BMAD Delivery Path
+
+**Canonical BMAD runtime:** `_bmad/` + `.agents/skills/`
+
+**Use BMAD for major work:**
+- Features and epics
+- Architecture changes
+- Multi-file refactors
+- Release-readiness and test-planning work
+
+**Direct repo workflow is still fine for:**
+- Tiny bug fixes
+- Scoped lint/type fixes
+- Urgent production patches
+
+**Default major-work path:**
+1. `bmad-document-project`
+2. `bmad-generate-project-context`
+3. Brief or PRFAQ -> PRD -> UX -> architecture -> epics and stories
+4. `bmad-check-implementation-readiness`
+5. `bmad-sprint-planning`
+6. Story cycle: `bmad-create-story` -> validate -> `bmad-dev-story` -> `bmad-code-review`
+
+**Artifact paths:**
+- Brownfield knowledge: `docs/index.md`
+- Agent context: `vault/bmad-output/project-context.md`
+- Planning: `vault/bmad-output/planning-artifacts/`
+- Implementation: `vault/bmad-output/implementation-artifacts/`
+- Tests: `vault/bmad-output/test-artifacts/`
+
+**Legacy cleanup rule:** Do not reintroduce legacy BMAD prompt trees under `.claude/commands/bmad` or `.codex/prompts/bmad-*`.
 
 ---
 

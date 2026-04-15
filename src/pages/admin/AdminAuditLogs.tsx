@@ -14,58 +14,15 @@ import {
 } from '@/components/ui/table';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
 import { formatDateTimeFull } from '@/utils/dateFormat';
+
+import { sanitizeChanges } from './adminAuditLogUtils';
 
 // Configuration constants
 const AUDIT_LOG_CONFIG = {
   DEFAULT_LIMIT: 100,
   USER_ID_DISPLAY_LENGTH: 8,
 } as const;
-
-// Sensitive fields that should be redacted in audit logs
-const SENSITIVE_FIELDS = [
-  'password',
-  'token',
-  'secret',
-  'api_key',
-  'apiKey',
-  'credential',
-  'auth',
-  'session',
-  'cookie',
-  'private_key',
-  'privateKey',
-] as const;
-
-/**
- * Sanitize audit log changes by redacting sensitive fields
- * Prevents XSS by escaping HTML and handles potential security issues
- */
-const sanitizeChanges = (changes: Json): string => {
-  if (!changes || typeof changes !== 'object') return '-';
-  if (Array.isArray(changes)) return JSON.stringify(changes);
-
-  const sanitized = { ...changes as Record<string, unknown> };
-
-  // Redact sensitive fields (case-insensitive check)
-  Object.keys(sanitized).forEach(key => {
-    const lowerKey = key.toLowerCase();
-    if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field.toLowerCase()))) {
-      sanitized[key] = '[REDACTED]';
-    }
-  });
-
-  // Escape HTML entities to prevent XSS when rendering
-  const escaped = JSON.stringify(sanitized, null, 2)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-
-  return escaped;
-};
 
 export default function AdminAuditLogs() {
   const { t } = useLanguage();
@@ -134,10 +91,9 @@ export default function AdminAuditLogs() {
                       : t.admin.auditLogsPage.system}
                   </TableCell>
                   <TableCell className="max-w-md">
-                    <pre
-                      className="whitespace-pre-wrap text-xs font-mono bg-muted p-2 rounded max-h-24 overflow-auto"
-                      dangerouslySetInnerHTML={{ __html: sanitizeChanges(log.changes) }}
-                    />
+                    <pre className="whitespace-pre-wrap text-xs font-mono bg-muted p-2 rounded max-h-24 overflow-auto">
+                      {sanitizeChanges(log.changes)}
+                    </pre>
                   </TableCell>
                 </TableRow>
               ))}

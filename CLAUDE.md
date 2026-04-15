@@ -2,7 +2,7 @@
 
 > Build with intent; keep the repo lean; ship only after quality gates pass.
 
-**Last Updated:** December 9, 2025
+**Last Updated:** April 15, 2026
 
 ---
 
@@ -43,6 +43,30 @@ git stash push -m "WIP before sync" && git pull origin main
 3. **Implement:** Small typed functions; reuse `ResponsiveImage`, `LanguageContext`, shadcn components
 4. **Verify:** Run `npm run lint` and `npm run build` after changes
 5. **Document:** Update relevant MD files; stamp the date
+
+## BMAD Transition
+
+- **Canonical BMAD install:** `_bmad/` and `.agents/skills/`
+- **Legacy BMAD prompts:** `.claude/commands/bmad` and `.codex/prompts/bmad-*` are being retired; do not recreate them
+- **Required for major work:** Features, epics, architecture changes, release/test planning, and multi-file refactors
+- **Allowed direct path:** Tiny bug fixes, scoped lint/type cleanups, and urgent patches
+
+### BMAD Artifact Locations
+- **Brownfield knowledge:** `docs/index.md`
+- **Agent context:** `vault/bmad-output/project-context.md`
+- **Planning artifacts:** `vault/bmad-output/planning-artifacts/`
+- **Implementation artifacts:** `vault/bmad-output/implementation-artifacts/`
+- **Test artifacts:** `vault/bmad-output/test-artifacts/`
+
+### Default Major-Work Path
+1. `bmad-document-project`
+2. `bmad-generate-project-context`
+3. Brief or PRFAQ -> PRD -> UX -> Architecture -> Epics and Stories
+4. `bmad-check-implementation-readiness`
+5. `bmad-sprint-planning`
+6. Story cycle: `bmad-create-story` -> validate -> `bmad-dev-story` -> `bmad-code-review`
+
+Run BMAD skills in fresh contexts when possible. If scope changes invalidate the active plan, use `bmad-correct-course` instead of patching around broken assumptions.
 
 ---
 
@@ -110,4 +134,4 @@ Before any PR or deploy:
 4. **README.md** — Project overview for humans
 5. **PRODUCTION_CHECKLIST.md** — Launch readiness
 
-**Slot 5 is reserved for temporary docs only — delete after use.**
+**Slot 5 is reserved for temporary root docs only.** BMAD artifacts belong in `docs/` and `vault/bmad-output/`, not as new root-level guide files.

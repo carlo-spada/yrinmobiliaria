@@ -1,18 +1,8 @@
-import { Menu, X, ChevronDown, Calendar, MapPin, Phone, Mail, Heart, User, LogOut } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Calendar, ChevronDown, Heart, Mail, MapPin, Menu, Phone, X } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -23,36 +13,51 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
-import { useFavorites } from '@/hooks/useFavorites';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { cn } from '@/lib/utils';
 
 import { LanguageSelector } from './LanguageSelector';
 
+const PublicHeaderActions = lazy(() =>
+  import('@/components/header/PublicHeaderActions').then((module) => ({
+    default: module.PublicHeaderActions,
+  }))
+);
+
+const PublicMobileAccountSection = lazy(() =>
+  import('@/components/header/PublicMobileAccountSection').then((module) => ({
+    default: module.PublicMobileAccountSection,
+  }))
+);
+
+function HeaderActionsFallback({ favoritesLabel, signInLabel }: { favoritesLabel: string; signInLabel: string }) {
+  return (
+    <>
+      <Link to="/favoritos" className="hidden md:block relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={favoritesLabel}
+          title={favoritesLabel}
+        >
+          <Heart className="h-5 w-5" aria-hidden="true" />
+        </Button>
+      </Link>
+      <Link to="/auth" className="hidden md:block">
+        <Button variant="outline" size="sm">
+          {signInLabel}
+        </Button>
+      </Link>
+    </>
+  );
+}
+
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showDeferredActions, setShowDeferredActions] = useState(false);
   const { t, language } = useLanguage();
   const location = useLocation();
-  const navigate = useNavigate();
-  const { count: favoritesCount } = useFavorites();
-  const { getSetting } = useSiteSettings();
-  const { user, profile, signOut } = useAuth();
-  
-  const companyName = getSetting('company_name', 'YR Inmobiliaria');
-
-  const initials = (profile?.display_name || user?.email || 'U')
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .substring(0, 2);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
+  const companyName = 'YR Inmobiliaria';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,6 +66,16 @@ export function Header() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setShowDeferredActions(true);
+    }, 150);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const propertyTypes = [
@@ -205,79 +220,22 @@ export function Header() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
-            {/* Favorites Button */}
-            <Link to="/favoritos" className="hidden md:block relative">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative"
-                aria-label={`${t.header.viewFavorites}${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
-                title={`${t.header.viewFavorites}${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
+            {showDeferredActions ? (
+              <Suspense
+                fallback={
+                  <HeaderActionsFallback
+                    favoritesLabel={t.header.viewFavorites}
+                    signInLabel={language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
+                  />
+                }
               >
-                <Heart 
-                  className={cn(
-                    'h-5 w-5',
-                    favoritesCount > 0 && 'fill-red-500 text-red-500'
-                  )} 
-                  aria-hidden="true"
-                />
-                {favoritesCount > 0 && (
-                  <Badge
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                    variant="destructive"
-                  >
-                    {favoritesCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
-
-            {/* User Menu */}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hidden md:flex rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={profile?.photo_url || ''} alt={profile?.display_name || 'User'} />
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{profile?.display_name || user.email}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/cuenta" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Mi Cuenta' : 'My Account'}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/favoritos" className="cursor-pointer">
-                      <Heart className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {language === 'es' ? 'Cerrar Sesión' : 'Sign Out'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                <PublicHeaderActions />
+              </Suspense>
             ) : (
-              <Link to="/auth" className="hidden md:block">
-                <Button variant="outline" size="sm">
-                  {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
-                </Button>
-              </Link>
+              <HeaderActionsFallback
+                favoritesLabel={t.header.viewFavorites}
+                signInLabel={language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
+              />
             )}
 
             <LanguageSelector />
@@ -411,54 +369,26 @@ export function Header() {
                   <Separator />
 
                   {/* User Menu - Mobile */}
-                  {user ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3 px-4 py-3 bg-muted rounded-lg">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={profile?.photo_url || ''} alt={profile?.display_name || 'User'} />
-                          <AvatarFallback className="text-sm bg-primary/10 text-primary">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{profile?.display_name || user.email}</p>
-                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                        </div>
+                  <Suspense
+                    fallback={
+                      <div className="space-y-2">
+                        <Link to="/favoritos" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Button variant="outline" className="w-full">
+                            {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
+                          </Button>
+                        </Link>
+                        <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Button variant="outline" className="w-full">
+                            {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
+                          </Button>
+                        </Link>
                       </div>
-                      <Link
-                        to="/cuenta"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <User className="h-5 w-5" />
-                        {language === 'es' ? 'Mi Cuenta' : 'My Account'}
-                      </Link>
-                      <Link
-                        to="/favoritos"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <Heart className="h-5 w-5" />
-                        {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleSignOut();
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors w-full text-left"
-                      >
-                        <LogOut className="h-5 w-5" />
-                        {language === 'es' ? 'Cerrar Sesión' : 'Sign Out'}
-                      </button>
-                    </div>
-                  ) : (
-                    <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">
-                        {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
-                      </Button>
-                    </Link>
-                  )}
+                    }
+                  >
+                    {isMobileMenuOpen ? (
+                      <PublicMobileAccountSection onNavigate={() => setIsMobileMenuOpen(false)} />
+                    ) : null}
+                  </Suspense>
 
                   <Separator />
 

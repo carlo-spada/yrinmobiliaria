@@ -111,32 +111,6 @@ export default function CompleteProfile() {
     }
   };
 
-  const handleImageUpload = async (files: File[]) => {
-    if (files.length === 0) return;
-
-    try {
-      const file = files[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("property-images")
-        .upload(`agent-photos/${fileName}`, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("property-images")
-        .getPublicUrl(`agent-photos/${fileName}`);
-
-      setValue("photo_url", publicUrl);
-      toast.success("Foto subida exitosamente");
-    } catch (error) {
-      logger.error("Error uploading photo:", error);
-      toast.error("Error al subir la foto", { duration: 10000 });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-12 px-4">
       <div className="max-w-2xl mx-auto">
@@ -167,11 +141,13 @@ export default function CompleteProfile() {
                 </div>
                 <ImageUploadZone 
                   images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
-                  onImagesChange={(imgs) => {
-                    if (imgs.length > 0) {
-                      handleImageUpload([new File([], imgs[0].url)]);
-                    }
-                  }}
+                  maxImages={1}
+                  onImagesChange={(imgs) =>
+                    setValue("photo_url", imgs[0]?.url ?? "", {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                 />
                 {errors.photo_url && (
                   <p className="text-sm text-destructive">{errors.photo_url.message}</p>
