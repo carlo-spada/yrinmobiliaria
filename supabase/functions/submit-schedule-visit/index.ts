@@ -207,7 +207,6 @@ serve(async (req) => {
             title_es,
             price,
             location,
-            organization_id,
             agent_id,
             profiles!properties_agent_id_fkey(email, display_name)
           `)
@@ -225,20 +224,8 @@ serve(async (req) => {
           recipientName = agentData.display_name || 'Agente';
           console.log(`Routing visit email to agent: ${recipientName} (${recipientEmail})`);
         } else {
-          // Fallback to organization email
-          const { data: orgData } = await supabase
-            .from('organizations')
-            .select('contact_email, name')
-            .eq('id', propertyData?.organization_id)
-            .single();
-          
-          if (orgData?.contact_email) {
-            recipientEmail = orgData.contact_email;
-            recipientName = orgData.name || 'YR Inmobiliaria';
-            console.log(`Routing visit email to organization: ${recipientName} (${recipientEmail})`);
-          } else {
-            console.warn('No agent or organization email found, using fallback: contacto@yrinmobiliaria.com');
-          }
+          // Single-tenant: sin agente asignado → email fijo del negocio
+          console.warn('No agent email found, using business fallback: contacto@yrinmobiliaria.com');
         }
 
         const propertyTitle = propertyData?.title_es || 'Propiedad';

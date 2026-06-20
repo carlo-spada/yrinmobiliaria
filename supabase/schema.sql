@@ -1,0 +1,336 @@
+-- =============================================================================
+-- YR Inmobiliaria — Esquema SINGLE-TENANT limpio (fuente de verdad)
+-- =============================================================================
+-- Autorizado desde src/integrations/supabase/types.ts (espejo real de la BD viva).
+--
+-- PENDIENTE de reconciliar con `pg_dump --schema-only` del proyecto viejo
+-- (ewsltpqbhbohuaonwflp) cuando lleguen las credenciales, para:
+--   * cuerpos exactos de triggers (¿existe handle_new_user en auth.users?)
+--   * defaults/constraints/check exactos
+--   * el bucket de Storage y el cron de limpieza (van junto con policies.sql)
+--
+-- Cambios vs. la BD vieja (decisiones del plan aprobado):
+--   * Single-tenant: SE ELIMINA `organizations` y toda columna `organization_id`.
+--   * Se descartan `entity_definitions` y `field_definitions` (experimento abandonado).
+--   * Modelo de roles: `app_role` AÑADE 'agent'. La identidad de rol vive SOLO en
+--     `role_assignments` (no en `profiles`, que el usuario puede editar → evita
+--     escalada de privilegios). `profiles.agent_level` pasa a ser solo antigüedad
+--     de display. Esto corrige el Bug 1 (agentes nuevos no reconocidos).
+--   * RLS y Storage NO van aquí — van en policies.sql.
+-- =============================================================================
+
+create extension if not exists "pgcrypto";
+
+-- ----------------------------------------------------------------------------
+-- ENUMS
+-- ----------------------------------------------------------------------------
+create type public.app_role           as enum ('user', 'agent', 'admin', 'superadmin'); -- +agent
+create type public.agent_level        as enum ('junior', 'associate', 'senior', 'partner');
+create type public.property_operation as enum ('venta', 'renta');
+create type public.property_status    as enum ('disponible', 'vendida', 'rentada', 'pendiente');
+create type public.property_type      as enum ('casa', 'departamento', 'local', 'oficina', 'terrenos');
+
+-- ----------------------------------------------------------------------------
+-- updated_at helper
+-- ----------------------------------------------------------------------------
+create or replace function public.set_updated_at()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- profiles  (sin organization_id, sin columna role)
+-- ----------------------------------------------------------------------------
+create table public.profiles (
+  id                     uuid primary key default gen_random_uuid(),
+  user_id                uuid not null unique references auth.users(id) on delete cascade,
+  display_name           text not null,
+  email                  text not null,
+  phone                  text,
+  whatsapp_number        text,
+  photo_url              text,
+  bio_es                 text,
+  bio_en                 text,
+  agent_level            public.agent_level,            -- solo display/antigüedad
+  agent_license_number   text,
+  agent_specialty        text[],
+  agent_years_experience integer,
+  languages              text[],
+  service_zones          text[],
+  linkedin_url           text,
+  instagram_handle       text,
+  facebook_url           text,
+  professional_email     text,
+  job_title              text,
+  social_links           jsonb,
+  email_preference       text,
+  email_verified         boolean default false,
+  email_verified_at      timestamptz,
+  is_active              boolean default true,
+  is_complete            boolean default false,
+  is_featured            boolean default false,
+  show_in_directory      boolean default true,
+  completed_at           timestamptz,
+  invited_by             uuid references auth.users(id) on delete set null,
+  invited_at             timestamptz,
+  created_at             timestamptz default now(),
+  updated_at             timestamptz default now()
+);
+create index profiles_directory_idx on public.profiles (show_in_directory) where show_in_directory;
+
+-- ----------------------------------------------------------------------------
+-- role_assignments  (FUENTE DE VERDAD de roles; sin organization_id)
+-- ----------------------------------------------------------------------------
+create table public.role_assignments (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  role       public.app_role not null,
+  granted_at timestamptz default now(),
+  unique (user_id, role)
+);
+create index role_assignments_user_idx on public.role_assignments (user_id);
+
+-- ----------------------------------------------------------------------------
+-- properties  (sin organization_id)
+-- ----------------------------------------------------------------------------
+create table public.properties (
+  id                 uuid primary key default gen_random_uuid(),
+  agent_id           uuid references public.profiles(id) on delete set null,
+  title_es           text not null,
+  title_en           text not null,
+  description_es     text,
+  description_en     text,
+  type               public.property_type not null,
+  operation          public.property_operation not null,
+  status             public.property_status not null default 'disponible',
+  price              numeric not null,
+  location           jsonb not null default '{}'::jsonb,
+  features           jsonb not null default '{}'::jsonb,
+  amenities          text[],
+  image_variants     jsonb,
+  featured           boolean default false,
+  language           text default 'es',
+  is_translation_of  uuid references public.properties(id) on delete set null,
+  published_date     timestamptz,
+  created_by         uuid references auth.users(id) on delete set null,
+  created_at         timestamptz not null default now(),
+  updated_at         timestamptz not null default now()
+);
+create index properties_status_idx   on public.properties (status);
+create index properties_agent_idx    on public.properties (agent_id);
+create index properties_featured_idx on public.properties (featured) where featured;
+create trigger properties_set_updated_at before update on public.properties
+  for each row execute function public.set_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- property_images
+-- ----------------------------------------------------------------------------
+create table public.property_images (
+  id            uuid primary key default gen_random_uuid(),
+  property_id   uuid not null references public.properties(id) on delete cascade,
+  image_url     text not null,
+  display_order integer not null default 0,
+  alt_text_es   text,
+  alt_text_en   text,
+  created_at    timestamptz not null default now()
+);
+create index property_images_property_idx on public.property_images (property_id);
+
+-- ----------------------------------------------------------------------------
+-- service_zones
+-- ----------------------------------------------------------------------------
+create table public.service_zones (
+  id             uuid primary key default gen_random_uuid(),
+  name_es        text not null,
+  name_en        text not null,
+  description_es text,
+  description_en text,
+  image_url      text,
+  active         boolean not null default true,
+  display_order  integer not null default 0,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+create trigger service_zones_set_updated_at before update on public.service_zones
+  for each row execute function public.set_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- site_settings  (también fuente del email del negocio para las edge functions,
+-- en reemplazo de la lectura de `organizations`)
+-- ----------------------------------------------------------------------------
+create table public.site_settings (
+  id            uuid primary key default gen_random_uuid(),
+  setting_key   text not null unique,
+  setting_value jsonb not null,
+  category      text not null,
+  description   text not null,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create trigger site_settings_set_updated_at before update on public.site_settings
+  for each row execute function public.set_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- cms_pages  (sin organization_id)
+-- ----------------------------------------------------------------------------
+create table public.cms_pages (
+  id                     uuid primary key default gen_random_uuid(),
+  slug                   text not null unique,
+  title                  text not null,
+  content                jsonb,
+  is_published           boolean default false,
+  last_agent_interaction timestamptz,
+  created_at             timestamptz not null default now(),
+  updated_at             timestamptz not null default now()
+);
+create trigger cms_pages_set_updated_at before update on public.cms_pages
+  for each row execute function public.set_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- contact_inquiries  (sin organization_id)
+-- ----------------------------------------------------------------------------
+create table public.contact_inquiries (
+  id                uuid primary key default gen_random_uuid(),
+  property_id       uuid references public.properties(id) on delete set null,
+  name              text not null,
+  email             text not null,
+  phone             text,
+  message           text not null,
+  status            text not null default 'new',
+  assigned_to_agent uuid references public.profiles(id) on delete set null,
+  assigned_by       uuid references auth.users(id) on delete set null,
+  assigned_at       timestamptz,
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
+);
+create index contact_inquiries_property_idx on public.contact_inquiries (property_id);
+create trigger contact_inquiries_set_updated_at before update on public.contact_inquiries
+  for each row execute function public.set_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- scheduled_visits  (sin organization_id)
+-- ----------------------------------------------------------------------------
+create table public.scheduled_visits (
+  id             uuid primary key default gen_random_uuid(),
+  property_id    uuid not null references public.properties(id) on delete cascade,
+  agent_id       uuid references public.profiles(id) on delete set null,
+  name           text not null,
+  email          text not null,
+  phone          text not null,
+  preferred_date date not null,
+  preferred_time text not null,
+  message        text,
+  status         text not null default 'pending',
+  assigned_by    uuid references auth.users(id) on delete set null,
+  assigned_at    timestamptz,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+create index scheduled_visits_property_idx on public.scheduled_visits (property_id);
+create trigger scheduled_visits_set_updated_at before update on public.scheduled_visits
+  for each row execute function public.set_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- agent_invitations  (sin organization_id)
+-- ----------------------------------------------------------------------------
+create table public.agent_invitations (
+  id            uuid primary key default gen_random_uuid(),
+  email         text not null,
+  token         text not null unique default encode(extensions.gen_random_bytes(24), 'hex'),
+  display_name  text,
+  phone         text,
+  service_zones text[],
+  expires_at    timestamptz not null default (now() + interval '7 days'),
+  invited_by    uuid not null references auth.users(id) on delete cascade,
+  invited_at    timestamptz default now(),
+  accepted_by   uuid references auth.users(id) on delete set null,
+  accepted_at   timestamptz
+);
+create index agent_invitations_email_idx on public.agent_invitations (email);
+
+-- ----------------------------------------------------------------------------
+-- user_favorites
+-- ----------------------------------------------------------------------------
+create table public.user_favorites (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  property_id uuid not null references public.properties(id) on delete cascade,
+  created_at  timestamptz default now(),
+  unique (user_id, property_id)
+);
+create index user_favorites_user_idx on public.user_favorites (user_id);
+
+-- ----------------------------------------------------------------------------
+-- audit_logs
+-- ----------------------------------------------------------------------------
+create table public.audit_logs (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null,
+  action     text not null,
+  table_name text,
+  record_id  uuid,
+  changes    jsonb,
+  created_at timestamptz not null default now()
+);
+create index audit_logs_created_idx on public.audit_logs (created_at desc);
+
+-- ----------------------------------------------------------------------------
+-- FUNCIONES DE ROL (single-tenant; SECURITY DEFINER para usarse dentro de RLS).
+-- Reemplazan a has_role(org), is_org_admin, get_user_org_id, can_manage_org.
+-- ----------------------------------------------------------------------------
+create or replace function public.has_role(_user_id uuid, _role public.app_role)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.role_assignments
+    where user_id = _user_id and role = _role
+  );
+$$;
+
+create or replace function public.is_superadmin(_user_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select public.has_role(_user_id, 'superadmin');
+$$;
+
+create or replace function public.is_admin(_user_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select public.has_role(_user_id, 'admin') or public.has_role(_user_id, 'superadmin');
+$$;
+
+-- "staff" = puede gestionar listados / subir imágenes (agente, admin o superadmin).
+-- Reemplaza el chequeo roto basado en agent_level.
+create or replace function public.is_staff(_user_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select public.has_role(_user_id, 'agent')
+      or public.has_role(_user_id, 'admin')
+      or public.has_role(_user_id, 'superadmin');
+$$;
+
+-- ----------------------------------------------------------------------------
+-- RLS: habilitar en TODAS las tablas (deny-by-default). Las políticas de acceso
+-- van en policies.sql. Sin políticas, solo el service_role accede.
+-- ----------------------------------------------------------------------------
+alter table public.profiles          enable row level security;
+alter table public.role_assignments  enable row level security;
+alter table public.properties        enable row level security;
+alter table public.property_images   enable row level security;
+alter table public.service_zones     enable row level security;
+alter table public.site_settings     enable row level security;
+alter table public.cms_pages         enable row level security;
+alter table public.contact_inquiries enable row level security;
+alter table public.scheduled_visits  enable row level security;
+alter table public.agent_invitations enable row level security;
+alter table public.user_favorites    enable row level security;
+alter table public.audit_logs        enable row level security;
+
+-- =============================================================================
+-- PENDIENTE (no en este archivo):
+--   * RLS por tabla + políticas de Storage  -> supabase/policies.sql
+--   * Bucket `property-images` + cron de limpieza SOLO de `temp/`  -> policies.sql
+--   * RPCs públicas get_public_agents / get_public_agent_by_id (sin org)  -> policies.sql
+--   * ¿Trigger handle_new_user en auth.users? -> confirmar con pg_dump del viejo
+--     (hoy la app crea el profile manualmente en AcceptInvitation/signUp; se
+--      reconcilia en PR1b para no duplicar).
+-- =============================================================================

@@ -152,19 +152,10 @@ serve(async (req) => {
       const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
       if (resendApiKey) {
-        // Fetch organization email dynamically
-        const { data: orgData } = await supabase
-          .from('organizations')
-          .select('contact_email, name')
-          .eq('slug', 'yr-inmobiliaria')
-          .single();
-
-        const organizationEmail = orgData?.contact_email || 'contacto@yrinmobiliaria.com';
-        const organizationName = orgData?.name || 'YR Inmobiliaria';
+        // Single-tenant: destino fijo del negocio (configurable luego en site_settings)
+        const organizationEmail = 'contacto@yrinmobiliaria.com';
+        const organizationName = 'YR Inmobiliaria';
         
-        if (!orgData?.contact_email) {
-          console.warn('Organization email not found, using fallback: contacto@yrinmobiliaria.com');
-        }
         const emailHtml = `
 <!DOCTYPE html>
 <html lang="es">

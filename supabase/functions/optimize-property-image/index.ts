@@ -41,26 +41,17 @@ serve(async (req) => {
       );
     }
 
-    // Check if user has admin or agent role
-    const { data: roleData, error: roleError } = await supabase
+    // Verificar que el usuario es staff (agente, admin o superadmin) POR ROL
+    const { data: staffRole, error: roleError } = await supabase
       .from('role_assignments')
       .select('role')
       .eq('user_id', user.id)
-      .in('role', ['admin', 'superadmin'])
+      .in('role', ['agent', 'admin', 'superadmin'])
       .maybeSingle();
 
-    // Also check if user is an agent
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('agent_level, organization_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    const isAgent = profileData?.agent_level && profileData?.organization_id;
-
-    if ((roleError || !roleData) && !isAgent) {
+    if (roleError || !staffRole) {
       return new Response(
-        JSON.stringify({ error: 'Admin or agent access required' }),
+        JSON.stringify({ error: 'Staff access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
