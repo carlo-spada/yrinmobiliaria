@@ -32,7 +32,6 @@ serve(async (req: Request) => {
       .from("agent_invitations")
       .select(`
         *,
-        organization:organizations(*),
         inviter:profiles!agent_invitations_invited_by_fkey(display_name)
       `)
       .eq("id", invitation_id)
@@ -50,7 +49,7 @@ serve(async (req: Request) => {
     // Prepare email HTML
     const year = new Date().getFullYear();
     const inviterName = invitation.inviter?.display_name || "el equipo";
-    const orgName = invitation.organization?.name || "YR Inmobiliaria";
+    const orgName = "YR Inmobiliaria";
 
     const emailHtml = `
 <!DOCTYPE html>
