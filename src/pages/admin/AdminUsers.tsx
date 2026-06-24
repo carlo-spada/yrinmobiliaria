@@ -1,12 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Shield, Mail, User, Building2, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Pencil, Shield, Mail, User } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { UserRowSkeleton } from '@/components/admin/TableSkeleton';
-import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -31,16 +30,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 
-type OrganizationSummary = Pick<Database['public']['Tables']['organizations']['Row'], 'id' | 'name' | 'slug'>;
+type UserRole = 'superadmin' | 'admin' | 'agent' | 'user';
 
 type UserListItem = {
   user_id: string;
   profile_id: string;
   email: string;
-  role: 'superadmin' | 'admin' | 'user';
-  organization_id: string | null;
+  role: UserRole;
   display_name: string;
   photo_url: string | null;
   bio_es: string | null;
@@ -49,7 +46,7 @@ type UserListItem = {
   languages: string[] | null;
   professional_email: string | null;
   email_preference: string | null;
-  organization: OrganizationSummary | null | undefined;
+  is_active: boolean | null;
   roles: { role: string; granted_at: string | null }[];
 };
 
@@ -61,16 +58,15 @@ type ProfileFormData = {
   email_preference: string;
 };
 
+const roleRank = (role: string) =>
+  role === 'superadmin' ? 3 : role === 'admin' ? 2 : role === 'agent' ? 1 : 0;
+
 function UsersContent() {
   const queryClient = useQueryClient();
-  const { isSuperadmin, organizationId } = useUserRole();
-  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
-  const scopedOrgId = isSuperadmin && isAllOrganizations ? null : (effectiveOrgId ?? organizationId);
-  const canQuery = isSuperadmin || !!scopedOrgId;
+  const { isSuperadmin } = useUserRole();
 
   const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [orgSearchQuery, setOrgSearchQuery] = useState('');
 
   // Form state for editing
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -80,40 +76,13 @@ function UsersContent() {
     professional_email: '',
     email_preference: 'forward_to_personal'
   });
-  const [selectedRole, setSelectedRole] = useState<'superadmin' | 'admin' | 'user'>('user');
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-
-  // All hooks must be called unconditionally at the top
-  const { data: organizations } = useQuery({
-    queryKey: ['organizations-list'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('name', { ascending: true });
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  // Filter organizations for searchable dropdown
-  const filteredOrganizations = useMemo(() => {
-    if (!organizations) return [];
-    if (!orgSearchQuery) return organizations;
-
-    const query = orgSearchQuery.toLowerCase();
-    return organizations.filter(org =>
-      org.name?.toLowerCase().includes(query) ||
-      org.slug?.toLowerCase().includes(query)
-    );
-  }, [organizations, orgSearchQuery]);
+  const [selectedRole, setSelectedRole] = useState<UserRole>('user');
 
   const { data: userProfiles, isLoading } = useQuery({
-    queryKey: ['users-list', scopedOrgId],
+    queryKey: ['users-list'],
     queryFn: async () => {
-      // Query profiles directly (users table no longer exists)
-      let profilesQuery = supabase
+      // Query profiles directly (single-tenant: no organization scoping)
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -121,22 +90,16 @@ function UsersContent() {
           email,
           display_name,
           photo_url,
-          organization_id,
           languages,
           professional_email,
           email_preference,
           bio_es,
           bio_en,
           job_title,
+          is_active,
           created_at
         `)
         .order('created_at', { ascending: false });
-
-      if (scopedOrgId) {
-        profilesQuery = profilesQuery.eq('organization_id', scopedOrgId);
-      }
-
-      const { data: profiles, error } = await profilesQuery;
 
       if (error) throw error;
       if (!profiles) return [];
@@ -151,28 +114,19 @@ function UsersContent() {
       const roleMap = new Map<string, { role: string, granted_at: string }>();
       roleAssignments?.forEach(ra => {
         const existing = roleMap.get(ra.user_id);
-        if (!existing || ra.role === 'superadmin' || (ra.role === 'admin' && existing.role !== 'superadmin')) {
+        if (!existing || roleRank(ra.role) > roleRank(existing.role)) {
           roleMap.set(ra.user_id, { role: ra.role, granted_at: ra.granted_at ?? '' });
         }
       });
 
-      // Get organizations
-      const { data: orgs } = await supabase
-        .from('organizations')
-        .select('id, name, slug');
-
-      const orgMap = new Map(orgs?.map(o => [o.id, o]) || []);
-
-      return profiles.map((profile) => {
-        const org = profile.organization_id ? orgMap.get(profile.organization_id) : null;
-        const roleInfo = roleMap.get(profile.user_id) || { role: 'user', granted_at: profile.created_at };
+      return profiles.map((profile): UserListItem => {
+        const roleInfo = roleMap.get(profile.user_id) || { role: 'user', granted_at: profile.created_at ?? '' };
 
         return {
           user_id: profile.user_id,
           profile_id: profile.id,
           email: profile.email,
-          role: roleInfo.role as 'superadmin' | 'admin' | 'user',
-          organization_id: profile.organization_id,
+          role: roleInfo.role as UserRole,
           display_name: profile.display_name || profile.email,
           photo_url: profile.photo_url,
           bio_es: profile.bio_es,
@@ -181,12 +135,11 @@ function UsersContent() {
           languages: profile.languages,
           professional_email: profile.professional_email,
           email_preference: profile.email_preference,
-          organization: org,
+          is_active: profile.is_active,
           roles: [{ role: roleInfo.role, granted_at: roleInfo.granted_at }]
         };
       });
     },
-    enabled: canQuery,
   });
 
   const updateProfileMutation = useMutation({
@@ -218,11 +171,11 @@ function UsersContent() {
   });
 
   const changeRoleMutation = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'superadmin' | 'admin' | 'user' }) => {
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: UserRole }) => {
       if (!isSuperadmin) {
         throw new Error('Solo los superadministradores pueden cambiar roles');
       }
-      // Delete existing role assignments for this user
+      // Replace existing role assignments with the new single role
       const { error: deleteError } = await supabase
         .from('role_assignments')
         .delete()
@@ -230,21 +183,9 @@ function UsersContent() {
 
       if (deleteError) throw deleteError;
 
-      // Get user's organization from profiles
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('organization_id')
-        .eq('user_id', userId)
-        .single();
-
-      // Insert new role
       const { error: insertError } = await supabase
         .from('role_assignments')
-        .insert({
-          user_id: userId,
-          role: newRole,
-          organization_id: profileData?.organization_id
-        });
+        .insert({ user_id: userId, role: newRole });
 
       if (insertError) throw insertError;
     },
@@ -258,42 +199,9 @@ function UsersContent() {
     },
   });
 
-  const changeOrganizationMutation = useMutation({
-    mutationFn: async ({ userId, orgId }: { userId: string; orgId: string | null }) => {
-      if (!isSuperadmin) {
-        throw new Error('Solo los superadministradores pueden asignar organizaciones');
-      }
-
-      // Update profile's organization (single source of truth now)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ organization_id: orgId })
-        .eq('user_id', userId);
-
-      if (profileError) throw profileError;
-
-      // Update role_assignments organization for consistency
-      const { error: roleError } = await supabase
-        .from('role_assignments')
-        .update({ organization_id: orgId })
-        .eq('user_id', userId);
-
-      if (roleError) throw roleError;
-    },
-    onSuccess: () => {
-      toast.success('Organización actualizada correctamente');
-      queryClient.invalidateQueries({ queryKey: ['users-list'] });
-    },
-    onError: (error) => {
-      toast.error('Error al cambiar organización: ' + error.message);
-    },
-  });
-
   const handleEditClick = (user: UserListItem) => {
     setSelectedUser(user);
     setSelectedRole(user.role ?? 'user');
-    setSelectedOrgId(user.organization_id);
-    setOrgSearchQuery(''); // Reset org search
     setFormData({
       bio_es: user.bio_es ?? '',
       job_title: user.job_title ?? '',
@@ -309,7 +217,6 @@ function UsersContent() {
     // Reset state after animation
     setTimeout(() => {
       setSelectedUser(null);
-      setOrgSearchQuery('');
     }, 150);
   };
 
@@ -317,6 +224,7 @@ function UsersContent() {
     switch (role) {
       case 'superadmin': return 'bg-red-500 text-white';
       case 'admin': return 'bg-purple-500 text-white';
+      case 'agent': return 'bg-blue-500 text-white';
       default: return 'bg-gray-500 text-white';
     }
   };
@@ -325,20 +233,10 @@ function UsersContent() {
     switch (role) {
       case 'superadmin': return 'Superadministrador';
       case 'admin': return 'Administrador';
+      case 'agent': return 'Agente';
       default: return 'Usuario';
     }
   };
-
-  // Conditional rendering AFTER all hooks
-  if (!canQuery) {
-    return (
-      <RoleGuard allowedRoles={['admin', 'superadmin']}>
-        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-          Asigna una organización a tu perfil para gestionar usuarios.
-        </div>
-      </RoleGuard>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -466,10 +364,6 @@ function UsersContent() {
                       <span className="text-sm font-medium">Email Personal</span>
                       <span className="text-sm text-muted-foreground">{selectedUser?.email}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Organización</span>
-                      <span className="text-sm text-muted-foreground">{selectedUser?.organization?.name || 'Sin organización'}</span>
-                    </div>
                   </div>
 
                   <div className="space-y-3 border-t pt-4">
@@ -477,17 +371,16 @@ function UsersContent() {
                       <Shield className="h-4 w-4" />
                       Cambiar Rol del Usuario
                     </Label>
-                    <div className="flex gap-2">
-                      {['superadmin', 'admin', 'user'].map((role) => (
+                    <div className="flex flex-wrap gap-2">
+                      {(['superadmin', 'admin', 'agent', 'user'] as const).map((role) => (
                         <Button
                           key={role}
                           variant={selectedRole === role ? 'default' : 'outline'}
                           className={selectedRole === role ? getRoleBadgeVariant(role) : ''}
                           onClick={() => {
-                            const typedRole = role as 'superadmin' | 'admin' | 'user';
-                            setSelectedRole(typedRole);
+                            setSelectedRole(role);
                             if (selectedUser) {
-                              changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: typedRole });
+                              changeRoleMutation.mutate({ userId: selectedUser.user_id, newRole: role });
                             }
                           }}
                           disabled={changeRoleMutation.isPending || !isSuperadmin}
@@ -499,73 +392,9 @@ function UsersContent() {
                     <p className="text-xs text-muted-foreground">
                       Rol actual: <Badge className={getRoleBadgeVariant(selectedUser?.role ?? 'user')}>{getRoleLabel(selectedUser?.role ?? 'user')}</Badge>
                     </p>
-                  </div>
-
-                  <div className="space-y-3 border-t pt-4">
-                    <Label>Asignar Organización (Solo Superadmin)</Label>
-                    {isSuperadmin ? (
-                      <>
-                        <div className="flex gap-2">
-                          <Select
-                            value={selectedOrgId || 'none'}
-                            onValueChange={(val) => {
-                              const orgId = val === 'none' ? null : val;
-                              setSelectedOrgId(orgId);
-                              setOrgSearchQuery(''); // Reset search on selection
-                            }}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Seleccionar organización" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {/* Search input for organizations */}
-                              <div className="px-2 pb-2">
-                                <div className="relative">
-                                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    placeholder="Buscar organización..."
-                                    value={orgSearchQuery}
-                                    onChange={(e) => setOrgSearchQuery(e.target.value)}
-                                    className="pl-8 h-8"
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </div>
-                              </div>
-                              <SelectItem value="none">Sin organización</SelectItem>
-                              {filteredOrganizations.map((org) => (
-                                <SelectItem key={org.id} value={org.id}>
-                                  {org.name}
-                                </SelectItem>
-                              ))}
-                              {filteredOrganizations.length === 0 && orgSearchQuery && (
-                                <div className="px-2 py-1 text-sm text-muted-foreground">
-                                  No se encontraron organizaciones
-                                </div>
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            onClick={() => {
-                              if (selectedUser) {
-                                changeOrganizationMutation.mutate({
-                                  userId: selectedUser.user_id,
-                                  orgId: selectedOrgId
-                                });
-                              }
-                            }}
-                            disabled={!isSuperadmin || changeOrganizationMutation.isPending || selectedOrgId === selectedUser?.organization_id}
-                          >
-                            <Building2 className="h-4 w-4 mr-2" />
-                            Asignar
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Organización actual: {selectedUser?.organization?.name ?? 'Ninguna'}
-                        </p>
-                      </>
-                    ) : (
+                    {!isSuperadmin && (
                       <p className="text-sm text-muted-foreground">
-                        Solo los superadministradores pueden asignar organizaciones.
+                        Solo los superadministradores pueden cambiar roles.
                       </p>
                     )}
                   </div>
@@ -633,12 +462,12 @@ function UsersContent() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {user.organization_id ? (
+                    {user.is_active !== false ? (
                       <Badge variant="default" className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-0">
                         Activo
                       </Badge>
                     ) : (
-                      <Badge variant="destructive">Sin Org</Badge>
+                      <Badge variant="secondary">Inactivo</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">

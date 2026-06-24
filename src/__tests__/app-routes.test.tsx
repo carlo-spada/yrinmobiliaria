@@ -19,7 +19,6 @@ const roleState = vi.hoisted(() => ({
   isSuperadmin: false,
   isAdmin: false,
   isAgent: false,
-  organizationId: null,
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -65,7 +64,6 @@ describe("App route protection", () => {
     roleState.isSuperadmin = false;
     roleState.isAdmin = false;
     roleState.isAgent = false;
-    roleState.organizationId = null;
   });
 
   it("renders public routes", async () => {

@@ -102,13 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role = 'superadmin';
         } else if (roles.includes('admin')) {
           role = 'admin';
+        } else if (roles.includes('agent')) {
+          role = 'agent';
         }
       }
-
-      // If no admin role but has agent_level, consider them an agent
-      if (role === 'user' && profile?.agent_level) {
-        role = 'agent';
-      }
+      // 'agent' is a first-class role in role_assignments now (single-tenant).
+      // profile.agent_level is display-only seniority, not an identity signal.
 
       const isSuperadmin = role === 'superadmin';
       const isAdmin = role === 'admin' || isSuperadmin;
@@ -146,7 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user_id: data.user.id,
         email: data.user.email!,
         display_name: data.user.email!.split('@')[0],
-        organization_id: null,
         is_complete: true,
       });
 
@@ -174,7 +172,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isSuperadmin: roleData?.isSuperadmin ?? false,
     isAdmin: roleData?.isAdmin ?? false,
     isAgent: roleData?.isAgent ?? false,
-    organizationId: profile?.organization_id ?? null,
     roleLoading: roleLoading || profileLoading,
     signIn,
     signUp,

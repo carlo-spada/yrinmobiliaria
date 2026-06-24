@@ -4,29 +4,17 @@ import { createContext } from 'react';
 import type { Database, Tables } from '@/integrations/supabase/types';
 
 /**
- * Database role enum from role_assignments table
- * These are the actual roles stored in the database
+ * Application roles, stored in the role_assignments table.
+ * Single-tenant and role-based: 'agent' is now a first-class DB role
+ * (no longer inferred from profile.agent_level, which is display-only seniority).
  */
 export type DatabaseRole = Database['public']['Enums']['app_role'];
 
 /**
- * Inferred roles based on profile data (not stored in role_assignments)
- * - 'agent': User has agent_level set in their profile
- * - 'client': Regular user without admin/superadmin role and no agent_level
+ * UserRole is the app_role enum: 'user' | 'agent' | 'admin' | 'superadmin'.
+ * Determined in AuthContext from role_assignments (highest privilege wins).
  */
-export type InferredRole = 'agent' | 'client';
-
-/**
- * UserRole combines database roles with inferred roles
- * - Database roles (from role_assignments): 'superadmin' | 'admin' | 'user'
- * - Inferred roles (from profile): 'agent' | 'client'
- *
- * Role determination logic (in AuthContext):
- * 1. Check role_assignments for 'superadmin' or 'admin'
- * 2. If only 'user' role, check profile.agent_level → 'agent'
- * 3. If no agent_level → 'user' (treated as regular client)
- */
-export type UserRole = DatabaseRole | InferredRole;
+export type UserRole = DatabaseRole;
 
 type Profile = Tables<'profiles'>;
 
@@ -41,7 +29,6 @@ export interface AuthContextValue {
   isSuperadmin: boolean;
   isAdmin: boolean;
   isAgent: boolean;
-  organizationId: string | null;
   roleLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;

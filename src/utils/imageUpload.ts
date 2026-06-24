@@ -159,7 +159,7 @@ const getStorageErrorMessage = (error: StorageError | Error | unknown): string =
 /**
  * Uploads an image to Supabase Storage and generates optimized variants
  */
-export const uploadImage = async (file: File, propertyId?: string): Promise<ImageUploadResult> => {
+export const uploadImage = async (file: File, propertyId: string): Promise<ImageUploadResult> => {
   // Validate file
   const validationError = validateImage(file);
   if (validationError) {
@@ -175,9 +175,10 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
     const randomString = Math.random().toString(36).substring(2, 8);
     const imageId = `${timestamp}-${randomString}`;
     const extension = 'webp'; // Always use webp after optimization
-    const fileName = propertyId
-      ? `${propertyId}/${imageId}.${extension}`
-      : `temp/${imageId}.${extension}`;
+    // Always upload under the property's folder so Storage RLS (owner/admin)
+    // passes and the object is permanent. The temp/ branch is gone: it produced
+    // orphaned uploads that a cleanup cron reaped after 24h (Bug 2).
+    const fileName = `${propertyId}/${imageId}.${extension}`;
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
@@ -198,29 +199,27 @@ export const uploadImage = async (file: File, propertyId?: string): Promise<Imag
       .from(BUCKET_NAME)
       .getPublicUrl(data.path);
 
-    // Generate optimized variants using edge function (only for property images)
+    // Generate optimized variants using the edge function
     let variants;
-    if (propertyId) {
-      try {
-        const { data: variantsData, error: variantsError } = await supabase.functions.invoke(
-          'optimize-property-image',
-          {
-            body: {
-              propertyId,
-              imageId,
-              imagePath: data.path
-            }
+    try {
+      const { data: variantsData, error: variantsError } = await supabase.functions.invoke(
+        'optimize-property-image',
+        {
+          body: {
+            propertyId,
+            imageId,
+            imagePath: data.path
           }
-        );
-
-        if (variantsError) {
-          logger.warn('Failed to generate variants, will use transform fallback:', variantsError);
-        } else if (variantsData?.variants) {
-          variants = variantsData.variants;
         }
-      } catch (err) {
-        logger.warn('Error calling optimization function, will use transform fallback:', err);
+      );
+
+      if (variantsError) {
+        logger.warn('Failed to generate variants, will use transform fallback:', variantsError);
+      } else if (variantsData?.variants) {
+        variants = variantsData.variants;
       }
+    } catch (err) {
+      logger.warn('Error calling optimization function, will use transform fallback:', err);
     }
 
     return {

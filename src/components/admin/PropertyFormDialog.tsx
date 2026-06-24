@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -24,14 +24,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logAuditEvent } from '@/utils/auditLog';
+import { uploadImage } from '@/utils/imageUpload';
 import { logger } from '@/utils/logger';
 
-import { ImageUploadZone } from './ImageUploadZone';
-import { useAdminOrg } from './useAdminOrg';
+import { ImageUploadZone, type EditorImage } from './ImageUploadZone';
 
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
@@ -97,24 +96,14 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm({
     resolver: zodResolver(propertyFormSchema),
   });
-  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
-  const { isSuperadmin, organizationId: userOrgId } = useUserRole();
 
   // Initialize images from property prop to avoid setState in effect
-  const [images, setImages] = useState<Array<{
-    url: string;
-    path?: string;
-    variants?: {
-      avif: Record<number, string>;
-      webp: Record<number, string>;
-    };
-  }>>(() => {
+  const [images, setImages] = useState<EditorImage[]>(() => {
     if (property?.property_images && Array.isArray(property.property_images)) {
       return property.property_images.map((img) => ({ url: img.image_url }));
     }
     return [];
   });
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
   // Use useWatch for stable subscriptions instead of watch()
   const propertyType = useWatch({ control, name: 'type' });
@@ -122,17 +111,6 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   const status = useWatch({ control, name: 'status' });
   const zone = useWatch({ control, name: 'zone' });
   const watchedFeatured = useWatch({ control, name: 'featured' });
-
-  // Fetch organizations for superadmin when creating new property in "all orgs" mode
-  const { data: organizations = [] } = useQuery({
-    queryKey: ['organizations-for-property'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_public_organizations');
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: isSuperadmin && isAllOrganizations && !property,
-  });
 
   // Fetch available zones from database
   const { data: zones = [], isLoading: zonesLoading } = useQuery({
@@ -195,14 +173,6 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
   }, [open, property?.id, reset]);
   /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
-  // Determine if form can be submitted (org validation for superadmin)
-  const canSubmit = useMemo(() => {
-    if (!property && isSuperadmin && isAllOrganizations && !selectedOrgId) {
-      return false;
-    }
-    return true;
-  }, [property, isSuperadmin, isAllOrganizations, selectedOrgId]);
-
   // Reset form state when dialog closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -213,31 +183,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         featured: false,
       });
       setImages([]);
-      setSelectedOrgId(null);
     }
     onOpenChange(newOpen);
   };
 
   const mutation = useMutation({
     mutationFn: async (formData: PropertyFormData) => {
-      // console.log("[Property Save] Starting mutation", { isEdit: !!property, formData });
-
-      // Determine org: editing uses property's org, new property uses selected/effective/user's org
-      let scopedOrgId: string | null = null;
-      if (property?.organization_id) {
-        scopedOrgId = property.organization_id;
-      } else if (isSuperadmin && isAllOrganizations) {
-        scopedOrgId = selectedOrgId;
-      } else {
-        scopedOrgId = effectiveOrgId || userOrgId;
-      }
-
-      // console.log("[Property Save] Scoped org:", { scopedOrgId, isSuperadmin, isAllOrganizations, effectiveOrgId, userOrgId, selectedOrgId });
-
-      if (!scopedOrgId) {
-        throw new Error('Selecciona una organización antes de crear la propiedad');
-      }
-
       // Validate that zone exists in service_zones table
       const { data: zoneExists, error: zoneError } = await supabase
         .from('service_zones')
@@ -261,11 +212,10 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
       }
 
       // Get current user's profile to auto-assign as agent (only for new properties)
-      let agentId = null;
+      let agentId: string | null = null;
 
       if (!property) {
         const { data: { user } } = await supabase.auth.getUser();
-        // console.log("[Property Save] Current user:", user?.id);
 
         if (user) {
           const { data: profile } = await supabase
@@ -274,11 +224,12 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
             .eq('user_id', user.id)
             .single();
 
-          agentId = profile?.id || null;
-          // console.log("[Property Save] Agent ID for new property:", agentId);
+          agentId = profile?.id ?? null;
         }
       }
 
+      // Property fields. image_variants is set AFTER images are uploaded below,
+      // since brand-new properties upload their images only once they have an id.
       const propertyData = {
         title_es: formData.title_es,
         title_en: formData.title_en,
@@ -289,7 +240,6 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         price: parseFloat(formData.price),
         status: formData.status,
         featured: formData.featured,
-        organization_id: scopedOrgId,
         ...(agentId && { agent_id: agentId }),
         location: {
           zone: formData.zone,
@@ -307,28 +257,18 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           constructionArea: formData.constructionArea ? parseFloat(formData.constructionArea) : null,
           landArea: formData.landArea ? parseFloat(formData.landArea) : null,
         },
-        image_variants: images.map((img, index) => ({
-          id: img.path || `image-${index}`,
-          variants: img.variants || { avif: {}, webp: {} },
-          alt_es: `${formData.title_es} - Imagen ${index + 1}`,
-          alt_en: `${formData.title_en} - Image ${index + 1}`,
-          order: index,
-        })),
       };
 
-      // console.log("[Property Save] Property data to save:", propertyData);
-
+      // Create or update the property FIRST so images can be stored under
+      // {propertyId}/ and pass Storage RLS (Bug 2).
       let propertyId = property?.id;
 
       if (property) {
-        // console.log("[Property Save] Updating existing property:", property.id);
         const { data: result, error } = await supabase
           .from('properties')
           .update(propertyData)
           .eq('id', property.id)
           .select();
-
-        // console.log("[Property Save] Update response:", { result, error });
 
         if (error) {
           logger.error('[Property Save] Update RLS/DB error', {
@@ -345,14 +285,11 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           throw new Error('No se pudo actualizar la propiedad. Verifica tus permisos.');
         }
       } else {
-        // console.log("[Property Save] Creating new property");
         const { data, error } = await supabase
           .from('properties')
           .insert([propertyData])
           .select()
           .single();
-
-        // console.log("[Property Save] Insert response:", { data, error });
 
         if (error) {
           logger.error('[Property Save] Insert RLS/DB error', {
@@ -366,8 +303,49 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         propertyId = data.id;
       }
 
-      // Handle images
-      // Delete existing images if updating
+      if (!propertyId) {
+        throw new Error('No se pudo determinar la propiedad para guardar las imágenes.');
+      }
+      const savedId = propertyId;
+
+      // Upload any pending (deferred) images to {propertyId}/. Already-uploaded
+      // images (editing) are kept as-is. If uploads fail for a brand-new
+      // property, roll it back so we don't leave an empty listing.
+      let uploaded: EditorImage[];
+      try {
+        uploaded = await Promise.all(
+          images.map(async (img): Promise<EditorImage> => {
+            if (!img.file) return img;
+            const result = await uploadImage(img.file, savedId);
+            return { url: result.url, path: result.path, variants: result.variants };
+          })
+        );
+      } catch (uploadError) {
+        if (!property) {
+          await supabase.from('properties').delete().eq('id', savedId);
+        }
+        throw uploadError;
+      }
+
+      // Persist image_variants now that the URLs are final
+      const imageVariants = uploaded.map((img, index) => ({
+        id: img.path || `image-${index}`,
+        variants: img.variants || { avif: {}, webp: {} },
+        alt_es: `${formData.title_es} - Imagen ${index + 1}`,
+        alt_en: `${formData.title_en} - Image ${index + 1}`,
+        order: index,
+      }));
+
+      const { error: variantsError } = await supabase
+        .from('properties')
+        .update({ image_variants: imageVariants })
+        .eq('id', savedId);
+
+      if (variantsError) {
+        logger.error('[Property Save] image_variants update error', variantsError);
+      }
+
+      // Replace property_images rows
       if (property) {
         const { error: deleteError } = await supabase
           .from('property_images')
@@ -379,32 +357,28 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         }
       }
 
-      // Insert all images
-      if (images.length > 0 && propertyId) {
-        const imageRecords = images.map((image, index) => ({
-          property_id: propertyId,
-          image_url: image.url,
-          display_order: index,
-          alt_text_es: `${formData.title_es} - Imagen ${index + 1}`,
-          alt_text_en: `${formData.title_en} - Image ${index + 1}`,
-        }));
+      const imageRecords = uploaded.map((image, index) => ({
+        property_id: savedId,
+        image_url: image.url,
+        display_order: index,
+        alt_text_es: `${formData.title_es} - Imagen ${index + 1}`,
+        alt_text_en: `${formData.title_en} - Image ${index + 1}`,
+      }));
 
-        // console.log("[Property Save] Inserting images:", imageRecords);
-        const { error } = await supabase
-          .from('property_images')
-          .insert(imageRecords);
+      const { error: imagesError } = await supabase
+        .from('property_images')
+        .insert(imageRecords);
 
-        if (error) {
-          logger.error('[Property Save] Image insert error', error);
-          throw error;
-        }
+      if (imagesError) {
+        logger.error('[Property Save] Image insert error', imagesError);
+        throw imagesError;
       }
 
       // Log audit event
       await logAuditEvent({
         action: property ? 'UPDATE_PROPERTY' : 'CREATE_PROPERTY',
         table_name: 'properties',
-        record_id: propertyId,
+        record_id: savedId,
         changes: {
           title: formData.title_es,
           type: formData.type,
@@ -412,16 +386,9 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
           price: formData.price
         }
       });
-
-      // console.log("[Property Save] Mutation completed successfully");
     },
     onSuccess: () => {
-      // Scope invalidation to match PropertiesTable query key
-      const queryScopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
-      queryClient.invalidateQueries({
-        queryKey: ['admin-properties', queryScopedOrgId],
-        exact: true
-      });
+      queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
       toast.success(property ? 'Propiedad actualizada' : 'Propiedad creada correctamente');
       onOpenChange(false);
       reset();
@@ -451,27 +418,6 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Organization selector for superadmin creating new property with "all orgs" mode */}
-          {!property && isSuperadmin && isAllOrganizations && (
-            <div className={`p-4 rounded-lg border ${!selectedOrgId ? 'bg-destructive/10 border-destructive/50' : 'bg-muted/50'}`}>
-              <Label className="text-sm font-medium mb-2 block">Organización *</Label>
-              <Select value={selectedOrgId || ''} onValueChange={setSelectedOrgId}>
-                <SelectTrigger className={!selectedOrgId ? 'border-destructive' : ''}>
-                  <SelectValue placeholder="Selecciona una organización" />
-                </SelectTrigger>
-                <SelectContent>
-                  {organizations.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {!selectedOrgId && (
-                <p className="text-sm text-destructive mt-2">Debes seleccionar una organización antes de crear la propiedad</p>
-              )}
-            </div>
-          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title_es">Título (Español)</Label>
@@ -669,7 +615,7 @@ export const PropertyFormDialog = ({ open, onOpenChange, property }: PropertyFor
               </Button>
               <Button
                 type="submit"
-                disabled={mutation.isPending || !canSubmit}
+                disabled={mutation.isPending}
               >
                 {mutation.isPending ? 'Guardando...' : property ? 'Actualizar' : 'Crear'}
               </Button>

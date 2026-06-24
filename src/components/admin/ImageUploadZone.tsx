@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { uploadImage, deleteImage, extractPathFromUrl } from '@/utils/imageUpload';
+import { uploadImage, deleteImage, extractPathFromUrl, validateImage } from '@/utils/imageUpload';
 import { logger } from '@/utils/logger';
 
 /** Upload result tracking for better error reporting */
@@ -27,23 +27,21 @@ interface UploadAttempt {
 }
 
 
+/** An image in the property editor: either already uploaded (url + path) or a
+ *  pending local file (url is an object URL, file is set) awaiting upload. */
+export interface EditorImage {
+  url: string;
+  path?: string;
+  file?: File;
+  variants?: {
+    avif: Record<number, string>;
+    webp: Record<number, string>;
+  };
+}
+
 interface ImageUploadZoneProps {
-  images: Array<{
-    url: string;
-    path?: string;
-    variants?: {
-      avif: Record<number, string>;
-      webp: Record<number, string>;
-    };
-  }>;
-  onImagesChange: (images: Array<{
-    url: string;
-    path?: string;
-    variants?: {
-      avif: Record<number, string>;
-      webp: Record<number, string>;
-    };
-  }>) => void;
+  images: EditorImage[];
+  onImagesChange: (images: EditorImage[]) => void;
   propertyId?: string;
   maxImages?: number;
 }
@@ -64,6 +62,25 @@ export const ImageUploadZone = ({
     // Check if adding these files would exceed max
     if (images.length + fileArray.length > maxImages) {
       toast.error(`Máximo ${maxImages} imágenes permitidas`);
+      return;
+    }
+
+    // New property (no id yet): defer upload. Keep the files as local previews;
+    // PropertyFormDialog uploads them to {propertyId}/ once the property exists.
+    if (!propertyId) {
+      const pending: EditorImage[] = [];
+      for (const file of fileArray) {
+        const validationError = validateImage(file);
+        if (validationError) {
+          toast.error(`${file.name}: ${validationError}`, { duration: 8000 });
+          continue;
+        }
+        pending.push({ url: URL.createObjectURL(file), file });
+      }
+      if (pending.length > 0) {
+        onImagesChange([...images, ...pending]);
+        toast.success(`${pending.length} imagen(es) lista(s) para subir al guardar`);
+      }
       return;
     }
 
@@ -156,6 +173,15 @@ export const ImageUploadZone = ({
 
   const handleRemoveImage = async (index: number) => {
     const imageToRemove = images[index];
+
+    // Pending local image (not uploaded yet): just drop it and free the preview.
+    if (imageToRemove.file) {
+      if (imageToRemove.url.startsWith('blob:')) {
+        URL.revokeObjectURL(imageToRemove.url);
+      }
+      onImagesChange(images.filter((_, i) => i !== index));
+      return;
+    }
 
     try {
       // Extract path from URL if it's a storage URL

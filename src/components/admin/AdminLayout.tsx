@@ -4,7 +4,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -12,7 +11,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 
 import { AdminHeader } from './AdminHeader';
-import { AdminOrgProvider } from './AdminOrgContext';
 import { AdminSidebar } from './AdminSidebar';
 
 const SIDEBAR_STORAGE_KEY = 'admin-sidebar-open';
@@ -38,8 +36,8 @@ const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
 };
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { user, loading: authLoading, profile } = useAuth();
-  const { isStaff, role, loading: roleLoading, isSuperadmin } = useUserRole();
+  const { user, loading: authLoading } = useAuth();
+  const { isStaff, role, loading: roleLoading } = useUserRole();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -63,8 +61,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   const loading = authLoading || roleLoading;
-  // Don't show org warning for superadmins - they have access to all orgs
-  const showOrgWarning = !!profile && !profile.organization_id && !isSuperadmin;
 
   if (loading) {
     return (
@@ -122,23 +118,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <ProfileCompletionGuard>
       <ErrorBoundary>
-        <AdminOrgProvider organizationId={profile?.organization_id ?? null} canViewAll={isSuperadmin}>
-          <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
-            <AdminLayoutContent>
-              {showOrgWarning && (
-                <Alert variant="default" className="mb-4 border-amber-500/40 bg-amber-50 text-amber-900">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Falta organización</AlertTitle>
-                  <AlertDescription>
-                    No se detectó organización en tu perfil. Algunas acciones pueden fallar por políticas de acceso.
-                    Contacta a un administrador para asignarte a una organización.
-                  </AlertDescription>
-                </Alert>
-              )}
-              {children}
-            </AdminLayoutContent>
-          </SidebarProvider>
-        </AdminOrgProvider>
+        <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
+          <AdminLayoutContent>
+            {children}
+          </AdminLayoutContent>
+        </SidebarProvider>
       </ErrorBoundary>
     </ProfileCompletionGuard>
   );

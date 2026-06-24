@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.send-agent-invitation]
 verify_jwt = true
+
+[functions.accept-agent-invitation]
+verify_jwt = false

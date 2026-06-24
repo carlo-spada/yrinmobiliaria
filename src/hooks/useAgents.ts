@@ -18,21 +18,15 @@ export interface Agent {
   is_active: boolean;
 }
 
-export function useAgents(organizationId?: string) {
+export function useAgents() {
   return useQuery({
-    queryKey: ['agents', organizationId],
+    queryKey: ['agents'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('id, display_name, email, photo_url, agent_level, is_active')
         .eq('is_active', true)
         .order('display_name');
-
-      if (organizationId) {
-        query = query.eq('organization_id', organizationId);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       return data as Agent[];

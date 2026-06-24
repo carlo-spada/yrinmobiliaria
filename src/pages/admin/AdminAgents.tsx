@@ -12,19 +12,17 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminAgents() {
-  const { profile } = useAuth();
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   const { data: agents, isLoading } = useQuery({
-    queryKey: ['agents', profile?.organization_id],
+    queryKey: ['agents'],
     queryFn: async () => {
-      // Get profiles for this organization
+      // Get all agent profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -33,7 +31,6 @@ export default function AdminAgents() {
           inquiries:contact_inquiries(count),
           visits:scheduled_visits(count)
         `)
-        .eq('organization_id', profile?.organization_id ?? '')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -60,7 +57,6 @@ export default function AdminAgents() {
         role: roleMap.get(profile.user_id) || 'user'
       }));
     },
-    enabled: !!profile?.organization_id,
   });
 
   const getRoleDisplay = (role: string) => {
