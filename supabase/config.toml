@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.optimize-property-image]
 verify_jwt = true
 
+[functions.upload-property-image]
+verify_jwt = false
+
 [functions.send-agent-invitation]
 verify_jwt = true
 

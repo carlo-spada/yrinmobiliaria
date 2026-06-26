@@ -156,8 +156,24 @@ const getStorageErrorMessage = (error: StorageError | Error | unknown): string =
   return 'Error al subir la imagen. Por favor intenta de nuevo o contacta al administrador si el problema persiste.';
 };
 
+/** Converts a Blob to a base64 string (without the data: prefix). */
+const blobToBase64 = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const comma = result.indexOf(',');
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () => reject(new Error('No se pudo leer la imagen optimizada'));
+    reader.readAsDataURL(blob);
+  });
+
 /**
- * Uploads an image to Supabase Storage and generates optimized variants
+ * Uploads a property image via the upload-property-image edge function and
+ * generates optimized variants. The upload goes through an edge function
+ * (service_role) because this project's storage-api does not validate user JWTs,
+ * so a direct authenticated upload from the browser is rejected by Storage RLS.
  */
 export const uploadImage = async (file: File, propertyId: string): Promise<ImageUploadResult> => {
   // Validate file
@@ -167,37 +183,24 @@ export const uploadImage = async (file: File, propertyId: string): Promise<Image
   }
 
   try {
-    // Optimize image
+    // Optimize the image client-side, then upload it through the edge function.
+    // The file always lands under {propertyId}/ (no temp/ branch — that was Bug 2,
+    // where uploads to temp/ were reaped by a cleanup cron after 24h).
     const optimizedBlob = await optimizeImage(file);
+    const fileBase64 = await blobToBase64(optimizedBlob);
 
-    // Generate unique filename and image ID
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 8);
-    const imageId = `${timestamp}-${randomString}`;
-    const extension = 'webp'; // Always use webp after optimization
-    // Always upload under the property's folder so Storage RLS (owner/admin)
-    // passes and the object is permanent. The temp/ branch is gone: it produced
-    // orphaned uploads that a cleanup cron reaped after 24h (Bug 2).
-    const fileName = `${propertyId}/${imageId}.${extension}`;
+    const { data, error } = await supabase.functions.invoke('upload-property-image', {
+      body: { propertyId, fileBase64, contentType: 'image/webp' },
+    });
 
-    // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(fileName, optimizedBlob, {
-        contentType: 'image/webp',
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (error) {
-      logger.error('Supabase storage error:', error);
-      throw new Error(getStorageErrorMessage(error));
+    if (error || data?.error) {
+      const message = data?.error || error?.message || 'Error al subir la imagen';
+      logger.error('Upload edge function error:', message);
+      throw new Error(getStorageErrorMessage({ message }));
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(data.path);
+    const publicUrl: string = data.url;
+    const imageId: string = data.imageId;
 
     // Generate optimized variants using the edge function
     let variants;
