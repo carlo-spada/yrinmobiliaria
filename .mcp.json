@@ -1,16 +1,5 @@
 {
   "mcpServers": {
-    "agentvibes": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "--package=agentvibes",
-        "agentvibes-mcp-server"
-      ],
-      "env": {
-        "PATH": "/opt/anaconda3/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
-      }
-    },
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=ticsgpyathxawsupcghj&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
