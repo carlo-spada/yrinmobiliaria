@@ -83,8 +83,6 @@ const authenticatedRoutes: AppRoute[] = [
   { path: "/admin/settings", element: lazyPage(() => import("@/pages/admin/AdminSettings")) },
   { path: "/admin/health", element: lazyPage(() => import("@/pages/admin/AdminHealth")) },
   { path: "/admin/cms", element: lazyPage(() => import("@/pages/admin/AdminCMS")) },
-  { path: "/admin/seed", element: lazyPage(() => import("@/pages/admin/DatabaseSeed")) },
-  { path: "/admin/schema-builder", element: lazyPage(() => import("@/pages/admin/SchemaBuilder")) },
 ];
 
 export function AppRoutes() {

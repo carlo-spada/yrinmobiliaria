@@ -3,31 +3,18 @@ import { Home, MessageSquare, Calendar, FileText } from 'lucide-react';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { DashboardSkeleton } from '@/components/admin/TableSkeleton';
-import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '@/utils/dateFormat';
 
 function DashboardContent() {
-  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
-  const { isSuperadmin } = useUserRole();
-  const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
-  const canQuery = isSuperadmin || !!scopedOrg;
-
   // All hooks must be called unconditionally at the top
   const { data: stats } = useQuery({
-    queryKey: ['admin-stats', scopedOrg],
+    queryKey: ['admin-stats'],
     queryFn: async () => {
       const propertyQuery = supabase.from('properties').select('id', { count: 'exact', head: true });
       const inquiriesQuery = supabase.from('contact_inquiries').select('id', { count: 'exact', head: true });
       const visitsQuery = supabase.from('scheduled_visits').select('id', { count: 'exact', head: true });
-
-      if (scopedOrg) {
-        propertyQuery.eq('organization_id', scopedOrg);
-        inquiriesQuery.eq('organization_id', scopedOrg);
-        visitsQuery.eq('organization_id', scopedOrg);
-      }
 
       const [properties, inquiries, visits, logs] = await Promise.all([
         propertyQuery,
@@ -43,60 +30,39 @@ function DashboardContent() {
         logs: logs.count || 0,
       };
     },
-    enabled: canQuery,
   });
 
   const { data: recentInquiries } = useQuery({
-    queryKey: ['recent-inquiries', scopedOrg],
+    queryKey: ['recent-inquiries'],
     queryFn: async () => {
-      let query = supabase
+      const { data } = await supabase
         .from('contact_inquiries')
         .select('*, properties(title_es)')
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (scopedOrg) {
-        query = query.eq('organization_id', scopedOrg);
-      }
-
-      const { data } = await query;
       return data || [];
     },
-    enabled: canQuery,
   });
 
   const { data: upcomingVisits } = useQuery({
-    queryKey: ['upcoming-visits', scopedOrg],
+    queryKey: ['upcoming-visits'],
     queryFn: async () => {
-      let query = supabase
+      const { data } = await supabase
         .from('scheduled_visits')
         .select('*, properties(title_es)')
         .gte('preferred_date', new Date().toISOString().split('T')[0])
         .order('preferred_date', { ascending: true })
         .limit(5);
 
-      if (scopedOrg) {
-        query = query.eq('organization_id', scopedOrg);
-      }
-
-      const { data } = await query;
       return data || [];
     },
-    enabled: canQuery,
   });
 
   // Get loading state
-  const isLoading = !stats && canQuery;
+  const isLoading = !stats;
 
   // Conditional rendering AFTER all hooks
-  if (!canQuery) {
-    return (
-      <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-        Asigna una organización a tu perfil para ver el dashboard.
-      </div>
-    );
-  }
-
   if (isLoading) {
     return <DashboardSkeleton />;
   }

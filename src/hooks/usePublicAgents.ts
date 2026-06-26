@@ -26,7 +26,6 @@ export interface PublicAgent {
   languages: string[] | null;
   service_zones: string[] | null;
   is_featured: boolean;
-  organization_id: string | null;
   // Social links are public by nature (users control what they share)
   instagram_handle: string | null;
   linkedin_url: string | null;

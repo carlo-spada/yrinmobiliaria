@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { TableSkeleton } from '@/components/admin/TableSkeleton';
-import { useAdminOrg } from '@/components/admin/useAdminOrg';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +34,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logAuditEvent } from '@/utils/auditLog';
@@ -49,30 +47,20 @@ function InquiriesContent() {
   const [selectedInquiry, setSelectedInquiry] = useState<ContactInquiry | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
-  const { isSuperadmin } = useUserRole();
   const { t } = useLanguage();
-  const scopedOrg = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
-  const canQuery = isSuperadmin || !!scopedOrg;
 
   // All hooks must be called unconditionally at the top
   const { data: inquiries, isLoading } = useQuery({
-    queryKey: ['contact-inquiries', scopedOrg],
+    queryKey: ['contact-inquiries'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('contact_inquiries')
         .select('*, properties(title_es)')
         .order('created_at', { ascending: false });
 
-      if (scopedOrg) {
-        query = query.eq('organization_id', scopedOrg);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: canQuery,
   });
 
   const updateStatusMutation = useMutation({
@@ -122,16 +110,6 @@ function InquiriesContent() {
   });
 
   // Conditional rendering AFTER all hooks
-  if (!canQuery) {
-    return (
-      <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>
-        <div className="min-h-[200px] flex items-center justify-center text-muted-foreground">
-          {t.admin.common.assignOrg}
-        </div>
-      </RoleGuard>
-    );
-  }
-
   if (isLoading) {
     return (
       <RoleGuard allowedRoles={['agent', 'admin', 'superadmin']}>

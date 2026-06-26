@@ -32,7 +32,6 @@ vi.mock("@/hooks/useUserRole", () => ({
     isSuperadmin: roleState.role === "superadmin",
     isAdmin: roleState.role === "admin" || roleState.role === "superadmin",
     isAgent: roleState.role === "agent",
-    organizationId: null,
   }),
 }));
 

@@ -9,7 +9,6 @@ export interface UserRoleData {
   isSuperadmin: boolean;
   isAdmin: boolean;
   isAgent: boolean;
-  organizationId: string | null;
   loading: boolean;
 }
 
@@ -17,9 +16,9 @@ export interface UserRoleData {
  * Hook to determine user's role and permissions.
  * Uses the shared AuthContext for consistent state across the app.
  *
- * Role hierarchy:
- * - superadmin: Full system access, no org scoping
- * - admin: Org-scoped access, can manage org resources
+ * Role hierarchy (single-tenant):
+ * - superadmin: Full system access
+ * - admin: Manage all resources
  * - agent: Limited access to own properties/inquiries/visits
  * - user: Regular customer, no admin access
  */
@@ -32,7 +31,6 @@ export function useUserRole(): UserRoleData {
     isSuperadmin: context.isSuperadmin,
     isAdmin: context.isAdmin,
     isAgent: context.isAgent,
-    organizationId: context.organizationId,
     loading: context.roleLoading,
   };
 }

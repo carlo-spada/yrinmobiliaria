@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
@@ -8,10 +7,8 @@ import {
   Calendar,
   Users,
   UserCircle,
-  FileText,
   Settings,
   Activity,
-  Database,
   Building2,
   X,
 } from 'lucide-react';
@@ -31,15 +28,9 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
   SidebarHeader,
-  SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
-import { supabase } from '@/integrations/supabase/client';
-
-import { useAdminOrg } from './useAdminOrg';
-
 
 type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
 
@@ -61,41 +52,7 @@ export function AdminSidebar() {
   const { open, isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const { role } = useUserRole();
-  const { profile } = useAuth();
-  const { selectedOrgId, isAllOrganizations, canViewAll } = useAdminOrg();
   const currentPath = location.pathname;
-
-  // Fetch the organization name for display
-  const { data: selectedOrg } = useQuery({
-    queryKey: ['org-name', selectedOrgId],
-    queryFn: async () => {
-      if (!selectedOrgId || selectedOrgId === 'all') return null;
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('name, slug')
-        .eq('id', selectedOrgId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedOrgId && selectedOrgId !== 'all',
-  });
-
-  // For non-superadmins, fetch their own org name
-  const { data: userOrg } = useQuery({
-    queryKey: ['user-org', profile?.organization_id],
-    queryFn: async () => {
-      if (!profile?.organization_id) return null;
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('name, slug')
-        .eq('id', profile.organization_id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !canViewAll && !!profile?.organization_id,
-  });
 
   // Close mobile sidebar when navigating
   const handleNavClick = () => {
@@ -190,27 +147,9 @@ export function AdminSidebar() {
       roles: ['superadmin'],
       items: [
         {
-          title: 'Organizaciones',
-          url: '/admin/settings',
-          icon: Building2,
-          roles: ['superadmin'],
-        },
-        {
           title: 'Salud del Sistema',
           url: '/admin/health',
           icon: Activity,
-          roles: ['superadmin'],
-        },
-        {
-          title: 'Schema Builder',
-          url: '/admin/schema-builder',
-          icon: Database,
-          roles: ['superadmin'],
-        },
-        {
-          title: 'Seed Database',
-          url: '/admin/seed',
-          icon: FileText,
           roles: ['superadmin'],
         },
       ],
@@ -304,35 +243,6 @@ export function AdminSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
-
-      {/* Organization indicator footer */}
-      <SidebarFooter className="border-t p-3">
-        <div className="flex items-center gap-2 text-xs">
-          <Building2 className="h-4 w-4 text-primary shrink-0" />
-          {(open || isMobile) && (
-            <div className="min-w-0 flex-1">
-              {canViewAll ? (
-                // Superadmin view
-                isAllOrganizations ? (
-                  <span className="text-muted-foreground font-medium">Todas las Orgs</span>
-                ) : (
-                  <span className="font-medium text-foreground truncate block">
-                    {selectedOrg?.name || 'Cargando...'}
-                  </span>
-                )
-              ) : (
-                // Admin/Agent view - show their org
-                <span className="font-medium text-foreground truncate block">
-                  {userOrg?.name || profile?.organization_id ? 'Cargando...' : 'Sin organización'}
-                </span>
-              )}
-              <span className="text-muted-foreground text-[10px]">
-                {canViewAll ? 'Contexto actual' : 'Tu organización'}
-              </span>
-            </div>
-          )}
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }

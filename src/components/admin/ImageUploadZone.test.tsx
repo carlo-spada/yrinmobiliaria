@@ -7,19 +7,18 @@ import { uploadImage } from '@/utils/imageUpload';
 
 import { ImageUploadZone } from './ImageUploadZone';
 
-
-
-
 vi.mock('@/utils/imageUpload', () => ({
   uploadImage: vi.fn(),
   deleteImage: vi.fn(),
   extractPathFromUrl: vi.fn(),
+  validateImage: vi.fn(() => null),
 }));
 
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    warning: vi.fn(),
   },
 }));
 const mockedUploadImage = uploadImage as unknown as ReturnType<typeof vi.fn>;
@@ -41,18 +40,18 @@ const renderUploader = (props?: Partial<React.ComponentProps<typeof ImageUploadZ
 };
 
 describe('ImageUploadZone', () => {
-  it('uploads and adds images on success', async () => {
+  it('uploads immediately when the property already exists', async () => {
     mockedUploadImage.mockResolvedValueOnce({ url: 'https://cdn.test/img.webp', path: 'test/path' });
     const handleChange = vi.fn();
     const file = new File(['data'], 'photo.jpg', { type: 'image/jpeg' });
 
-    const { container } = renderUploader({ onImagesChange: handleChange });
+    const { container } = renderUploader({ onImagesChange: handleChange, propertyId: 'prop-1' });
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => expect(mockedUploadImage).toHaveBeenCalledTimes(1));
-    expect(mockedUploadImage).toHaveBeenCalledWith(file, undefined);
+    expect(mockedUploadImage).toHaveBeenCalledWith(file, 'prop-1');
     expect(handleChange).toHaveBeenCalledWith([{ url: 'https://cdn.test/img.webp', path: 'test/path' }]);
   });
 
@@ -60,7 +59,7 @@ describe('ImageUploadZone', () => {
     mockedUploadImage.mockRejectedValueOnce(new Error('No tienes permisos'));
     const file = new File(['data'], 'photo.jpg', { type: 'image/jpeg' });
 
-    const { container } = renderUploader();
+    const { container } = renderUploader({ propertyId: 'prop-1' });
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(input, { target: { files: [file] } });
@@ -74,5 +73,28 @@ describe('ImageUploadZone', () => {
         description: expect.stringContaining('No tienes permisos')
       })
     );
+  });
+
+  it('defers upload for a new property (no propertyId) and keeps the file for later', async () => {
+    const handleChange = vi.fn();
+    const file = new File(['data'], 'photo.jpg', { type: 'image/jpeg' });
+    const originalCreate = URL.createObjectURL;
+    URL.createObjectURL = vi.fn(() => 'blob:preview') as unknown as typeof URL.createObjectURL;
+
+    try {
+      const { container } = renderUploader({ onImagesChange: handleChange });
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => expect(handleChange).toHaveBeenCalled());
+      // Deferred: no upload happens yet; the raw File is preserved for the form to upload.
+      expect(mockedUploadImage).not.toHaveBeenCalled();
+      expect(handleChange).toHaveBeenCalledWith([
+        expect.objectContaining({ url: 'blob:preview', file }),
+      ]);
+    } finally {
+      URL.createObjectURL = originalCreate;
+    }
   });
 });

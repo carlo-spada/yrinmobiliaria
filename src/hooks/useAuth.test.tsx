@@ -37,7 +37,7 @@ const setupAuthMock = ({
   profile = null,
 }: {
   session: Session | null;
-  roles?: { role: string; organization_id?: string | null; granted_at?: string }[];
+  roles?: { role: string; granted_at?: string }[];
   profile?: Record<string, unknown> | null;
 }) => {
   const subscription = { unsubscribe: vi.fn() };

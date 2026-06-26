@@ -35,7 +35,6 @@ import { logAuditEvent } from '@/utils/auditLog';
 import { PropertyFormDialog } from './PropertyFormDialog';
 import { ReassignPropertyDialog } from './ReassignPropertyDialog';
 import { TableSkeleton } from './TableSkeleton';
-import { useAdminOrg } from './useAdminOrg';
 
 type PropertyWithRelations = Database['public']['Tables']['properties']['Row'] & {
   property_images?: Array<{ image_url: string; display_order: number }>;
@@ -47,16 +46,12 @@ export const PropertiesTable = () => {
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
   const [reassigningProperty, setReassigningProperty] = useState<PropertyWithRelations | null>(null);
   const queryClient = useQueryClient();
-  const { isAdmin, isSuperadmin } = useUserRole();
-  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
-
-  const scopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
-  const shouldFetch = isSuperadmin || !!scopedOrgId;
+  const { isAdmin } = useUserRole();
 
   const { data: properties, isLoading } = useQuery({
-    queryKey: ['admin-properties', scopedOrgId],
+    queryKey: ['admin-properties'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('properties')
         .select(`
           *,
@@ -65,16 +60,9 @@ export const PropertiesTable = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (scopedOrgId) {
-        query = query.eq('organization_id', scopedOrgId);
-      }
-
-      const { data, error } = await query;
-
       if (error) throw error;
       return data;
     },
-    enabled: shouldFetch,
   });
 
   const deleteMutation = useMutation({
@@ -99,11 +87,7 @@ export const PropertiesTable = () => {
       });
     },
     onSuccess: () => {
-      // Scope invalidation to the current organization
-      queryClient.invalidateQueries({
-        queryKey: ['admin-properties', scopedOrgId],
-        exact: true
-      });
+      queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
       toast.success('Propiedad eliminada correctamente');
       setDeletingPropertyId(null);
     },
@@ -112,15 +96,6 @@ export const PropertiesTable = () => {
       toast.error('Error al eliminar: ' + errorMessage);
     },
   });
-
-  // Early return for missing org (after all hooks)
-  if (!shouldFetch) {
-    return (
-      <div className="text-sm text-muted-foreground border rounded-lg p-4">
-        Asigna una organización a tu perfil para gestionar propiedades.
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -239,7 +214,6 @@ export const PropertiesTable = () => {
           propertyTitle={reassigningProperty.title_es}
           currentAgentId={reassigningProperty.agent_id}
           currentAgentName={reassigningProperty.agent?.display_name || null}
-          organizationId={reassigningProperty.organization_id}
         />
       )}
 

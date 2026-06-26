@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { Phone, Mail, MapPin, Clock, Building2, Facebook, Instagram, Loader2, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 
 // Improved validation patterns
 const VALIDATION_PATTERNS = {
@@ -17,39 +16,14 @@ const VALIDATION_PATTERNS = {
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { PermissionsMatrix } from '@/components/admin/PermissionsMatrix';
 import { RoleGuard } from '@/components/admin/RoleGuard';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { SettingValue } from '@/hooks/useSiteSettings';
-import { useUserRole } from '@/hooks/useUserRole';
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
-
-type OrganizationRow = Database['public']['Tables']['organizations']['Row'];
 
 interface SettingEditorProps {
   settingKey: string;
@@ -63,16 +37,16 @@ interface SettingEditorProps {
   defaultValue?: SettingValue;
 }
 
-const SettingEditor = ({ 
-  settingKey, 
-  label, 
-  description, 
-  value, 
-  multiline, 
-  icon, 
-  onSave, 
+const SettingEditor = ({
+  settingKey,
+  label,
+  description,
+  value,
+  multiline,
+  icon,
+  onSave,
   isUpdating,
-  defaultValue 
+  defaultValue
 }: SettingEditorProps) => {
   const [editValue, setEditValue] = useState<string>(String(value || ''));
   const [hasChanges, setHasChanges] = useState(false);
@@ -155,8 +129,8 @@ const SettingEditor = ({
           />
         )}
         <div className="flex gap-2">
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={!hasChanges || isUpdating}
             size="sm"
           >
@@ -164,9 +138,9 @@ const SettingEditor = ({
             Guardar
           </Button>
           {defaultValue !== undefined && (
-            <Button 
-              onClick={handleReset} 
-              variant="outline" 
+            <Button
+              onClick={handleReset}
+              variant="outline"
               size="sm"
               disabled={isUpdating}
             >
@@ -192,124 +166,11 @@ const defaultSettings = {
 };
 
 export default function AdminSettings() {
-  const { isSuperadmin } = useUserRole();
   const { getSettingsByCategory, updateSetting, isUpdating, isLoading } = useSiteSettings();
-  const queryClient = useQueryClient();
-
-  const [isOrgDialogOpen, setIsOrgDialogOpen] = useState(false);
-  const [editingOrg, setEditingOrg] = useState<OrganizationRow | null>(null);
-  const [deletingOrgId, setDeletingOrgId] = useState<string | null>(null);
-  const [orgFormData, setOrgFormData] = useState<Pick<
-    OrganizationRow,
-    'name' | 'slug' | 'contact_email' | 'phone' | 'domain'
-  >>({
-    name: '',
-    slug: '',
-    contact_email: '',
-    phone: '',
-    domain: '',
-  });
 
   const contactSettings = getSettingsByCategory('contact');
   const businessSettings = getSettingsByCategory('business');
   const socialSettings = getSettingsByCategory('social');
-
-  // Fetch organizations
-  const { data: organizations = [], isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations-admin'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: isSuperadmin,
-  });
-
-  // Create/Update organization mutation
-  const saveOrgMutation = useMutation({
-    mutationFn: async (orgData: typeof orgFormData) => {
-      if (editingOrg) {
-        const { error } = await supabase
-          .from('organizations')
-          .update(orgData)
-          .eq('id', editingOrg.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('organizations')
-          .insert(orgData);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organizations-admin'] });
-      toast({ title: editingOrg ? 'Organización actualizada' : 'Organización creada' });
-      setIsOrgDialogOpen(false);
-      setEditingOrg(null);
-      setOrgFormData({ name: '', slug: '', contact_email: '', phone: '', domain: '' });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Delete organization mutation
-  const deleteOrgMutation = useMutation({
-    mutationFn: async (orgId: string) => {
-      const { error } = await supabase
-        .from('organizations')
-        .delete()
-        .eq('id', orgId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organizations-admin'] });
-      toast({ title: 'Organización eliminada' });
-      setDeletingOrgId(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error al eliminar',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const handleOpenOrgDialog = (org?: OrganizationRow) => {
-    if (org) {
-      setEditingOrg(org);
-      setOrgFormData({
-        name: org.name,
-        slug: org.slug,
-        contact_email: org.contact_email,
-        phone: org.phone || '',
-        domain: org.domain || '',
-      });
-    } else {
-      setEditingOrg(null);
-      setOrgFormData({ name: '', slug: '', contact_email: '', phone: '', domain: '' });
-    }
-    setIsOrgDialogOpen(true);
-  };
-
-  // Reset mutation state and form when dialog closes
-  const handleCloseOrgDialog = useCallback(() => {
-    setIsOrgDialogOpen(false);
-    // Reset mutation state after dialog animation
-    setTimeout(() => {
-      saveOrgMutation.reset();
-      setEditingOrg(null);
-      setOrgFormData({ name: '', slug: '', contact_email: '', phone: '', domain: '' });
-    }, 150);
-  }, [saveOrgMutation]);
 
   if (isLoading) {
     return (
@@ -333,11 +194,10 @@ export default function AdminSettings() {
         </div>
 
         <Tabs defaultValue="contact" className="space-y-4">
-          <TabsList className={`grid w-full ${isSuperadmin ? 'grid-cols-5' : 'grid-cols-4'} lg:w-[600px]`}>
+          <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
             <TabsTrigger value="contact">Contacto</TabsTrigger>
             <TabsTrigger value="business">Negocio</TabsTrigger>
             <TabsTrigger value="social">Redes Sociales</TabsTrigger>
-            {isSuperadmin && <TabsTrigger value="organizations">Organizaciones</TabsTrigger>}
             <TabsTrigger value="permissions">Permisos</TabsTrigger>
           </TabsList>
 
@@ -350,7 +210,7 @@ export default function AdminSettings() {
                   setting.setting_key === 'company_phone' ? 'Teléfono' :
                   setting.setting_key === 'company_email' ? 'Correo Electrónico' :
                   setting.setting_key === 'whatsapp_number' ? 'WhatsApp' :
-                  setting.setting_key === 'company_address' ? 'Dirección' : 
+                  setting.setting_key === 'company_address' ? 'Dirección' :
                   setting.setting_key
                 }
                 description={setting.description}
@@ -419,172 +279,10 @@ export default function AdminSettings() {
             ))}
           </TabsContent>
 
-          {isSuperadmin && (
-            <TabsContent value="organizations" className="space-y-4">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold">Gestión de Organizaciones</h3>
-                  <p className="text-sm text-muted-foreground">Administra todas las organizaciones del sistema</p>
-                </div>
-                <Button onClick={() => handleOpenOrgDialog()} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Nueva Organización
-                </Button>
-              </div>
-
-              {orgsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {organizations.map((org) => (
-                    <Card key={org.id}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <CardTitle className="flex items-center gap-2">
-                              {org.name}
-                              {!org.is_active && (
-                                <Badge variant="secondary">Inactivo</Badge>
-                              )}
-                            </CardTitle>
-                            <CardDescription className="space-y-1">
-                              <div><strong>Slug:</strong> {org.slug}</div>
-                              <div><strong>Email:</strong> {org.contact_email}</div>
-                              {org.phone && <div><strong>Teléfono:</strong> {org.phone}</div>}
-                              {org.domain && <div><strong>Dominio:</strong> {org.domain}</div>}
-                            </CardDescription>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleOpenOrgDialog(org)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => setDeletingOrgId(org.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                  {organizations.length === 0 && (
-                    <Card>
-                      <CardContent className="py-8 text-center text-muted-foreground">
-                        No hay organizaciones. Crea una nueva para comenzar.
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              )}
-            </TabsContent>
-          )}
-
           <TabsContent value="permissions" className="space-y-4">
             <PermissionsMatrix />
           </TabsContent>
         </Tabs>
-
-        {/* Organization Dialog */}
-        <Dialog open={isOrgDialogOpen} onOpenChange={(open) => !open && handleCloseOrgDialog()}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingOrg ? 'Editar Organización' : 'Nueva Organización'}</DialogTitle>
-              <DialogDescription>
-                {editingOrg ? 'Actualiza la información de la organización' : 'Crea una nueva organización en el sistema'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre *</Label>
-                <Input
-                  id="name"
-                  value={orgFormData.name}
-                  onChange={(e) => setOrgFormData({ ...orgFormData, name: e.target.value })}
-                  placeholder="YR Inmobiliaria"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="slug">Slug * (identificador único)</Label>
-                <Input
-                  id="slug"
-                  value={orgFormData.slug}
-                  onChange={(e) => setOrgFormData({ ...orgFormData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
-                  placeholder="yr-inmobiliaria"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contact_email">Email de Contacto *</Label>
-                <Input
-                  id="contact_email"
-                  type="email"
-                  value={orgFormData.contact_email}
-                  onChange={(e) => setOrgFormData({ ...orgFormData, contact_email: e.target.value })}
-                  placeholder="contacto@empresa.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Teléfono</Label>
-                <Input
-                  id="phone"
-                  value={orgFormData.phone ?? ''}
-                  onChange={(e) => setOrgFormData({ ...orgFormData, phone: e.target.value })}
-                  placeholder="(951) 123-4567"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="domain">Dominio</Label>
-                <Input
-                  id="domain"
-                  value={orgFormData.domain ?? ''}
-                  onChange={(e) => setOrgFormData({ ...orgFormData, domain: e.target.value })}
-                  placeholder="empresa.com"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={handleCloseOrgDialog}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => saveOrgMutation.mutate(orgFormData)}
-                disabled={!orgFormData.name || !orgFormData.slug || !orgFormData.contact_email || saveOrgMutation.isPending}
-              >
-                {saveOrgMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {editingOrg ? 'Actualizar' : 'Crear'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Confirmation */}
-        <AlertDialog open={!!deletingOrgId} onOpenChange={() => setDeletingOrgId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>¿Eliminar organización?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta acción no se puede deshacer. Todos los usuarios, propiedades y datos asociados a esta organización podrían verse afectados.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deletingOrgId && deleteOrgMutation.mutate(deletingOrgId)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Eliminar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
       </RoleGuard>
     </AdminLayout>

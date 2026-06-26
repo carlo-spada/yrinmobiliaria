@@ -1,7 +1,7 @@
 import type { Session, User } from "@supabase/supabase-js";
 import { vi } from "vitest";
 
-type RoleRow = { role: string; organization_id?: string | null; granted_at?: string };
+type RoleRow = { role: string; granted_at?: string };
 
 type ProfileRow = Record<string, unknown> | null;
 

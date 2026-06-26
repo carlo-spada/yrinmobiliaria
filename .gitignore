@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ETL migration data (contains PII) — never commit
+etl-import/
+etl-*.mjs

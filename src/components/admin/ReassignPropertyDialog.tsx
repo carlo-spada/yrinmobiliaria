@@ -20,11 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAgents } from '@/hooks/useAgents';
-import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { logAuditEvent } from '@/utils/auditLog';
-
-import { useAdminOrg } from './useAdminOrg';
 
 interface ReassignPropertyDialogProps {
   open: boolean;
@@ -33,7 +30,6 @@ interface ReassignPropertyDialogProps {
   propertyTitle: string;
   currentAgentId: string | null;
   currentAgentName: string | null;
-  organizationId: string;
 }
 
 export function ReassignPropertyDialog({
@@ -43,14 +39,11 @@ export function ReassignPropertyDialog({
   propertyTitle,
   currentAgentId,
   currentAgentName,
-  organizationId,
 }: ReassignPropertyDialogProps) {
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const queryClient = useQueryClient();
-  const { isSuperadmin } = useUserRole();
-  const { effectiveOrgId, isAllOrganizations } = useAdminOrg();
 
-  const { data: agents, isLoading: loadingAgents } = useAgents(organizationId);
+  const { data: agents, isLoading: loadingAgents } = useAgents();
 
   // Handle dialog open/close with state reset
   const handleOpenChange = (newOpen: boolean) => {
@@ -88,12 +81,7 @@ export function ReassignPropertyDialog({
       return newAgent;
     },
     onSuccess: (newAgent) => {
-      // Scope invalidation to match PropertiesTable query key
-      const scopedOrgId = isSuperadmin && isAllOrganizations ? null : effectiveOrgId;
-      queryClient.invalidateQueries({
-        queryKey: ['admin-properties', scopedOrgId],
-        exact: true
-      });
+      queryClient.invalidateQueries({ queryKey: ['admin-properties'] });
       toast.success(`Propiedad reasignada a ${newAgent?.display_name}`);
       handleOpenChange(false);
     },

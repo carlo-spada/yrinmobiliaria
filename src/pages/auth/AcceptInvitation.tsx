@@ -9,9 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { logger } from "@/utils/logger";
 
 const passwordSchema = z.string()
@@ -21,17 +19,21 @@ const passwordSchema = z.string()
   .regex(/[0-9]/, "Debe contener al menos un número")
   .regex(/[^A-Za-z0-9]/, "Debe contener al menos un carácter especial");
 
-type AgentInvitation = Database['public']['Tables']['agent_invitations']['Row'] & {
-  organization: Database['public']['Tables']['organizations']['Row'] | null;
-};
+// Single-tenant: invitations no longer carry an organization. The whole flow
+// goes through the accept-agent-invitation edge function (service-role), since
+// agent_invitations and role_assignments are admin-only via RLS and the invitee
+// has no session yet.
+interface InvitationPreview {
+  email: string;
+  display_name: string | null;
+}
 
 export default function AcceptInvitation() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  useAuth(); // Initialize auth context
   const token = searchParams.get("token");
 
-  const [invitation, setInvitation] = useState<AgentInvitation | null>(null);
+  const [invitation, setInvitation] = useState<InvitationPreview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
@@ -39,33 +41,17 @@ export default function AcceptInvitation() {
 
   const validateInvitation = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
-        .from("agent_invitations")
-        .select(`
-          *,
-          organization:organizations(*)
-        `)
-        .eq("token", token ?? '')
-        .single();
+      const { data, error: fetchError } = await supabase.functions.invoke(
+        "accept-agent-invitation",
+        { body: { token } }
+      );
 
-      if (fetchError || !data) {
-        setError("Invitación no encontrada");
+      if (fetchError || !data || data.error) {
+        setError(data?.error || "Invitación no encontrada");
         return;
       }
 
-      // Check if expired
-      if (new Date(data.expires_at) < new Date()) {
-        setError("Esta invitación ha expirado");
-        return;
-      }
-
-      // Check if already accepted
-      if (data.accepted_at) {
-        setError("Esta invitación ya ha sido aceptada");
-        return;
-      }
-
-      setInvitation(data);
+      setInvitation({ email: data.email, display_name: data.display_name ?? null });
     } catch (err) {
       logger.error("Error validating invitation:", err);
       setError("Error al validar la invitación");
@@ -85,7 +71,7 @@ export default function AcceptInvitation() {
   }, [token, validateInvitation]);
 
   const handleAccept = async () => {
-    if (!invitation) {
+    if (!invitation || !token) {
       toast.error("Invitación no válida");
       return;
     }
@@ -98,48 +84,22 @@ export default function AcceptInvitation() {
 
     setIsProcessing(true);
     try {
-      // Sign up user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      // Create the account + agent role server-side (service-role).
+      const { data, error: acceptError } = await supabase.functions.invoke(
+        "accept-agent-invitation",
+        { body: { token, password } }
+      );
+
+      if (acceptError || !data || data.error) {
+        throw new Error(data?.error || acceptError?.message || "Error al aceptar la invitación");
+      }
+
+      // Sign the freshly created agent in.
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: invitation.email,
-        password: password,
-        options: {
-          data: {
-            display_name: invitation.display_name || invitation.email.split("@")[0],
-          },
-        },
+        password,
       });
-
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error("No user created");
-
-      // Create profile with agent role
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          user_id: authData.user.id,
-          organization_id: invitation.organization_id,
-          display_name: invitation.display_name || invitation.email.split("@")[0],
-          email: invitation.email,
-          phone: invitation.phone,
-          service_zones: invitation.service_zones,
-          role: "agent",
-          is_complete: false,
-          invited_by: invitation.invited_by,
-          invited_at: invitation.invited_at,
-        });
-
-      if (profileError) throw profileError;
-
-      // Mark invitation as accepted
-      const { error: updateError } = await supabase
-        .from("agent_invitations")
-        .update({
-          accepted_at: new Date().toISOString(),
-          accepted_by: authData.user.id,
-        })
-        .eq("id", invitation.id);
-
-      if (updateError) throw updateError;
+      if (signInError) throw signInError;
 
       toast.success("¡Invitación aceptada! Completa tu perfil para comenzar.");
       navigate("/onboarding/complete-profile");
@@ -182,7 +142,7 @@ export default function AcceptInvitation() {
       <Card className="w-full max-w-md p-8">
         <div className="text-center space-y-2 mb-6">
           <CheckCircle2 className="h-16 w-16 mx-auto text-primary" />
-          <h1 className="text-2xl font-bold">Invitación a {invitation?.organization?.name}</h1>
+          <h1 className="text-2xl font-bold">Invitación a YR Inmobiliaria</h1>
           <p className="text-muted-foreground">
             Te invitaron para unirte al equipo como agente inmobiliario
           </p>
@@ -193,7 +153,6 @@ export default function AcceptInvitation() {
             <h2 className="font-semibold mb-2">Información de la invitación:</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><strong>Email:</strong> {invitation?.email}</li>
-              <li><strong>Organización:</strong> {invitation?.organization?.name}</li>
               {invitation?.display_name && (
                 <li><strong>Nombre:</strong> {invitation.display_name}</li>
               )}

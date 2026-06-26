@@ -45,7 +45,7 @@ interface InviteAgentDialogProps {
 }
 
 export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { zones } = useServiceZones();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
@@ -89,7 +89,7 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
   }, [open, form]);
 
   const onSubmit = async (data: InviteFormData) => {
-    if (!user || !profile?.organization_id) return;
+    if (!user) return;
 
     // Create new abort controller for this submission
     abortControllerRef.current = new AbortController();
@@ -118,7 +118,6 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
         .from('agent_invitations')
         .select('id')
         .eq('email', data.email)
-        .eq('organization_id', profile.organization_id)
         .is('accepted_at', null)
         .abortSignal(signal)
         .single();
@@ -135,7 +134,6 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
       const { data: invitation, error: inviteError } = await supabase
         .from('agent_invitations')
         .insert({
-          organization_id: profile.organization_id,
           email: data.email,
           display_name: data.display_name || null,
           phone: data.phone || null,
