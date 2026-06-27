@@ -10,15 +10,13 @@ import {
   Settings,
   Activity,
   Building2,
-  X,
 } from 'lucide-react';
 import { useMemo } from 'react';
 
 
 import { NavLink } from '@/components/NavLink';
-import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import {
-  Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
@@ -27,11 +25,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-  SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useLocation } from '@/lib/router-compat';
+import { cn } from '@/lib/utils';
 
 type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
 
@@ -50,7 +48,7 @@ interface MenuGroup {
 }
 
 export function AdminSidebar() {
-  const { open, isMobile, setOpenMobile } = useSidebar();
+  const { open, isMobile, openMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const { role } = useUserRole();
   const currentPath = location.pathname;
@@ -176,74 +174,83 @@ export function AdminSidebar() {
     [role] // Only recompute when role changes
   );
 
+  // Whether item labels (text) should be shown. On mobile the drawer is always
+  // expanded; on desktop it follows the collapse state.
+  const showLabels = open || isMobile;
+
+  const navContent = (
+    <SidebarContent>
+      {visibleGroups.map((group, groupIndex) => (
+        <SidebarGroup key={group.label}>
+          <SidebarGroupLabel className={!showLabels ? 'sr-only' : ''}>
+            {group.label}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {group.items.map((item) => {
+                const isActive = item.exactMatch
+                  ? currentPath === item.url
+                  : currentPath.startsWith(item.url) && item.url !== '/admin';
+
+                // Special case for dashboard - only active on exact match
+                const isDashboardActive = item.url === '/admin' && currentPath === '/admin';
+                const finalIsActive = item.url === '/admin' ? isDashboardActive : isActive;
+
+                return (
+                  <SidebarMenuItem key={item.url + item.title}>
+                    <SidebarMenuButton asChild isActive={finalIsActive}>
+                      <NavLink
+                        to={item.url}
+                        className="hover:bg-accent"
+                        activeClassName="bg-accent text-accent-foreground font-medium"
+                        onClick={handleNavClick}
+                      >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {showLabels && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+          {groupIndex < visibleGroups.length - 1 && <SidebarSeparator />}
+        </SidebarGroup>
+      ))}
+    </SidebarContent>
+  );
+
   return (
-    <Sidebar collapsible="icon">
-      {/* Mobile Header */}
-      {isMobile && (
-        <SidebarHeader className="border-b px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-lg">Admin</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setOpenMobile(false)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  e.preventDefault();
-                  setOpenMobile(false);
-                }
-              }}
-              className="h-8 w-8"
-              aria-label="Cerrar menú de navegación"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Cerrar menú</span>
-            </Button>
-          </div>
-        </SidebarHeader>
-      )}
-      <SidebarContent>
-        {visibleGroups.map((group, groupIndex) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className={!open && !isMobile ? 'sr-only' : ''}>
-              {group.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const isActive = item.exactMatch
-                    ? currentPath === item.url
-                    : currentPath.startsWith(item.url) && item.url !== '/admin';
+    <>
+      {/*
+        Desktop sidebar — an IN-FLOW grid/flex column. It physically occupies
+        its own width (never `fixed`/`absolute`), so the header and main content
+        can never overlap it. Width follows the collapse state.
+      */}
+      <aside
+        className={cn(
+          'hidden md:flex md:h-full md:shrink-0 md:flex-col',
+          'overflow-y-auto border-r border-sidebar-border bg-sidebar text-sidebar-foreground',
+          'transition-[width] duration-200 ease-linear',
+          open ? 'md:w-64' : 'md:w-16',
+        )}
+      >
+        {navContent}
+      </aside>
 
-                  // Special case for dashboard - only active on exact match
-                  const isDashboardActive = item.url === '/admin' && currentPath === '/admin';
-                  const finalIsActive = item.url === '/admin' ? isDashboardActive : isActive;
-
-                  return (
-                    <SidebarMenuItem key={item.url + item.title}>
-                      <SidebarMenuButton asChild isActive={finalIsActive}>
-                        <NavLink
-                          to={item.url}
-                          className="hover:bg-accent"
-                          activeClassName="bg-accent text-accent-foreground font-medium"
-                          onClick={handleNavClick}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          {(open || isMobile) && <span>{item.title}</span>}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-            {groupIndex < visibleGroups.length - 1 && <SidebarSeparator />}
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-    </Sidebar>
+      {/* Mobile sidebar — off-canvas drawer that overlays only when opened. */}
+      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+        <SheetContent
+          side="left"
+          className="w-72 bg-sidebar p-0 text-sidebar-foreground [&>button]:text-sidebar-foreground"
+        >
+          <SheetTitle className="flex items-center gap-2 border-b px-4 py-3 text-lg font-semibold">
+            <Building2 className="h-5 w-5 text-primary" />
+            Admin
+          </SheetTitle>
+          <div className="flex h-full w-full flex-col overflow-y-auto">{navContent}</div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

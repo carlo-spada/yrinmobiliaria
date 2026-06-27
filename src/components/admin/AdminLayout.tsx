@@ -19,15 +19,22 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
-// Simplified layout that works with Cloudflare - no peer selectors or inline margin calculations
-// The Sidebar component internally creates a spacer div, so we just need flex layout
+// Locked-viewport dashboard shell. The whole screen is partitioned into strict,
+// non-overlapping regions:
+//   ┌────────────┬──────────────────────┐
+//   │            │  header (top)        │
+//   │  sidebar   ├──────────────────────┤
+//   │  (in-flow) │  main (scrolls)      │
+//   └────────────┴──────────────────────┘
+// The sidebar is an in-flow flex column (never `fixed`/`absolute`), so it
+// physically reserves its own width and nothing can slide on top of it.
 const AdminLayoutContent = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex h-screen w-full overflow-hidden">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         <AdminHeader />
-        <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background">
           {children}
         </main>
       </div>
