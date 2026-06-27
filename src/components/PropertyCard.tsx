@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
 import { memo } from 'react';
-import { Link } from 'react-router-dom';
+
 
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
+import { Link } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 interface PropertyAgent {

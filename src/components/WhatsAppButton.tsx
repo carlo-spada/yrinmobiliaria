@@ -18,22 +18,22 @@ export function WhatsAppButton({ message, className }: WhatsAppButtonProps) {
     : 'Hello, I am interested in a property from YR Real Estate';
   
   // Use dynamic setting with fallback to env var only
-  const phoneNumber = getSetting('whatsapp_number') || import.meta.env.VITE_WHATSAPP_NUMBER;
-  
+  const phoneNumber = getSetting('whatsapp_number') || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+
   // Don't render if no phone number configured
   if (!phoneNumber) {
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV !== 'production') {
       console.warn('WhatsApp phone number not configured');
     }
     return null;
   }
-  
+
   const handleClick = () => {
     const finalMessage = message || defaultMessage;
-    
+
     // Validate message length for security
     if (finalMessage.length > 500) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV !== 'production') {
         console.warn('WhatsApp message exceeds maximum length');
       }
       return;

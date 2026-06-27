@@ -1,11 +1,12 @@
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
+import { Link } from '@/lib/router-compat';
 
 export function FeaturedProperties() {
   const { t, language } = useLanguage();

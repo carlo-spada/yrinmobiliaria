@@ -1,6 +1,6 @@
 import { Calendar, ChevronDown, Heart, Mail, MapPin, Menu, Phone, X } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Link, useLocation } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 import { LanguageSelector } from './LanguageSelector';

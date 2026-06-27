@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from '@/lib/router-compat';
 
 export function Footer() {
   const { t, language } = useLanguage();

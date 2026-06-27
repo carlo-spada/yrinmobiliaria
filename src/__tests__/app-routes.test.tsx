@@ -33,14 +33,14 @@ vi.mock("@/components/auth/ProfileCompletionGuard", () => ({
   ProfileCompletionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("@/pages/MapView", () => ({ default: () => <div>MapViewMock</div> }));
-vi.mock("@/pages/Favorites", () => ({ default: () => <div>FavoritesMock</div> }));
-vi.mock("@/pages/Auth", () => ({ default: () => <div>AuthMock</div> }));
-vi.mock("@/pages/Index", () => ({ default: () => <div>IndexMock</div> }));
-vi.mock("@/pages/admin/AdminDashboard", () => ({ default: () => <div>AdminDashboardMock</div> }));
-vi.mock("@/pages/onboarding/CompleteProfile", () => ({ default: () => <div>CompleteProfileMock</div> }));
-vi.mock("@/pages/agent/AgentDashboard", () => ({ default: () => <div>AgentDashboardMock</div> }));
-vi.mock("@/pages/agent/EditProfile", () => ({ default: () => <div>EditProfileMock</div> }));
+vi.mock("@/screens/MapView", () => ({ default: () => <div>MapViewMock</div> }));
+vi.mock("@/screens/Favorites", () => ({ default: () => <div>FavoritesMock</div> }));
+vi.mock("@/screens/Auth", () => ({ default: () => <div>AuthMock</div> }));
+vi.mock("@/screens/Index", () => ({ default: () => <div>IndexMock</div> }));
+vi.mock("@/screens/admin/AdminDashboard", () => ({ default: () => <div>AdminDashboardMock</div> }));
+vi.mock("@/screens/onboarding/CompleteProfile", () => ({ default: () => <div>CompleteProfileMock</div> }));
+vi.mock("@/screens/agent/AgentDashboard", () => ({ default: () => <div>AgentDashboardMock</div> }));
+vi.mock("@/screens/agent/EditProfile", () => ({ default: () => <div>EditProfileMock</div> }));
 vi.mock("@/components/WhatsAppButton", () => ({
   WhatsAppButton: () => <div aria-label="whatsapp-button" />,
 }));

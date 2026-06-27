@@ -3,20 +3,20 @@
  * @returns Object with isValid boolean and error message if invalid
  */
 export function validateSupabaseEnv(): { isValid: boolean; error?: string } {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || supabaseUrl === 'undefined') {
     return {
       isValid: false,
-      error: 'VITE_SUPABASE_URL is missing or invalid',
+      error: 'NEXT_PUBLIC_SUPABASE_URL is missing or invalid',
     };
   }
 
   if (!supabaseKey || supabaseKey === 'undefined') {
     return {
       isValid: false,
-      error: 'VITE_SUPABASE_PUBLISHABLE_KEY is missing or invalid',
+      error: 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing or invalid',
     };
   }
 

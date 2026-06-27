@@ -1,9 +1,10 @@
 import { Building2, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from '@/lib/router-compat';
 
 interface EmptyPropertyListProps {
   message?: string;

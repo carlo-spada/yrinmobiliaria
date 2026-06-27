@@ -1,12 +1,13 @@
 import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useServiceZones } from '@/hooks/useServiceZones';
+import { useNavigate } from '@/lib/router-compat';
 import { toLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 
 export function HeroSection() {

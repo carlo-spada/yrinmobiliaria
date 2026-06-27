@@ -1,5 +1,5 @@
 import { Heart, LogOut, User } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { usePublicSession } from '@/hooks/usePublicSession';
 import { supabase } from '@/integrations/supabase/client';
+import { Link, useNavigate } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 export function PublicHeaderActions() {

@@ -3,7 +3,7 @@
  * In production, sensitive errors are hidden from the browser console
  */
 
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 export const logger = {
   /**
