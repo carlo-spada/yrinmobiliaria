@@ -1,8 +1,8 @@
 # GEMINI.md — YR Inmobiliaria
 
-> AI-assisted development guide for Gemini. See `CLAUDE.md` for complete project philosophy.
+> AI-assisted development guide for Gemini. See `CLAUDE.md` for complete project architecture.
 
-**Last Updated:** April 15, 2026
+**Last Updated:** June 27, 2026
 
 ---
 
@@ -19,30 +19,28 @@ If behind origin:
 git stash push -m "WIP before sync" && git pull origin main
 ```
 
-**This is non-negotiable.** Multiple agents and humans contribute to this repo. Working on stale code wastes time and produces invalid analysis.
+**Non-negotiable.** Multiple agents and humans contribute. Stale code wastes time and produces invalid analysis.
 
 ---
 
 ## Project Overview
 
-Modern, bilingual (Spanish/English) real estate platform for YR Inmobiliaria in Oaxaca, Mexico.
+Modern, bilingual (Spanish/English) real estate platform for YR Inmobiliaria in Oaxaca, Mexico. Live at `yrinmobiliaria.com`.
 
 ### Tech Stack
-- **Frontend:** React 19 + TypeScript
-- **Build:** Vite 7
-- **Backend:** Supabase (PostgreSQL, Auth, Storage)
+- **Framework:** Next.js 16 (App Router) + React 19 + TypeScript
+- **Backend:** own Supabase (PostgreSQL, Auth, Storage) — single-tenant, role-based
 - **Styling:** Tailwind CSS 4 + shadcn/ui
-- **Routing:** React Router 7
-- **Data:** TanStack Query
-- **Forms:** React Hook Form + Zod
-- **i18n:** Custom `LanguageContext` (not i18next)
+- **Maps:** React Leaflet 5
+- **Data:** TanStack Query · **Forms:** React Hook Form + Zod
+- **i18n:** custom `LanguageContext` (not i18next)
+- **Hosting:** Vercel (DNS in Cloudflare) · **Email:** Resend
 
 ### Architecture
-- **SPA:** Client-side routing via React Router
-- **Component-based:** Organized by feature and reusability
-- **Lazy loading:** Routes and heavy components load on-demand
-- **Hooks for logic:** Business logic in `src/hooks`
-- **Direct Supabase:** Frontend communicates directly with Supabase API
+- **App Router:** file-based routing under `app/`. Public routes are server-rendered (metadata + JSON-LD + sitemap/robots); private routes use `page.tsx` (server) + `view.tsx` (client `dynamic ssr:false`).
+- **Router compat shim** (`@/lib/router-compat`) exposes react-router-style hooks/components over `next/navigation`; client screens use it instead of `react-router-dom` (which is not a dependency).
+- **Hooks for logic:** business logic in `src/hooks`; screens in `src/screens`.
+- **Direct Supabase:** the client talks to Supabase via the browser SSR client; RLS enforces access.
 
 ---
 
@@ -50,91 +48,44 @@ Modern, bilingual (Spanish/English) real estate platform for YR Inmobiliaria in 
 
 ```bash
 npm install          # Install dependencies
-npm run dev          # Dev server on localhost:5173
-npm run build        # Production build to dist/
-npm run lint         # ESLint analysis
-npm test             # Vitest + RTL test suite
+npm run dev          # Next dev server
+npm run build        # Production build (runs typecheck)
+npm run lint         # ESLint
+npx vitest run       # Unit tests (Vitest + RTL)
+npm run test:e2e     # Playwright smoke
 ```
 
 ---
 
 ## Development Conventions
 
-### Imports
-Use `@` alias for `src` directory:
-```typescript
-import { MyComponent } from '@/components/MyComponent';
-```
-
-### Styling
-- Tailwind CSS utility classes
-- Follow design system in `tailwind.config.ts`
-- Use existing shadcn/ui components
-
-### State Management
-- **Server state:** TanStack Query (fetching, caching, mutations)
-- **Local UI state:** `useState` or `useReducer`
-- **Global UI state:** `LanguageContext` or new React Context
-
-### Data Fetching
-- Encapsulate Supabase queries in hooks (`src/hooks`)
-- Transform data to TypeScript types within hooks
-- Use auto-generated types from `src/integrations/supabase/types.ts`
-
-### Components
-- `src/components/ui` — Reusable UI primitives
-- `src/components` — Feature-specific components
-- `src/pages` — Top-level route components
-
-### SEO
-Include `<MetaTags />` and `<StructuredData />` on new pages.
-
-### Types
-- Custom types in `src/types`
-- Supabase types auto-generated in `src/integrations/supabase/types.ts`
-
-### Environment
-- Secrets managed via Lovable Cloud, not `.env` files in repo
-- Never commit API keys or credentials
+- **Imports:** use the `@` alias for `src` (e.g. `import { X } from '@/components/X'`).
+- **Styling:** Tailwind utilities + existing shadcn/ui components.
+- **State:** TanStack Query for server state; `useState`/`useReducer` for local UI; React Context (`LanguageContext`) for global UI.
+- **Data fetching:** encapsulate Supabase queries in `src/hooks`; transform to TS types there; use generated types from `src/integrations/supabase/types.ts`.
+- **Components:** `src/components/ui` primitives · `src/components` feature components · `src/screens` route screens.
+- **SEO:** server-side only — metadata via `generateMetadata` and JSON-LD via `@/components/seo/JsonLd` in `app/(public)/**/page.tsx`. Do not add client-side meta/structured-data components.
+- **Types:** custom types in `src/types`; Supabase types auto-generated in `src/integrations/supabase/types.ts`.
+- **Environment:** public client config is `NEXT_PUBLIC_*` (in `.env`, safe to commit); server secrets live as Supabase Function secrets / Vercel env — never commit keys.
 
 ---
 
-## BMAD Delivery Path
+## Auth & Roles (single-tenant)
 
-- **Canonical BMAD runtime:** `_bmad/` + `.agents/skills/`
-- **Brownfield knowledge:** `docs/index.md`
-- **Agent context:** `vault/bmad-output/project-context.md`
-- **Planning artifacts:** `vault/bmad-output/planning-artifacts/`
-- **Implementation artifacts:** `vault/bmad-output/implementation-artifacts/`
-- **Test artifacts:** `vault/bmad-output/test-artifacts/`
-
-Use the BMAD workflow for major work: `bmad-document-project` -> `bmad-generate-project-context` -> brief/PRFAQ -> PRD -> UX -> architecture -> epics/stories -> readiness -> sprint planning -> story cycle.
-
-Small fixes can still use the direct repo workflow, but do not recreate the legacy BMAD prompt trees under `.claude/commands/bmad` or `.codex/prompts/bmad-*`.
-
----
-
-## Auth & Roles
-
-- **AuthContext** (`src/contexts/AuthContext.tsx`) — Central auth state
-- **useUserRole** (`src/hooks/useUserRole.ts`) — Role detection
-- Roles: `superadmin`, `admin`, `agent`, `user`
-- Route guards enforce role-based redirects
+- **AuthContext** (`src/contexts/AuthContext.tsx`) · **useUserRole** (`src/hooks/useUserRole.ts`).
+- Roles via `role_assignments`: `superadmin`, `admin`, `agent`, `user`.
+- Server gate in `middleware.ts`; client guards in `src/components/auth/NativeRouteGuards.tsx`.
 
 ---
 
 ## Backend Notes
 
-- **DO NOT** create `supabase/migrations/` or `supabase/functions/`
-- Lovable Cloud manages all backend changes
-- Request schema changes through Lovable prompts
-- RLS policies enforce organization-scoped data access
+- Backend is the project's **own Supabase** (`ticsgpyathxawsupcghj`) — no Lovable.
+- Edit `supabase/schema.sql` / `policies.sql` / `functions/` in-repo; **apply** to the live project (dashboard or Supabase MCP) **only with the owner's OK**. Hand-applied SQL → `supabase/manual/`.
+- The stale `supabase/migrations/` tree is Lovable legacy, not the source of truth.
 
 ---
 
 ## Quality Gates
 
-Before any submission:
-- `git fetch && git status` — Verify on latest code
-- `npm run lint` — Zero errors
-- `npm run build` — Passes without warnings
+Before any submission: `git fetch && git status` · `npm run build` (zero errors, typechecked) · `npm run lint` (zero errors) · `npx vitest run` · `npm run test:e2e`.
