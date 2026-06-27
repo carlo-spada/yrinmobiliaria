@@ -38,7 +38,7 @@ export function ShareButtons({ url, title, description, variant = 'default' }: S
   };
 
   if (!isValidUrl(shareUrl)) {
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV !== 'production') {
       console.error('Invalid URL format for sharing');
     }
     return null;

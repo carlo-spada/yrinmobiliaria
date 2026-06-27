@@ -1,5 +1,5 @@
 // Google Analytics utilities
-// GA4 is automatically initialized if VITE_GA_MEASUREMENT_ID env var is set
+// GA4 is automatically initialized if NEXT_PUBLIC_GA_MEASUREMENT_ID env var is set
 
 declare global {
   interface Window {
@@ -8,12 +8,12 @@ declare global {
   }
 }
 
-export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 // Initialize Google Analytics
 export const initGA = () => {
   if (!GA_MEASUREMENT_ID || GA_MEASUREMENT_ID === 'undefined') {
-    console.info('Google Analytics not configured. Add VITE_GA_MEASUREMENT_ID to enable tracking.');
+    console.info('Google Analytics not configured. Add NEXT_PUBLIC_GA_MEASUREMENT_ID to enable tracking.');
     return;
   }
 

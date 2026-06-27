@@ -1,5 +1,11 @@
-import { useEffect } from 'react';
-
+/**
+ * StructuredData (neutralizado para Next.js).
+ *
+ * En el SPA de Vite inyectaba JSON-LD en document.head desde el cliente. En el
+ * App Router, el JSON-LD se renderiza en el servidor dentro de cada `page.tsx`
+ * (etiqueta <script type="application/ld+json">), que es lo que los crawlers
+ * reciben en la respuesta HTML. Se conserva la firma por compatibilidad.
+ */
 export type SchemaType = 'Organization' | 'Product' | 'BreadcrumbList' | 'LocalBusiness' | 'Person';
 
 interface StructuredDataProps {
@@ -7,36 +13,6 @@ interface StructuredDataProps {
   data: Record<string, unknown>;
 }
 
-export function StructuredData({ type, data }: StructuredDataProps) {
-  useEffect(() => {
-    const scriptId = `structured-data-${type.toLowerCase()}`;
-
-    // Remove existing script if it exists
-    const existingScript = document.getElementById(scriptId);
-    if (existingScript) {
-      existingScript.remove();
-    }
-
-    // Create and inject new script
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': type,
-      ...data,
-    });
-
-    document.head.appendChild(script);
-
-    // Cleanup on unmount
-    return () => {
-      const scriptToRemove = document.getElementById(scriptId);
-      if (scriptToRemove) {
-        scriptToRemove.remove();
-      }
-    };
-  }, [type, data]);
-
+export function StructuredData(_props: StructuredDataProps) {
   return null;
 }

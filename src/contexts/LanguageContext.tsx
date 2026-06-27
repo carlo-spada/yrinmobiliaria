@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+'use client';
+
+import { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
 
 import { Language, Translation } from '@/types';
 import { translations } from '@/utils/translations';
@@ -11,8 +13,26 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('es');
+const LOCALE_COOKIE = 'locale';
+const ONE_YEAR = 60 * 60 * 24 * 365;
+
+export function LanguageProvider({
+  children,
+  initialLanguage = 'es',
+}: {
+  children: ReactNode;
+  initialLanguage?: Language;
+}) {
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
+
+  // Persistimos el idioma en cookie para que el servidor pueda emitir el
+  // <html lang> correcto en la siguiente navegación/SSR.
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    if (typeof document !== 'undefined') {
+      document.cookie = `${LOCALE_COOKIE}=${lang}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
+    }
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -20,7 +40,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLanguage,
       t: translations[language],
     }),
-    [language]
+    [language, setLanguage]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

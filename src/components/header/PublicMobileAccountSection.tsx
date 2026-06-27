@@ -1,11 +1,12 @@
 import { Heart, LogOut, User } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
 import { supabase } from '@/integrations/supabase/client';
+import { Link, useNavigate } from '@/lib/router-compat';
 
 interface PublicMobileAccountSectionProps {
   onNavigate?: () => void;

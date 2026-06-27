@@ -1,3 +1,8 @@
+// El cliente Supabase (@supabase/ssr) lanza si faltan URL/key al construirse.
+// vitest no carga .env, así que inyectamos valores dummy antes de cualquier import.
+process.env.NEXT_PUBLIC_SUPABASE_URL ||= "http://localhost:54321";
+process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||= "test-anon-key";
+
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
