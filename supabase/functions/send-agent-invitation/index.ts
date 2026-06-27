@@ -27,6 +27,30 @@ serve(async (req: Request) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // AuthZ: verify_jwt=true garantiza sesión válida pero NO rol. Solo
+    // admin/superadmin pueden (re)enviar invitaciones de agente.
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "") ?? "";
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+    const { data: adminRole } = await supabase
+      .from("role_assignments")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["admin", "superadmin"])
+      .maybeSingle();
+    if (!adminRole) {
+      return new Response(
+        JSON.stringify({ error: "Admin access required" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
     // Fetch invitation details
     const { data: invitation, error: inviteError } = await supabase
       .from("agent_invitations")

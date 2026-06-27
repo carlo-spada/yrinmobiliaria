@@ -47,6 +47,16 @@ serve(async (req) => {
     if (!propertyId || !fileBase64) {
       return json({ error: 'Missing propertyId or file' }, 400);
     }
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (typeof propertyId !== 'string' || !UUID_RE.test(propertyId)) {
+      return json({ error: 'Invalid propertyId' }, 400);
+    }
+    // Guard de tamaño ANTES de decodificar: el bucket ya limita a 10MB, pero el
+    // atob/Uint8Array ocurre en memoria de la función antes de ese rechazo.
+    // 14.000.000 chars base64 ≈ 10.5MB binarios.
+    if (typeof fileBase64 !== 'string' || fileBase64.length > 14_000_000) {
+      return json({ error: 'File too large' }, 413);
+    }
 
     // 4) Decode base64 and upload under {propertyId}/ with service_role
     const bytes = Uint8Array.from(atob(fileBase64), (c) => c.charCodeAt(0));
