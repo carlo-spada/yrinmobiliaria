@@ -51,13 +51,13 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch invitation details
+    // Fetch invitation details.
+    // Nota: agent_invitations.invited_by referencia auth.users, NO profiles, así
+    // que no se puede hacer embed de profiles vía ese FK (PostgREST falla). Se
+    // busca el perfil del invitador por separado más abajo.
     const { data: invitation, error: inviteError } = await supabase
       .from("agent_invitations")
-      .select(`
-        *,
-        inviter:profiles!agent_invitations_invited_by_fkey(display_name)
-      `)
+      .select("*")
       .eq("id", invitation_id)
       .single();
 
@@ -70,9 +70,20 @@ serve(async (req: Request) => {
     const origin = req.headers.get("origin") || "https://yrinmobiliaria.com";
     const magicLink = `${origin}/auth/accept-invitation?token=${invitation.token}`;
 
+    // Nombre del invitador (cosmético, para el saludo del email). profiles se
+    // relaciona con auth.users por su columna user_id.
+    let inviterName = "el equipo";
+    if (invitation.invited_by) {
+      const { data: inviterProfile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", invitation.invited_by)
+        .maybeSingle();
+      if (inviterProfile?.display_name) inviterName = inviterProfile.display_name;
+    }
+
     // Prepare email HTML
     const year = new Date().getFullYear();
-    const inviterName = invitation.inviter?.display_name || "el equipo";
     const orgName = "YR Inmobiliaria";
 
     const emailHtml = `
