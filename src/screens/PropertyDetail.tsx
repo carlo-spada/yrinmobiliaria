@@ -128,7 +128,7 @@ export default function PropertyDetail() {
   const propertyDescription = property.description[language]?.substring(0, 150) ||
     `${property.title[language]} en ${property.location.zone}. ${property.features.bedrooms || 0} habitaciones, ${property.features.bathrooms} baños, ${property.features.constructionArea}m².`;
 
-  const propertyImage = property.images[0] || 'https://lovable.dev/opengraph-image-p98pqg.png';
+  const propertyImage = property.images[0] || `${window.location.origin}/hero-desktop-1280.webp`;
   const propertyUrl = window.location.href;
   const getImageAlt = (index: number) => property.imagesAlt?.[index]?.[language] || property.title[language];
 

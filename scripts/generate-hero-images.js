@@ -122,7 +122,7 @@ async function generateImages(sourcePath) {
   console.log('Next steps:');
   console.log('1. Verify images look correct');
   console.log('2. Commit changes to git');
-  console.log('3. Push to trigger Lovable sync\n');
+  console.log('3. Push to trigger the Vercel deploy\n');
 }
 
 // Main

@@ -1,5 +1,5 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "yrinmobiliaria",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,9 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest",
-    "test:e2e": "playwright test",
-    "dev:vite": "vite",
-    "build:vite": "vite build"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -62,7 +60,6 @@
     "react-hook-form": "^7.68.0",
     "react-leaflet": "^5.0.0",
     "react-leaflet-cluster": "^4.0.0",
-    "react-router-dom": "^7.14.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
@@ -88,15 +85,11 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "jsdom": "^27.3.0",
-    "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
-    "rollup": "^4.60.1",
-    "rollup-plugin-visualizer": "^6.0.11",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^7.3.2",
     "vitest": "^4.1.4"
   },
   "overrides": {
@@ -108,9 +101,6 @@
     },
     "eslint-plugin-import": {
       "minimatch": "^3.1.4"
-    },
-    "lovable-tagger": {
-      "picomatch": "^2.3.2"
     }
   }
 }

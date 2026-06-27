@@ -45,17 +45,6 @@ export function SupabaseConfigError({ error }: { error: string }) {
             <div className="space-y-4 text-sm text-muted-foreground">
               <div>
                 <h3 className="font-semibold text-foreground mb-2">
-                  For Lovable Cloud Projects:
-                </h3>
-                <ol className="list-decimal list-inside space-y-2 ml-2">
-                  <li>This project uses Lovable Cloud backend</li>
-                  <li>Environment variables are automatically configured</li>
-                  <li>If you're seeing this error, contact Lovable support</li>
-                </ol>
-              </div>
-
-              <div className="pt-4 border-t border-border">
-                <h3 className="font-semibold text-foreground mb-2">
                   For Local Development:
                 </h3>
                 <ol className="list-decimal list-inside space-y-2 ml-2">
@@ -63,9 +52,8 @@ export function SupabaseConfigError({ error }: { error: string }) {
                   <li>Copy the contents from <code className="bg-muted px-2 py-1 rounded">.env.example</code></li>
                   <li>Add your Supabase project credentials:
                     <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                      <li><code className="bg-muted px-2 py-1 rounded">VITE_SUPABASE_URL</code> - Your Supabase project URL</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">VITE_SUPABASE_PUBLISHABLE_KEY</code> - Your anon/public key</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">VITE_SUPABASE_PROJECT_ID</code> - Your project ID</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">NEXT_PUBLIC_SUPABASE_URL</code> - Your Supabase project URL</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> - Your anon/public key</li>
                     </ul>
                   </li>
                   <li>Restart the development server</li>
@@ -88,19 +76,10 @@ export function SupabaseConfigError({ error }: { error: string }) {
 
           <div className="flex gap-3 pt-4">
             <a
-              href="https://docs.lovable.dev/features/cloud"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Lovable Cloud Docs
-            </a>
-            <a
               href="https://supabase.com/docs/guides/getting-started"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
             >
               <ExternalLink className="h-4 w-4" />
               Supabase Setup Guide

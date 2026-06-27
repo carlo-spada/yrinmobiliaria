@@ -138,8 +138,8 @@ export default function ScheduleVisit() {
     endDateTime.setHours(endDateTime.getHours() + 1);
 
     const title = encodeURIComponent(`Visita: ${property?.title[language] || 'Propiedad'}`);
-    const details = encodeURIComponent(`Visita programada a la propiedad en ${property?.location.zone || 'Oaxaca'}`);
-    const location = encodeURIComponent(property?.location.zone || 'Oaxaca, México');
+    const details = encodeURIComponent(`Visita programada a la propiedad en ${property?.zone || 'Oaxaca'}`);
+    const location = encodeURIComponent(property?.zone || 'Oaxaca, México');
     const startDate = dateTime.toISOString().replace(/-|:|\.\d+/g, '');
     const endDate = endDateTime.toISOString().replace(/-|:|\.\d+/g, '');
 

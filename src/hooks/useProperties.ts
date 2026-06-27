@@ -57,13 +57,13 @@ export interface SchedulableProperty {
 }
 
 // Type guards for safe JSON parsing
-function isPropertyLocation(obj: Json): obj is Record<string, unknown> & PropertyLocation {
+function isPropertyLocation(obj: unknown): obj is Record<string, unknown> & PropertyLocation {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
   const loc = obj as Record<string, unknown>;
   return 'zone' in loc || 'coordinates' in loc;
 }
 
-function isPropertyFeatures(obj: Json): obj is Record<string, unknown> & PropertyFeatures {
+function isPropertyFeatures(obj: unknown): obj is Record<string, unknown> & PropertyFeatures {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
   return true; // Features are flexible
 }
