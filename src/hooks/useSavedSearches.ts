@@ -17,7 +17,7 @@ const SAVED_SEARCHES_KEY = 'yr-inmobiliaria-saved-searches';
 const SavedSearchSchema = z.object({
   id: z.string(),
   name: z.string(),
-  filters: z.record(z.unknown()), // PropertyFilters is a flexible record type
+  filters: z.record(z.string(), z.unknown()), // PropertyFilters is a flexible record type
   createdAt: z.string(),
 });
 

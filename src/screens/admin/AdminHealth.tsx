@@ -32,7 +32,7 @@ export default function AdminHealth() {
 
   const { data: healthChecks, refetch, isFetching } = useQuery({
     queryKey: ['admin-health'],
-    queryFn: runAdminHealthChecks,
+    queryFn: () => runAdminHealthChecks(),
     enabled: false,
   });
 

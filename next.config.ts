@@ -17,13 +17,6 @@ const supabaseHost = (() => {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // El build de Vite nunca hizo typecheck (esbuild descarta tipos y no había
-  // script tsc), así que el repo arrastra errores de tipos latentes. Mantenemos
-  // paridad: el typecheck queda como gate separado (`tsc`/lint), no bloquea el
-  // build. TODO(PR3): limpiar tipos y reactivar.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   // Hay otros package-lock.json en directorios padre (worktree + checkout principal);
   // fijamos el root para que Next no infiera mal la ubicación de `app/`.
   turbopack: {
