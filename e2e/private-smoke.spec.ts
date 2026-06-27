@@ -40,3 +40,13 @@ test('/admin sin sesión redirige a /auth', async ({ page }) => {
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/auth/);
 });
+
+test('/admin/users sin sesión redirige a /auth (middleware cubre /admin/*)', async ({ page }) => {
+  await page.goto('/admin/users');
+  await expect(page).toHaveURL(/\/auth/);
+});
+
+test('/admin/properties sin sesión redirige a /auth', async ({ page }) => {
+  await page.goto('/admin/properties');
+  await expect(page).toHaveURL(/\/auth/);
+});

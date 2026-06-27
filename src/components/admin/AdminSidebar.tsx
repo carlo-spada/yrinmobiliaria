@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+
 
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useLocation } from '@/lib/router-compat';
 
 type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
 

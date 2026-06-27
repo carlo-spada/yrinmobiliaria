@@ -1,14 +1,14 @@
 import { AlertTriangle } from 'lucide-react';
 import { ReactNode, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
-import { ProfileCompletionGuard } from '@/components/auth/ProfileCompletionGuard';
+import { RequireCompleteProfile } from '@/components/auth/NativeRouteGuards';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
+import { Navigate, useLocation, useNavigate } from '@/lib/router-compat';
 
 import { AdminHeader } from './AdminHeader';
 import { AdminSidebar } from './AdminSidebar';
@@ -116,7 +116,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <ProfileCompletionGuard>
+    <RequireCompleteProfile>
       <ErrorBoundary>
         <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarChange}>
           <AdminLayoutContent>
@@ -124,6 +124,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </AdminLayoutContent>
         </SidebarProvider>
       </ErrorBoundary>
-    </ProfileCompletionGuard>
+    </RequireCompleteProfile>
   );
 };
