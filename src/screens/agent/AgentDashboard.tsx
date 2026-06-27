@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Home, MessageSquare, Calendar, Edit } from "lucide-react";
-import { Link } from "react-router-dom";
+
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "@/lib/router-compat";
 
 function AgentDashboardContent() {
   const { profile } = useAuth();

@@ -1,6 +1,5 @@
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -10,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { logger } from "@/utils/logger";
 
 const passwordSchema = z.string()

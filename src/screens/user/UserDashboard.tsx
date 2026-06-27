@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Heart, Mail, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
@@ -32,6 +31,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate, Link, Navigate } from '@/lib/router-compat';
 
 
 const profileSchema = z.object({
