@@ -184,6 +184,9 @@ export function Footer() {
             <Link to="/terminos" className="hover:text-accent transition-colors">
               {t.footer.terms}
             </Link>
+            <Link to="/derechos-arco" className="hover:text-accent transition-colors">
+              {t.footer.dataRights}
+            </Link>
           </div>
         </div>
       </div>

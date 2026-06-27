@@ -67,7 +67,7 @@ Documento vivo: marcar cada PR como hecho (`[x]`) y estampar la fecha al cerrarl
 
 ### Fase 0 — Fundaciones
 - [x] **PR 0.1 — Documento de roadmap.** Este archivo (`docs/roadmap/PRODUCT_ROADMAP.md`). Sin cambios de código. _(2026-06-27)_
-- [ ] **PR 0.2 — Cumplimiento LFPDPPP 2025 [legal].** Reescribir `src/screens/PrivacyPolicy.tsx` (finalidades, derechos ARCO, datos sensibles, contacto del responsable); checkbox de consentimiento en `Contact.tsx`, `ScheduleVisit.tsx` y signup; flujo de solicitud ARCO (formulario → `submit-contact` con asunto "ARCO").
+- [x] **PR 0.2 — Cumplimiento LFPDPPP 2025 [legal].** Aviso de Privacidad conforme en `src/screens/PrivacyPolicy.tsx` (finalidades primarias/secundarias, derechos ARCO, datos sensibles, transferencias, seguridad, responsable desde `site_settings`); `ConsentCheckbox` reutilizable en `Contact.tsx`, `ScheduleVisit.tsx` y registro (`Auth.tsx`); flujo ARCO en `/derechos-arco` (`src/screens/DataRights.tsx` → `submit-contact`). _(2026-06-27)_
 
 ### Fase 1 — Núcleo CRM y productividad de agentes
 - [ ] **PR 1.1 — Modelo de datos del CRM [DB].** Extender `contact_inquiries` y `scheduled_visits` con `stage` (nuevo/contactado/calificado/visita/negociación/cerrado-ganado/cerrado-perdido), `temperature` (hot/warm/cold), `source`, `last_contacted_at`, `next_follow_up_at`. Nuevas tablas: `lead_activities` (timeline call/email/whatsapp/note/status_change), `tasks` (follow-ups con due_date), `notifications`. RLS por rol + agente asignado. *Decisión: extender tablas existentes en lugar de crear `leads` nueva, para no romper los flujos públicos ni el admin.*

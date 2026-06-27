@@ -128,6 +128,7 @@ export interface Translation {
     rights: string;
     privacy: string;
     terms: string;
+    dataRights: string;
   };
   favorites: {
     added: string;
@@ -195,6 +196,38 @@ export interface Translation {
     contactLabel: string;
     addToCalendar: string;
     backToProperties: string;
+  };
+  legal: {
+    consent: {
+      prefix: string;
+      privacyLink: string;
+      suffix: string;
+      required: string;
+    };
+    dataRights: {
+      title: string;
+      subtitle: string;
+      intro: string;
+      rightLabel: string;
+      rightPlaceholder: string;
+      rightAccess: string;
+      rightRectification: string;
+      rightCancellation: string;
+      rightOpposition: string;
+      nameLabel: string;
+      namePlaceholder: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      phoneLabel: string;
+      phonePlaceholder: string;
+      detailsLabel: string;
+      detailsPlaceholder: string;
+      submit: string;
+      submitting: string;
+      successTitle: string;
+      successMessage: string;
+      backHome: string;
+    };
   };
   admin: {
     // Sidebar navigation
