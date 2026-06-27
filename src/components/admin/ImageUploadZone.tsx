@@ -149,6 +149,10 @@ export const ImageUploadZone = ({
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
+      // Sin fijar dropEffect, algunos navegadores/configuraciones muestran
+      // cursor "no-drop" y NO disparan el evento drop. Esto arregla el caso
+      // en que arrastrar-y-soltar no hacía nada (el clic sí funcionaba).
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
       setDragActive(true);
     } else if (e.type === 'dragleave') {
       setDragActive(false);

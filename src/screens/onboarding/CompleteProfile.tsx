@@ -182,9 +182,10 @@ export default function CompleteProfile() {
                     Sube una foto profesional que aparecerá en tu perfil público
                   </p>
                 </div>
-                <ImageUploadZone 
+                <ImageUploadZone
                   images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
                   maxImages={1}
+                  propertyId={user?.id}
                   onImagesChange={(imgs) =>
                     setValue("photo_url", imgs[0]?.url ?? "", {
                       shouldDirty: true,

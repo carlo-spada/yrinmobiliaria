@@ -138,6 +138,7 @@ function AdminEditProfileContent() {
               <ImageUploadZone
                 images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
                 maxImages={1}
+                propertyId={user?.id}
                 onImagesChange={(imgs) =>
                   setValue("photo_url", imgs[0]?.url ?? "", {
                     shouldDirty: true,
