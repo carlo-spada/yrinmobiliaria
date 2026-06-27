@@ -151,6 +151,8 @@ export function useLocation(): Location {
   const searchParams = useNextSearchParams();
   const search = searchParams?.toString() ? `?${searchParams.toString()}` : '';
   const hash = typeof window !== 'undefined' ? window.location.hash : '';
+  // `state` no se soporta: Next no preserva estado de navegación como react-router.
+  // Si se necesita pasar datos entre rutas, usar query params o sessionStorage.
   return useMemo(
     () => ({ pathname, search, hash, state: null, key: 'default' }),
     [pathname, search, hash]
@@ -214,10 +216,10 @@ export function useSearchParams(): [URLSearchParams, (next: SetSearchParamsArg, 
 // ---------------------------------------------------------------------------
 export function Navigate({ to, replace }: { to: To; replace?: boolean; state?: unknown }) {
   const router = useRouter();
-  const href = resolveTo(to);
   useEffect(() => {
+    const href = resolveTo(to);
     if (replace) router.replace(href);
     else router.push(href);
-  }, [router, href, replace]);
+  }, [router, to, replace]);
   return null;
 }

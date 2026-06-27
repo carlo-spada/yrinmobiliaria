@@ -19,8 +19,6 @@ import { AgentContactCard } from "@/components/AgentContactCard";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { PropertyCard } from "@/components/PropertyCard";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
-import { MetaTags } from "@/components/seo/MetaTags";
-import { StructuredData } from "@/components/seo/StructuredData";
 import { ShareButtons } from "@/components/ShareButtons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { useParams, Link, useNavigate } from '@/lib/router-compat';
-import { getProductSchema, getBreadcrumbSchema, getOrganizationSchema } from "@/lib/schema-helpers";
 
 const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
 
@@ -118,26 +115,7 @@ export default function PropertyDetail() {
     )
     .slice(0, 4);
 
-  // SEO metadata
-  const propertyTitle = `${property.title[language]} - ${new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    minimumFractionDigits: 0,
-  }).format(property.price)} - ${property.location.zone} | YR Inmobiliaria`;
-
-  const propertyDescription = property.description[language]?.substring(0, 150) ||
-    `${property.title[language]} en ${property.location.zone}. ${property.features.bedrooms || 0} habitaciones, ${property.features.bathrooms} baños, ${property.features.constructionArea}m².`;
-
-  const propertyImage = property.images[0] || `${window.location.origin}/hero-desktop-1280.webp`;
-  const propertyUrl = window.location.href;
   const getImageAlt = (index: number) => property.imagesAlt?.[index]?.[language] || property.title[language];
-
-  // Structured data
-  const breadcrumbItems = [
-    { name: language === 'es' ? 'Inicio' : 'Home', url: window.location.origin },
-    { name: language === 'es' ? 'Propiedades' : 'Properties', url: `${window.location.origin}/propiedades` },
-    { name: property.title[language], url: propertyUrl },
-  ];
 
   const handleWhatsApp = () => {
     const phoneNumber = getSetting('whatsapp_number') || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
@@ -192,20 +170,6 @@ export default function PropertyDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* SEO Meta Tags */}
-      <MetaTags
-        title={propertyTitle}
-        description={propertyDescription}
-        image={propertyImage}
-        url={propertyUrl}
-        type="product"
-      />
-
-      {/* Structured Data */}
-      <StructuredData type="Organization" data={getOrganizationSchema(language)} />
-      <StructuredData type="Product" data={getProductSchema(property, language)} />
-      <StructuredData type="BreadcrumbList" data={getBreadcrumbSchema(breadcrumbItems)} />
-
       {/* Lightbox Modal */}
       {isLightboxOpen && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">

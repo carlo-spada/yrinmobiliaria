@@ -2,8 +2,6 @@ import { Search, X } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 import { AgentCard } from '@/components/AgentCard';
-import { MetaTags } from '@/components/seo/MetaTags';
-import { StructuredData } from '@/components/seo/StructuredData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -18,7 +16,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { useServiceZones } from '@/hooks/useServiceZones';
-import { getOrganizationSchema } from '@/lib/schema-helpers';
 
 type SortOption = 'name' | 'properties' | 'experience';
 
@@ -107,12 +104,6 @@ export default function AgentDirectory() {
 
   return (
     <div className="min-h-screen bg-background">
-      <MetaTags
-        title={language === 'es' ? 'Nuestro Equipo de Agentes | YR Inmobiliaria' : 'Our Team of Agents | YR Inmobiliaria'}
-        description={language === 'es' ? 'Conoce a nuestro equipo de agentes inmobiliarios expertos en Oaxaca. Encuentra el agente perfecto para ayudarte con tus necesidades inmobiliarias.' : 'Meet our team of expert real estate agents in Oaxaca. Find the perfect agent to help you with your real estate needs.'}
-      />
-      <StructuredData type="Organization" data={getOrganizationSchema(language)} />
-
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">

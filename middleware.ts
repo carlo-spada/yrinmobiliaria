@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 // Rutas privadas: si no hay sesión, redirige a /auth (server-side, sin parpadeo).
 // El control fino por rol lo siguen haciendo los guards de la isla legacy
 // (RequireRole) una vez montada en cliente.
-const PRIVATE_PREFIXES = ['/admin', '/agent', '/onboarding'];
+const PRIVATE_PREFIXES = ['/admin', '/agent', '/onboarding', '/cuenta'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
