@@ -118,9 +118,10 @@ function EditProfileContent() {
                   <AvatarImage src={watchedValues.photo_url || undefined} />
                   <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <ImageUploadZone 
+                <ImageUploadZone
                   images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
                   maxImages={1}
+                  propertyId={user?.id}
                   onImagesChange={(imgs) =>
                     setValue("photo_url", imgs[0]?.url ?? "", {
                       shouldDirty: true,
