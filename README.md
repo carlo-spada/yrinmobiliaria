@@ -1,8 +1,8 @@
 # YR Inmobiliaria — Real Estate Platform
 
-A modern, bilingual (Spanish/English) real estate website for YR Inmobiliaria, showcasing properties in Oaxaca, Mexico.
+A modern, bilingual (Spanish/English) real estate website for YR Inmobiliaria, showcasing properties in Oaxaca, Mexico. Live at **[yrinmobiliaria.com](https://yrinmobiliaria.com)**.
 
-**Last Updated:** April 15, 2026
+**Last Updated:** June 27, 2026
 
 ---
 
@@ -12,21 +12,22 @@ A modern, bilingual (Spanish/English) real estate website for YR Inmobiliaria, s
 git clone <repo-url>
 cd yrinmobiliaria
 npm install
-npm run dev
+npm run dev          # Next.js dev server
 ```
 
-**For AI Agents:** Always sync first! See `CLAUDE.md` for workflow.
+**For AI Agents:** Always sync first! See `CLAUDE.md` for the workflow and architecture.
 
 ---
 
 ## Tech Stack
 
-- **Frontend:** React 19, TypeScript, Vite 7, Tailwind 4
-- **Routing:** React Router 7
+- **Framework:** Next.js 16 (App Router), React 19, TypeScript
+- **Styling:** Tailwind 4 + shadcn/ui
 - **Maps:** React Leaflet 5
-- **Backend:** Supabase (PostgreSQL, Auth, Storage) via Lovable Cloud
+- **Backend:** own Supabase (PostgreSQL, Auth, Storage) — single-tenant, role-based
 - **State:** TanStack Query + React Context
 - **Forms:** React Hook Form + Zod
+- **Hosting:** Vercel (DNS in Cloudflare)
 - **Email:** Resend (transactional emails)
 
 ---
@@ -34,52 +35,40 @@ npm run dev
 ## Features
 
 ### Public
-- Bilingual support (Spanish/English)
+- Bilingual support (Spanish/English) with server-rendered SEO (metadata, hreflang, JSON-LD, sitemap/robots)
 - Property listings with advanced filtering
 - Interactive map with property markers
-- Favorites system (syncs to Supabase for authenticated users)
-- Contact and visit scheduling forms
+- Favorites (syncs to Supabase for authenticated users)
+- Contact and visit-scheduling forms (Resend email)
 - WhatsApp integration
-- SEO optimized (structured data, Open Graph)
 - Responsive design (mobile, tablet, desktop)
 
 ### Admin Panel (`/admin`)
-- Dashboard with stats overview
-- Property management (CRUD with image uploads)
-- Agent management (invite, onboard, manage)
-- Inquiry and visit management
-- User and role management
-- Zone configuration
-- Audit logs
-- Health check monitoring
+Dashboard · property management (CRUD + image uploads) · agent management (invite/onboard) · inquiries & visits · users & roles · zones · audit logs · health · CMS.
 
-### Agent Features (`/agent`)
-- Agent dashboard with stats
-- Profile management
-- Onboarding wizard
+### Agent (`/agent`)
+Dashboard · profile management · onboarding.
 
-### User Features (`/cuenta`)
-- Profile management
-- Favorites display
-- Account settings
+### User (`/cuenta`)
+Profile · favorites · account settings.
 
 ---
 
 ## Project Structure
 
 ```
+app/                # Next.js App Router — (public)/ SSR pages, (app)/ private routes
 src/
-├── components/     # UI components (shadcn + custom)
-│   ├── admin/      # Admin panel components
-│   ├── ui/         # shadcn/ui primitives
-│   └── layout/     # Layout components
+├── components/     # UI (shadcn + custom); admin/, auth/, seo/
 ├── contexts/       # AuthContext, LanguageContext
 ├── hooks/          # Data fetching, auth, utilities
-├── pages/          # Route components
-│   ├── admin/      # Admin panel pages
-│   └── agent/      # Agent dashboard pages
-├── integrations/   # Supabase client and types
-└── utils/          # Helpers, validation, i18n
+├── screens/        # Client screens mounted by view.tsx
+├── integrations/   # Supabase client + generated types
+├── lib/            # router-compat shim, Supabase SSR helpers, SEO builders
+└── utils/          # Helpers, validation, i18n, image upload
+supabase/           # schema.sql, policies.sql, functions/, manual/, config.toml
+e2e/                # Playwright smoke
+middleware.ts       # Session refresh + private-route gate
 ```
 
 ---
@@ -89,70 +78,49 @@ src/
 ```bash
 npm install          # Install dependencies
 npm run dev          # Dev server
-npm run build        # Production build
+npm run build        # Production build (runs typecheck)
 npm run lint         # ESLint check
-npm test             # Run tests
+npx vitest run       # Unit tests
+npm run test:e2e     # Playwright smoke
 ```
 
 ---
 
 ## Documentation
 
-- **[CLAUDE.md](CLAUDE.md)** — Project rules and workflow
+- **[CLAUDE.md](CLAUDE.md)** — Project rules, architecture and workflow
 - **[AGENTS.md](AGENTS.md)** — AI agent guidelines
 - **[GEMINI.md](GEMINI.md)** — Gemini-specific guidance
 - **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** — Launch readiness
-
-## BMAD Workflow
-
-Major features, refactors, and architecture-sensitive work now follow the BMAD method.
-
-- **Canonical runtime:** `_bmad/` + `.agents/skills/`
-- **Brownfield knowledge:** [docs/index.md](docs/index.md)
-- **Agent context artifact:** `vault/bmad-output/project-context.md`
-- **Planning artifacts:** `vault/bmad-output/planning-artifacts/`
-- **Implementation artifacts:** `vault/bmad-output/implementation-artifacts/`
-- **Test artifacts:** `vault/bmad-output/test-artifacts/`
-
-Default path for major work:
-1. Refresh brownfield context with `bmad-document-project`
-2. Refine agent rules with `bmad-generate-project-context`
-3. Run planning flow: brief or PRFAQ -> PRD -> UX -> architecture -> epics and stories
-4. Run readiness and execution flow: implementation readiness -> sprint planning -> story cycle (`bmad-create-story`, `bmad-dev-story`, `bmad-code-review`)
-
-Small bug fixes can still use the direct repo workflow when the change does not justify the full BMAD path.
 
 ---
 
 ## Deployment
 
-Managed via **Lovable Cloud**:
-- Click "Publish" in the Lovable interface
-- Environment variables configured in Lovable Cloud Settings
-- Supabase migrations applied via Lovable or Supabase dashboard
+Hosted on **Vercel** (DNS in Cloudflare → Vercel). Pushing to `main` deploys; `NEXT_PUBLIC_*` env vars are set in Vercel (public client config) and server secrets (`RESEND_API_KEY`, Supabase service role) are stored as Supabase Function secrets. Backend DB changes are applied to the project's own Supabase via the dashboard or Supabase MCP.
 
 ---
 
-## Auth & Roles
+## Auth & Roles (single-tenant)
 
-- **superadmin** — Full system access
-- **admin** — Organization-scoped access
-- **agent** — Own properties and profile
-- **user** — Public features + favorites
+- **superadmin** — full system access
+- **admin** — full staff access
+- **agent** — own properties and profile
+- **user** — public features + favorites
 
-Route guards:
-- `/admin` — admin/superadmin only
-- `/agent/dashboard` — agents only
-- `/cuenta` — authenticated users
+Route guards: `/admin` (admin/superadmin), `/agent/dashboard` (agents), `/cuenta` (authenticated users). The server gate lives in `middleware.ts`.
 
 ---
 
 ## Environment
 
-Secrets are managed in Lovable Cloud (not committed):
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-- `RESEND_API_KEY` (Edge Functions)
+Public client config (safe to commit, in `.env`):
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `NEXT_PUBLIC_WHATSAPP_NUMBER` (optional)
+
+Server secrets (never commit): `RESEND_API_KEY` and the Supabase service role — stored as Supabase Function secrets. See `.env.example`.
 
 ---
 
@@ -161,9 +129,5 @@ Secrets are managed in Lovable Cloud (not committed):
 1. Sync first: `git fetch --all && git status -sb`
 2. Pull if behind: `git pull origin main`
 3. Make changes following `CLAUDE.md` conventions
-4. Verify: `npm run lint && npm run build`
-5. Commit with descriptive message (`feat:`, `fix:`, `chore:`)
-
----
-
-**Lovable Project:** https://lovable.dev/projects/85042ab5-51cc-4730-a42e-b9fceaafa3a2
+4. Verify: `npm run build && npm run lint && npx vitest run && npm run test:e2e`
+5. Commit with a descriptive message (`feat:`, `fix:`, `chore:`)

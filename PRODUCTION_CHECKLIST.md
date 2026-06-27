@@ -1,6 +1,6 @@
 # Production Readiness Checklist — YR Inmobiliaria
 
-**Last Updated:** December 9, 2025
+**Last Updated:** June 27, 2026
 
 Use this checklist before going live. Keep docs lean (max 5 files) and stamp dates on edits.
 
@@ -147,7 +147,7 @@ Use this checklist before going live. Keep docs lean (max 5 files) and stamp dat
 
 ### Email (Resend)
 - [ ] Domain verified
-- [ ] API key configured in Lovable Cloud
+- [ ] `RESEND_API_KEY` configured as a Supabase Function secret
 - [ ] Contact form emails working
 - [ ] Visit scheduling emails working
 

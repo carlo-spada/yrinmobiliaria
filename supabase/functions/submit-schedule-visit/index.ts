@@ -156,11 +156,14 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify property exists
+    // Verify property exists AND is publicly visible (no borradores). Replica la
+    // RLS pública (properties_select_public: status <> 'pendiente') para no
+    // filtrar la existencia de propiedades en borrador vía agendar visita.
     const { data: property, error: propertyError } = await supabase
       .from('properties')
       .select('id')
       .eq('id', sanitizedData.propertyId)
+      .neq('status', 'pendiente')
       .single();
 
     if (propertyError || !property) {

@@ -1,0 +1,52 @@
+-- ============================================================================
+-- HARDENING DE ADVISORS DE SEGURIDAD (backend nuevo ticsgpyathxawsupcghj)
+--
+-- Origen: auditoría de código post-migración. La parte SQL segura YA FUE
+-- APLICADA directamente (2026-06-27) tras verificar empíricamente el efecto.
+-- Queda 1 acción manual de dashboard (leaked password). Este archivo es el
+-- registro de lo aplicado + el razonamiento.
+-- ============================================================================
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- HALLAZGO CLAVE (verificado contra la DB viva): los WARN 0028/0029
+-- "Public/Signed-In Can Execute SECURITY DEFINER Function" sobre los helpers
+--   is_admin / is_staff / is_superadmin / has_role / current_profile_ids
+-- son ACEPTADOS POR DISEÑO y NO deben revocarse:
+--   - Estos helpers se invocan DENTRO de políticas RLS (p.ej.
+--     properties_insert_staff WITH CHECK (is_staff(auth.uid())),
+--     property_images_write_owner_admin USING (... current_profile_ids() ...)).
+--   - En Postgres, llamar a una función dentro de una policy exige que el ROL
+--     que corre la query (authenticated) tenga EXECUTE. SECURITY DEFINER NO
+--     exime al llamador de ese requisito. → Revocar EXECUTE a authenticated/
+--     PUBLIC rompería TODAS las lecturas/escrituras de staff con
+--     "permission denied for function". Es el patrón estándar de Supabase.
+--   - Además, revocar solo a anon/authenticated es un no-op: heredan el grant
+--     de PUBLIC, así que el advisor seguiría marcándolos igual.
+-- get_public_agents() también se DEJA público: es el RPC del directorio de
+--   agentes (usePublicAgents / useAgentBySlug / seo-server). WARN intencional.
+-- → Estos 12 WARN (6 funcs × anon+authenticated, contando get_public_agents)
+--   se documentan como aceptados; NO hay acción.
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- APLICADO ✓ — rls_auto_enable: es un EVENT TRIGGER (auto-activa RLS en tablas
+-- nuevas de public). NO se llama desde ninguna policy y, al devolver
+-- event_trigger, NO es invocable vía PostgREST. Bloquearlo del todo es seguro
+-- y limpia sus 2 WARN. (Ejecutado ya en la DB; idempotente si se reaplica.)
+revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- PENDIENTE (manual, dashboard — no hay tool MCP para Auth config):
+--   Leaked Password Protection (HaveIBeenPwned):
+--   Dashboard → Authentication → Settings → "Leaked password protection" = ON.
+--   Cierra el WARN auth_leaked_password_protection.
+
+-- ============================================================================
+-- NOTA — PERFORMANCE (NO incluido; plan separado, pre-existente de PR1a):
+--   - 28× auth_rls_initplan: envolver auth.uid() en (select auth.uid()) en las
+--     políticas (se evalúa 1 vez por query en vez de por fila).
+--   - 40× multiple_permissive_policies: consolidar políticas permisivas
+--     solapadas (p.ej. select_public + select_staff en la misma tabla/rol).
+--   - 10× unindexed_foreign_keys / 4× unused_index: INFO, opcional.
+-- Reflejar en supabase/policies.sql (fuente canónica) y aplicar luego. Es una
+-- reescritura amplia de políticas → tarea enfocada aparte.
+-- ============================================================================

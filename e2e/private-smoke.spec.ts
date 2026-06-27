@@ -5,8 +5,7 @@ import { expect, test } from '@playwright/test';
  * el port nativo a Next:
  *  - la pantalla de login renderiza e hidrata,
  *  - el guard de sesión (middleware server-side) redirige las rutas con prefijo
- *    privado a /auth,
- *  - el guard de cliente de /cuenta (UserDashboard) redirige a /auth.
+ *    privado a /auth (incluido /cuenta, ahora cubierto por el middleware).
  *
  * NO cubre flujos autenticados con escritura (login, subir foto, enviar
  * contacto): esos requieren credenciales de prueba y un entorno aislado para no
@@ -31,7 +30,7 @@ test('/onboarding/complete-profile sin sesión redirige a /auth', async ({ page 
   await expect(page).toHaveURL(/\/auth/);
 });
 
-test('/cuenta sin sesión redirige a /auth (guard de cliente)', async ({ page }) => {
+test('/cuenta sin sesión redirige a /auth (middleware cubre /cuenta)', async ({ page }) => {
   await page.goto('/cuenta');
   await expect(page).toHaveURL(/\/auth/);
 });

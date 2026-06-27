@@ -12,8 +12,6 @@ import {
 
 
 import { PropertyCard } from '@/components/PropertyCard';
-import { MetaTags } from '@/components/seo/MetaTags';
-import { StructuredData } from '@/components/seo/StructuredData';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -96,31 +94,8 @@ export default function AgentProfile() {
   // Contact is now handled through property inquiries or the contact page
   // WhatsApp numbers are no longer publicly exposed for privacy
 
-  // Structured data - only include public info
-  const personSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: agent.display_name,
-    image: agent.photo_url,
-    jobTitle:
-      agent.agent_level && levelLabels[agent.agent_level]
-        ? levelLabels[agent.agent_level][language]
-        : 'Real Estate Agent',
-    worksFor: {
-      '@type': 'Organization',
-      name: 'YR Inmobiliaria',
-    },
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <MetaTags
-        title={`${agent.display_name} - ${language === 'es' ? 'Agente Inmobiliario en Oaxaca' : 'Real Estate Agent in Oaxaca'} | YR Inmobiliaria`}
-        description={bio?.substring(0, 150) || `${agent.display_name} - ${language === 'es' ? 'Agente inmobiliario profesional en Oaxaca' : 'Professional real estate agent in Oaxaca'}`}
-        image={agent.photo_url || undefined}
-      />
-      <StructuredData type="Person" data={personSchema} />
-
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16">
         <div className="container mx-auto px-4">
