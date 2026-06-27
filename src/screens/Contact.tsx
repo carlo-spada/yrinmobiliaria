@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input-enhanced';
 import { Label } from '@/components/ui/label';
@@ -33,6 +34,8 @@ export default function Contact() {
   const { toast } = useToast();
   const { getSetting } = usePublicSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState<string>();
 
   // Get dynamic settings with fallbacks
   const companyPhone = getSetting('company_phone', '(951) 123-4567');
@@ -57,6 +60,11 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormData) => {
     if (!data.name || !data.email || !data.phone || !data.subject || !data.message) return;
+
+    if (!consent) {
+      setConsentError(t.legal.consent.required);
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -88,6 +96,7 @@ export default function Contact() {
         description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
       });
       reset();
+      setConsent(false);
     } catch (error) {
       logger.error('Contact form submission failed', error);
       toast({
@@ -244,6 +253,15 @@ export default function Contact() {
                       <p className="text-sm text-destructive mt-1">{errors.message.message}</p>
                     )}
                   </div>
+
+                  <ConsentCheckbox
+                    checked={consent}
+                    onCheckedChange={(value) => {
+                      setConsent(value);
+                      if (value) setConsentError(undefined);
+                    }}
+                    error={consentError}
+                  />
 
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                     {isSubmitting ? (t.contact?.sending || 'Enviando...') : (t.contact?.send || 'Enviar mensaje')}

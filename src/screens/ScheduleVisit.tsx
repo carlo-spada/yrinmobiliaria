@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input-enhanced';
@@ -46,6 +47,8 @@ export default function ScheduleVisit() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [confirmedData, setConfirmedData] = useState<ScheduleFormData | null>(null);
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState<string>();
 
   const preSelectedPropertyId = searchParams.get('propertyId');
 
@@ -80,8 +83,13 @@ export default function ScheduleVisit() {
   ];
 
   const onSubmit = async (data: ScheduleFormData) => {
+    if (!consent) {
+      setConsentError(t.legal.consent.required);
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
       // Submit via secure Edge Function with validation and rate limiting
       const { data: result, error: submitError } = await supabase.functions.invoke('submit-schedule-visit', {
@@ -407,6 +415,15 @@ export default function ScheduleVisit() {
                     </div>
                   </div>
                 </div>
+
+                <ConsentCheckbox
+                  checked={consent}
+                  onCheckedChange={(value) => {
+                    setConsent(value);
+                    if (value) setConsentError(undefined);
+                  }}
+                  error={consentError}
+                />
 
                 <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? (t.schedule?.scheduling || 'Agendando...') : (t.schedule?.schedule || 'Agendar visita')}

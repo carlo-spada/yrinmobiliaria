@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
 import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate, useSearchParams } from '@/lib/router-compat';
@@ -26,7 +28,9 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -79,11 +83,15 @@ const Auth = () => {
       return;
     }
 
-    // Validate password strength for signup
+    // Validate password strength and data-processing consent for signup
     if (!isLogin) {
       const passwordValidation = passwordSchema.safeParse(password);
       if (!passwordValidation.success) {
         toast.error(passwordValidation.error.issues[0].message);
+        return;
+      }
+      if (!consent) {
+        toast.error(t.legal.consent.required);
         return;
       }
     }
@@ -154,6 +162,9 @@ const Auth = () => {
                 <PasswordStrengthIndicator password={password} />
               )}
             </div>
+            {!isLogin && (
+              <ConsentCheckbox checked={consent} onCheckedChange={setConsent} />
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Cargando...' : isLogin ? 'Iniciar Sesión' : 'Registrarse'}
             </Button>
