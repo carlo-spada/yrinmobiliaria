@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -18,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "@/lib/router-compat";
 import { logger } from "@/utils/logger";
 
 
