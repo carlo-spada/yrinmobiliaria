@@ -48,6 +48,16 @@ const STEPS = [
   { id: 5, name: "Redes Sociales" },
 ];
 
+// Campos que pertenecen a cada paso, para validar antes de avanzar y para
+// poder llevar al usuario al primer paso con error al intentar finalizar.
+const STEP_FIELDS: Record<number, (keyof ProfileFormData)[]> = {
+  1: ["photo_url"],
+  2: ["languages", "bio_es", "bio_en"],
+  3: ["phone", "whatsapp_number"],
+  4: ["service_zones"],
+  5: ["linkedin_url", "facebook_url"],
+};
+
 export default function CompleteProfile() {
   const { user, profile } = useAuth();
   const { zones } = useServiceZones();
@@ -55,7 +65,7 @@ export default function CompleteProfile() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ProfileFormData>({
+  const { register, handleSubmit, watch, setValue, trigger, setError, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       photo_url: profile?.photo_url || "",
@@ -76,6 +86,14 @@ export default function CompleteProfile() {
   const progress = (currentStep / STEPS.length) * 100;
 
   const onSubmit = async (data: ProfileFormData) => {
+    // Defensa: sólo finalizar (crear el perfil) desde el último paso. Si el
+    // submit se dispara antes (p.ej. Enter en un input de un paso intermedio),
+    // se avanza en vez de guardar, para no crear el perfil prematuramente ni
+    // saltarse pasos (como Redes Sociales).
+    if (currentStep < STEPS.length) {
+      setCurrentStep((s) => Math.min(s + 1, STEPS.length));
+      return;
+    }
     setIsSubmitting(true);
     try {
       const { error } = await supabase
@@ -99,10 +117,35 @@ export default function CompleteProfile() {
     }
   };
 
-  const nextStep = () => {
+  // Valida sólo los campos del paso actual antes de permitir avanzar.
+  const validateCurrentStep = async (): Promise<boolean> => {
+    const fields = STEP_FIELDS[currentStep] ?? [];
+    const valid = fields.length ? await trigger(fields) : true;
+    // El requisito "teléfono o WhatsApp" del paso 3 es a nivel de objeto (.refine),
+    // así que trigger por campo no lo evalúa: se comprueba a mano.
+    if (currentStep === 3 && !watchedValues.phone && !watchedValues.whatsapp_number) {
+      setError("phone", { type: "manual", message: "Proporciona al menos teléfono o WhatsApp" });
+      return false;
+    }
+    return valid;
+  };
+
+  const nextStep = async () => {
     if (currentStep < STEPS.length) {
+      const ok = await validateCurrentStep();
+      if (!ok) return;
       setCurrentStep(currentStep + 1);
     }
+  };
+
+  // Si "Completar perfil" falla la validación global, lleva al usuario al
+  // primer paso con error y avisa (en vez de no hacer nada en silencio).
+  const onInvalid = (formErrors: typeof errors) => {
+    const firstBadStep = STEPS.map((s) => s.id).find((id) =>
+      (STEP_FIELDS[id] ?? []).some((f) => formErrors[f])
+    );
+    if (firstBadStep) setCurrentStep(firstBadStep);
+    toast.error("Faltan campos requeridos. Revisa los pasos marcados.");
   };
 
   const prevStep = () => {
@@ -123,7 +166,7 @@ export default function CompleteProfile() {
             <Progress value={progress} className="h-2" />
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
             {/* Step 1: Photo */}
             {currentStep === 1 && (
               <div className="space-y-6">
