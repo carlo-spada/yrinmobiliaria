@@ -3,6 +3,7 @@ import { componentTagger } from "lovable-tagger";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -64,6 +65,9 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: "./src/__tests__/setup.ts",
       globals: true,
+      // Los specs de Playwright viven en e2e/ y se corren con `npm run test:e2e`;
+      // vitest no debe recogerlos (su `test()` no es el de Playwright).
+      exclude: [...configDefaults.exclude, "e2e/**"],
     },
   };
 });

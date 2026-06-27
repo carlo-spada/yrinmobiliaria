@@ -1,3 +1,5 @@
+'use client';
+
 import { User, Session } from '@supabase/supabase-js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, ReactNode, useMemo } from 'react';

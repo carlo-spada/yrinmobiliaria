@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
-import { LegacyIsland } from '@/components/legacy/LegacyIsland';
+import View from './view';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <LegacyIsland />;
+  return <View />;
 }
