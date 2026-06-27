@@ -28,7 +28,7 @@ export interface PropertyFeatures {
 /**
  * Type guard to check if a JSON value is a valid PropertyLocation
  */
-export function isPropertyLocation(obj: Json): obj is PropertyLocation & Record<string, unknown> {
+export function isPropertyLocation(obj: unknown): obj is PropertyLocation & Record<string, unknown> {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
     return false;
   }
@@ -40,7 +40,7 @@ export function isPropertyLocation(obj: Json): obj is PropertyLocation & Record<
 /**
  * Type guard to check if a JSON value is a valid PropertyFeatures object
  */
-export function isPropertyFeatures(obj: Json): obj is PropertyFeatures & Record<string, unknown> {
+export function isPropertyFeatures(obj: unknown): obj is PropertyFeatures & Record<string, unknown> {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
     return false;
   }
