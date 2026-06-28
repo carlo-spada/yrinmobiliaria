@@ -148,10 +148,11 @@ Repo-only reconciliation — **zero live-DB writes** (declares what was already 
 
 ## Phase 4 — Performance & caching
 
-- **4.1** Decouple locale from `cookies()` so public pages can be static/ISR (ties to 5.1). Files: `app/layout.tsx`, `src/lib/seo-server.ts`. Risk Medium. Effort L.
-- **4.2** `generateStaticParams` + `revalidate` for `propiedad/[id]`, `agentes/[slug]`. Risk Medium. Effort M.
-- **4.3** TanStack global defaults (`refetchOnWindowFocus:false`, `retry:1`, sane `staleTime`). Files: `app/providers.tsx`. Risk Low. Effort S.
-- **4.4** Adopt `next/image` for hero/PDP gallery; drop image wildcard. Files: `next.config.ts`, `ResponsiveImage`. Risk Medium. Effort M–L.
+- **4.1** ✅ DONE (PR [#37](https://github.com/carlo-spada/yrinmobiliaria/pull/37)) — Locale decoupled from `cookies()`. Root `app/layout.tsx` renders the canonical `DEFAULT_LOCALE='es'` statically (no `cookies()`); `seo-server.getServerLocale()` returns a constant `Promise` (no cookie read) so the 13 `await getServerLocale()` call sites are untouched and 5.1 can later derive locale from the URL segment. `LanguageProvider` adopts the persisted `locale` cookie in a mount `useEffect` (renders `'es'` first to match the server → no hydration mismatch, since public bodies are `ssr:false`) and keeps `<html lang>` synced. Verified in-browser: ES default + EN-cookie adoption + 0 console errors.
+- **4.2** ✅ DONE (PR #37) — `generateStaticParams` + `export const revalidate = 3600` + `dynamicParams = true` on `propiedad/[id]` + `agentes/[slug]`. Enumeration via new `listPublicPropertyIds`/`listPublicAgentSlugs` helpers (degrade to `[]` on DB failure), reused by `sitemap.ts` (DRY → slug parity across SSG/sitemap/JSON-LD via one `toSlug`). `fetchPropertyMeta`/`fetchAgentMeta` wrapped in React `cache()` to dedupe the metadata+body query per render. **Build proof:** whole public surface flipped from `ƒ` Dynamic → `○` Static / `●` SSG (12 properties + 2 agents prerendered, revalidate 1h).
+- **4.3** ✅ DONE (PR #37) — TanStack defaults in `app/providers.tsx`: `refetchOnWindowFocus:false`, `retry:1`, `staleTime:60_000` (data-heavy hooks keep their own overrides; mutations still invalidate).
+- **4.4** Adopt `next/image` for hero/PDP gallery; drop image wildcard; clears the 6 `no-img-element` warnings. Files: `next.config.ts`, `ResponsiveImage`. Risk Medium. Effort M–L. **→ PR B (next).**
+- _Deferred from 4.V review (non-blocking):_ invalid `propiedad/[id]`/`agentes/[slug]` ids serve a soft-404 (200 + `robots:noindex`) which ISR now caches ~1h — fold into **8.2** (`notFound()` **+** giving `@/screens/NotFound` chrome + i18n, which it currently lacks). Slug-uniqueness for duplicate display-names → **5.4**.
 
 ---
 

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { env } from '@/lib/env';
-import { getPublicSupabase } from '@/lib/supabase/server';
+import { listPublicAgentSlugs, listPublicPropertyIds } from '@/lib/seo-server';
 
 const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
@@ -28,32 +28,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   }));
 
-  try {
-    const supabase = getPublicSupabase();
+  // Mismas fuentes que `generateStaticParams` de las rutas dinámicas (helpers
+  // en seo-server, que degradan a `[]` si la BD no responde → el sitemap queda
+  // con las rutas estáticas). Garantiza que los slugs del sitemap == los de las
+  // páginas (mismo `toSlug`).
+  const [propertyIds, agentSlugs] = await Promise.all([
+    listPublicPropertyIds(),
+    listPublicAgentSlugs(),
+  ]);
 
-    const { data: properties } = await supabase
-      .from('properties')
-      .select('id')
-      .eq('status', 'disponible');
-    for (const property of properties ?? []) {
-      entries.push({
-        url: `${SITE_URL}/propiedad/${property.id}`,
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      });
-    }
-
-    const { data: agents } = await supabase.rpc('get_public_agents');
-    for (const agent of (agents ?? []) as Array<{ display_name: string }>) {
-      const slug = agent.display_name.toLowerCase().replace(/ /g, '-');
-      entries.push({
-        url: `${SITE_URL}/agentes/${slug}`,
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      });
-    }
-  } catch {
-    // Si la BD no responde, el sitemap degrada a las rutas estáticas.
+  for (const id of propertyIds) {
+    entries.push({ url: `${SITE_URL}/propiedad/${id}`, changeFrequency: 'weekly', priority: 0.8 });
+  }
+  for (const slug of agentSlugs) {
+    entries.push({ url: `${SITE_URL}/agentes/${slug}`, changeFrequency: 'monthly', priority: 0.6 });
   }
 
   return entries;

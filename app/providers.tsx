@@ -17,7 +17,21 @@ export function Providers({
   children: ReactNode;
   initialLanguage: Language;
 }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            // El refetch al volver a la pestaña duplica llamadas sin valor real
+            // para un catálogo que cambia poco; un solo reintento y un staleTime
+            // de 1 min recortan tráfico a Supabase sin servir datos rancios.
+            refetchOnWindowFocus: false,
+            retry: 1,
+            staleTime: 60_000,
+          },
+        },
+      })
+  );
 
   useEffect(() => {
     initGA();
