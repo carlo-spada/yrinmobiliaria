@@ -92,8 +92,11 @@ const turnstileOk = async (token: unknown, ip: string): Promise<boolean> => {
 };
 
 // Rate-limit persistente en DB (backstop del fast-path en memoria).
-// deno-lint-ignore no-explicit-any
-const dbRateLimit = async (supabase: any, key: string, maxPerHour: number): Promise<boolean> => {
+const dbRateLimit = async (
+  supabase: ReturnType<typeof createClient>,
+  key: string,
+  maxPerHour: number,
+): Promise<boolean> => {
   const since = new Date(Date.now() - RATE_LIMIT_WINDOW).toISOString();
   await supabase.from('rate_limit_events').delete().eq('key', key).lt('created_at', since);
   const { count } = await supabase
