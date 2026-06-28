@@ -17,8 +17,15 @@
 --     eran `FOR ALL` (y solapaban SELECT) se separan en INSERT/UPDATE/DELETE y su
 --     acceso de lectura se pliega en la política SELECT consolidada.
 --
--- Nota lints: los WARN 0028/0029 sobre los helpers SECURITY DEFINER se tratan en
--- 0005 (revoke EXECUTE a anon/authenticated).
+-- Nota lints 0028/0029 (helpers SECURITY DEFINER ejecutables vía RPC) — RIESGO
+-- ACEPTADO (Phase 2.7): revocar EXECUTE a anon/authenticated ROMPE RLS
+-- (verificado: las políticas evalúan is_admin/is_staff/is_superadmin/
+-- current_profile_ids como el rol que consulta —anon incluido, p.ej. al leer
+-- properties— y dan "permission denied for function" sin EXECUTE). Mover a un
+-- schema privado es desproporcionado y get_public_agents es RPC pública
+-- intencional. La exposición es mínima: sondeo booleano de rol que exige conocer
+-- UUIDs; current_profile_ids solo devuelve los ids del propio usuario.
+-- (Auth leaked-password protection: diferido — requiere plan Pro de Supabase.)
 -- =============================================================================
 
 -- Fija search_path en el trigger de updated_at (lint 0011).
