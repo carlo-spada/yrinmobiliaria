@@ -20,6 +20,19 @@ const sanitizeInput = (input: string, maxLength: number): string => {
     .replace(/[<>]/g, ''); // Remove potential HTML tags
 };
 
+// Escapa HTML para interpolar valores de usuario en el email sin riesgo de
+// inyección (XSS en el cliente de correo / ruptura de atributos).
+const escapeHtml = (input: string): string =>
+  input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Elimina CR/LF de valores que van en cabeceras de email (anti header-injection).
+const stripHeader = (input: string): string => input.replace(/[\r\n]+/g, ' ').trim();
+
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 255;
@@ -176,7 +189,7 @@ serve(async (req) => {
     <div style="padding: 40px 30px;">
       <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
         <p style="margin: 0; color: #6c757d; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Asunto</p>
-        <p style="margin: 8px 0 0 0; color: #212529; font-size: 18px; font-weight: 600;">${subject}</p>
+        <p style="margin: 8px 0 0 0; color: #212529; font-size: 18px; font-weight: 600;">${escapeHtml(subject)}</p>
       </div>
 
       <div style="margin-bottom: 30px;">
@@ -188,7 +201,7 @@ serve(async (req) => {
               <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Nombre:</span>
             </td>
             <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef; text-align: right;">
-              <span style="color: #212529; font-size: 15px; font-weight: 600;">${sanitizedData.name}</span>
+              <span style="color: #212529; font-size: 15px; font-weight: 600;">${escapeHtml(sanitizedData.name)}</span>
             </td>
           </tr>
           <tr>
@@ -196,7 +209,7 @@ serve(async (req) => {
               <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Email:</span>
             </td>
             <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef; text-align: right;">
-              <a href="mailto:${sanitizedData.email}" style="color: #667eea; font-size: 15px; text-decoration: none;">${sanitizedData.email}</a>
+              <a href="mailto:${escapeHtml(sanitizedData.email)}" style="color: #667eea; font-size: 15px; text-decoration: none;">${escapeHtml(sanitizedData.email)}</a>
             </td>
           </tr>
           <tr>
@@ -204,7 +217,7 @@ serve(async (req) => {
               <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Teléfono:</span>
             </td>
             <td style="padding: 12px 0; text-align: right;">
-              <a href="tel:${sanitizedData.phone}" style="color: #667eea; font-size: 15px; text-decoration: none;">${sanitizedData.phone}</a>
+              <a href="tel:${escapeHtml(sanitizedData.phone)}" style="color: #667eea; font-size: 15px; text-decoration: none;">${escapeHtml(sanitizedData.phone)}</a>
             </td>
           </tr>
         </table>
@@ -213,13 +226,13 @@ serve(async (req) => {
       <div style="margin-bottom: 30px;">
         <h2 style="color: #212529; font-size: 20px; font-weight: 600; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">Mensaje</h2>
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; line-height: 1.6;">
-          <p style="margin: 0; color: #495057; font-size: 15px; white-space: pre-wrap;">${message}</p>
+          <p style="margin: 0; color: #495057; font-size: 15px; white-space: pre-wrap;">${escapeHtml(message)}</p>
         </div>
       </div>
 
       <!-- CTA Button -->
       <div style="text-align: center; margin-top: 40px;">
-        <a href="mailto:${sanitizedData.email}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);">
+        <a href="mailto:${escapeHtml(sanitizedData.email)}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);">
           Responder por Email
         </a>
       </div>
@@ -246,7 +259,7 @@ serve(async (req) => {
           body: JSON.stringify({
             from: `${organizationName} <${organizationEmail}>`,
             to: [organizationEmail],
-            subject: `[Contacto Web] ${subject} - ${sanitizedData.name}`,
+            subject: stripHeader(`[Contacto Web] ${subject} - ${sanitizedData.name}`),
             html: emailHtml,
             reply_to: sanitizedData.email,
           }),
