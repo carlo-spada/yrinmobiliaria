@@ -74,6 +74,38 @@ const checkRateLimit = (ip: string): boolean => {
   return true;
 };
 
+// Verificación Turnstile (anti-bot). Solo bloquea si TURNSTILE_ENFORCE='true',
+// así el deploy del edge no rompe el formulario antes de que el widget cliente
+// esté en vivo.
+const turnstileOk = async (token: unknown, ip: string): Promise<boolean> => {
+  if (Deno.env.get('TURNSTILE_ENFORCE') !== 'true') return true;
+  const secret = Deno.env.get('TURNSTILE_SECRET_KEY');
+  if (!secret) return true;
+  if (!token || typeof token !== 'string') return false;
+  const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+  });
+  const data = await resp.json();
+  return data?.success === true;
+};
+
+// Rate-limit persistente en DB (backstop del fast-path en memoria).
+// deno-lint-ignore no-explicit-any
+const dbRateLimit = async (supabase: any, key: string, maxPerHour: number): Promise<boolean> => {
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW).toISOString();
+  await supabase.from('rate_limit_events').delete().eq('key', key).lt('created_at', since);
+  const { count } = await supabase
+    .from('rate_limit_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('key', key)
+    .gte('created_at', since);
+  if ((count ?? 0) >= maxPerHour) return false;
+  await supabase.from('rate_limit_events').insert({ key });
+  return true;
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -101,7 +133,23 @@ serve(async (req) => {
       );
     }
 
-    const { propertyId, name, email, phone, date, timeSlot, notes } = await req.json();
+    const { propertyId, name, email, phone, date, timeSlot, notes, company_website, turnstileToken } = await req.json();
+
+    // Honeypot: el campo oculto solo lo rellenan bots → fingir éxito sin guardar.
+    if (typeof company_website === 'string' && company_website.trim() !== '') {
+      return new Response(
+        JSON.stringify({ success: true, message: 'Visit scheduled successfully' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Turnstile (solo si TURNSTILE_ENFORCE='true')
+    if (!(await turnstileOk(turnstileToken, clientIp))) {
+      return new Response(
+        JSON.stringify({ error: 'Verificación anti-bot fallida. Recarga e inténtalo de nuevo.', code: 'TURNSTILE_FAILED' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Server-side validation
     if (!propertyId || typeof propertyId !== 'string') {
@@ -168,6 +216,14 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Rate-limit persistente en DB (además del fast-path en memoria de arriba).
+    if (!(await dbRateLimit(supabase, `visit:${clientIp}`, MAX_SUBMISSIONS_PER_HOUR))) {
+      return new Response(
+        JSON.stringify({ error: 'Too many submissions. Please try again later.', code: 'RATE_LIMIT_EXCEEDED' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Verify property exists AND is publicly visible (no borradores). Replica la
     // RLS pública (properties_select_public: status <> 'pendiente') para no
