@@ -1,6 +1,6 @@
 # YR Inmobiliaria — Audit Report
 
-**Date:** 2026-06-27
+**Date:** 2026-06-27 · **Last Updated:** 2026-06-28 (resolved markers: Phases 0–2, 7.1–7.3)
 **Type:** Read-only audit (no code/DB/DNS/config modified during audit phase)
 **Auditor scope:** architecture, Next 16/React 19, Tailwind v4, Supabase DB/RLS/storage, edge functions, security, performance, SEO, analytics/observability, CI/CD, Vercel/Cloudflare, internal docs.
 
@@ -55,12 +55,12 @@ The real exposure is **operational safety, SEO reach, and performance/cost**, no
 - **H3 — Migration governance hazard.** 61 legacy Lovable migrations vs 4 clean live migrations; `schema.sql`+`policies.sql`+`manual/*.sql` are canonical but unenforced. Fix: quarantine `migrations/`, baseline, runbook. Effort S–M. Approval required.
 - **H4 — Public-form abuse.** In-memory per-isolate limiter on spoofable `x-forwarded-for` (`submit-contact/index.ts:59`), no CAPTCHA/honeypot. Fix: DB-side limit + Turnstile/honeypot. Effort M. Approval required.
 - **H5 — `.env` tracked in git.** Only `NEXT_PUBLIC_*` values today (no live secret exposed) but invites a real secret next. Fix: `git rm --cached .env`. Effort S.
-- **H6 — No `error.tsx`/`global-error.tsx`/`loading.tsx`; public screens lack any error boundary.** Fix: add boundaries + skeletons. Effort M.
+- **H6 — No `error.tsx`/`global-error.tsx`/`loading.tsx`; public screens lack any error boundary.** Fix: add boundaries + skeletons. Effort M. ✅ **Resolved** (PR #26, Phase 7.2): added all three App Router files + `PublicErrorBoundary` over public screens.
 - **H7 — Placeholder business data in JSON-LD** (`telephone:'+52-951-123-4567'`, `logo:favicon.ico`, placeholder address/social — `seo-server.ts:133-151`). Effort S.
 - **H8 — No public CMS/blog route.** `cms_pages` + `/admin/cms` exist; nothing renders publicly or in sitemap. Effort M.
 - **H9 — GA loads with no consent gate** (`app/providers.tsx:22`) despite shipped LFPDPPP work. Fix: consent banner + GA Consent Mode v2. Effort M.
 - **H10 — Lead conversions not instrumented.** `analytics.ts` `track*` helpers are dead code; contact/schedule/WhatsApp fire no event. Effort M.
-- **H11 — Tailwind triple-token drift + dead `tailwind.config.ts` + dead dark mode** (`next-themes` has no provider; no v4 `@custom-variant dark`). Effort M.
+- **H11 — Tailwind triple-token drift + dead `tailwind.config.ts` + dead dark mode** (`next-themes` has no provider; no v4 `@custom-variant dark`). Effort M. ✅ **Resolved** (PR #28, Phase 7.3): orphaned config deleted, single `@theme` token scheme, `@custom-variant dark` (class-based, dormant), `tailwindcss-animate` reactivated via `@plugin`.
 
 ---
 
@@ -73,7 +73,7 @@ The real exposure is **operational safety, SEO reach, and performance/cost**, no
 - **M4 — `upload-property-image` trusts client `contentType`**, no magic-byte sniffing; public-read bucket.
 - **M5 — `send-agent-invitation` magic link from attacker-controllable `origin` header** → token phishing. Use `SITE_URL`.
 - **M6 — `accept-agent-invitation` accept non-atomic (TOCTOU).** Use `UPDATE … WHERE accepted_at IS NULL RETURNING *`.
-- **M7 — Role gating by per-screen convention, not route-enforced.** Wrap `(app)` group structurally.
+- **M7 — Role gating by per-screen convention, not route-enforced.** Wrap `(app)` group structurally. ✅ **Resolved** (PR #27, Phase 7.1): nested `(app)` layout guards (`RequireStaff`/`RequireRole`/`RequireAuth`) run above the lazy `view.tsx`.
 - **M8 — `next.config.ts`:** hardcoded Supabase host fallback; `images.remotePatterns` wildcard `*.supabase.co` (dead until `next/image` adopted).
 - **M9 — Node version unpinned** (no `engines`/`.nvmrc`).
 - **M10 — `middleware.ts` deprecated** in Next 16 → `proxy.ts`.
@@ -87,7 +87,7 @@ The real exposure is **operational safety, SEO reach, and performance/cost**, no
 
 ## 6. Dependency / version review
 
-Stack current and compatible (Next 16.2.9 / React 19.2.1 / TS 5.9 / Tailwind 4.1 / Supabase-js 2.87 / @supabase/ssr 0.12). Dead under v4: `tailwindcss-animate`, `autoprefixer`. Last Vite artifact: `@vitejs/plugin-react-swc` (legit — Vitest). All `npm audit` highs dev-only (vite/ws/esbuild/postcss/js-yaml). **Do not mass-upgrade**; the versions are fine.
+Stack current and compatible (Next 16.2.9 / React 19.2.1 / TS 5.9 / Tailwind 4.1 / Supabase-js 2.87 / @supabase/ssr 0.12). `tailwindcss-animate` reactivated under v4 via `@plugin` (PR #28, Phase 7.3); `autoprefixer` still redundant under v4 (`@tailwindcss/postcss` handles prefixing) — droppable follow-up. Last Vite artifact: `@vitejs/plugin-react-swc` (legit — Vitest). All `npm audit` highs dev-only (vite/ws/esbuild/postcss/js-yaml). **Do not mass-upgrade**; the versions are fine.
 
 ---
 

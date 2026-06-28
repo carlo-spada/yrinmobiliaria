@@ -60,7 +60,7 @@ git stash push -m "WIP before sync" && git pull origin main
 
 ### Routing & rendering
 - **Public routes** (`app/(public)/…`) are native Next pages with `generateMetadata` (title/desc/canonical/OG/hreflang) + **server-side JSON-LD** (`@/components/seo/JsonLd`). `sitemap.ts` / `robots.ts` are dynamic.
-- **Private routes** (`app/(app)/…`: `/admin/*`, `/agent/*`, `/cuenta`, `/auth`, `/onboarding/*`) follow `page.tsx` (server, `robots:noindex`) + `view.tsx` (client `dynamic` with `ssr:false`) over a screen that self-mounts its own guard/layout. No authenticated data is fetched server-side.
+- **Private routes** (`app/(app)/…`: `/admin/*`, `/agent/*`, `/cuenta`, `/auth`, `/onboarding/*`) follow `page.tsx` (server, `robots:noindex`) + `view.tsx` (client `dynamic` with `ssr:false`). Role/auth guards are applied at the **route-group layout** (`app/(app)/<group>/layout.tsx`), above the lazy `view.tsx` — not self-mounted inside each screen. No authenticated data is fetched server-side.
 - **`proxy.ts`** refreshes the Supabase session and server-gates the private prefixes (`/admin`, `/agent`, `/onboarding`, `/cuenta`) → redirects to `/auth` when unauthenticated.
 - **Router compat shim** (`@/lib/router-compat`): re-exports `next/link` + `next/navigation` under react-router's API (`Link`/`NavLink`/`useNavigate`/`useLocation`/`useParams`/`useSearchParams`/`Navigate`) so the ported client screens compile unchanged. There is **no `react-router-dom`** dependency.
 
@@ -90,7 +90,7 @@ proxy.ts
 - **AuthContext** (`src/contexts/AuthContext.tsx`) — central auth state.
 - **useUserRole** (`src/hooks/useUserRole.ts`) — role detection.
 - Roles via `role_assignments`: `superadmin`, `admin`, `agent`, `user`. (`profiles.agent_level` is display-only seniority, not a role.)
-- Native guards in `src/components/auth/NativeRouteGuards.tsx` (`RequireAuth`/`RequireRole`/`RequireCompleteProfile`).
+- Native guards in `src/components/auth/NativeRouteGuards.tsx` (`RequireAuth`/`RequireRole`/`RequireStaff`/`RequireCompleteProfile`), wired per subtree in `app/(app)/<group>/layout.tsx` (`admin`→`RequireStaff`, `agent`→`RequireRole`, `cuenta`/`onboarding`→`RequireAuth`).
 - Route targets: admin → `/admin`, agent → `/agent/dashboard`, user → `/cuenta`.
 
 ### Database (Supabase, single-tenant)
