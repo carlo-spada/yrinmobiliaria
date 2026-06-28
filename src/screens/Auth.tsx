@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate, useSearchParams } from '@/lib/router-compat';
 import { mapAuthError } from '@/utils/authErrors';
+import { sanitizeRedirect } from '@/utils/safeRedirect';
 
 
 const passwordSchema = z.string()
@@ -44,15 +45,17 @@ const Auth = () => {
     }
 
     const handleRedirect = () => {
-      // Check for redirect parameter
-      const redirectTo = searchParams.get('redirect');
+      // Acepta el ?redirect= sólo si es una ruta interna de confianza (mismo
+      // origen). Rechaza absolutas / protocol-relative (`//evil.com`) / backslash
+      // para no convertirse en un open-redirect. Si no es de confianza, cae al
+      // destino por rol más abajo.
+      const safeRedirect = sanitizeRedirect(searchParams.get('redirect'));
 
       // Mark as redirected before navigating
       hasRedirected.current = true;
 
-      // If there's a redirect parameter, use it (for admin/protected routes)
-      if (redirectTo && redirectTo.startsWith('/')) {
-        navigate(redirectTo, { replace: true });
+      if (safeRedirect) {
+        navigate(safeRedirect, { replace: true });
         return;
       }
 
