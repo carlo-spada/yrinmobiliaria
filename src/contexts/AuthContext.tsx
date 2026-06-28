@@ -133,27 +133,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    const { data, error } = await supabase.auth.signUp({
+    // El profile se crea server-side con el trigger `handle_new_user` en
+    // auth.users (Phase 7.5), atómico con el alta. Ya no se inserta aquí: el
+    // insert client-side podía dejar usuarios sin profile (fallo del cliente, o
+    // confirmación de email activa → sin sesión todavía, no pasaba RLS).
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
       },
     });
-
-    // Create profile after successful signup
-    if (!error && data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        user_id: data.user.id,
-        email: data.user.email!,
-        display_name: data.user.email!.split('@')[0],
-        is_complete: true,
-      });
-
-      if (profileError) {
-        logger.error('Failed to create profile', profileError);
-      }
-    }
 
     return { error };
   };
