@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, CheckCircle, Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -62,6 +63,7 @@ export default function CompleteProfile() {
   const { user, profile } = useAuth();
   const { zones } = useServiceZones();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -106,6 +108,15 @@ export default function CompleteProfile() {
         .eq("user_id", user?.id ?? '');
 
       if (error) throw error;
+
+      // Refresca la caché de TanStack Query antes de navegar: el guard de
+      // "perfil completo" (RequireCompleteProfile, en el layout de /agent)
+      // lee la query ['profile-completion']. Si quedara el valor obsoleto
+      // is_complete:false en caché, stale-while-revalidate lo renderizaría
+      // primero y rebotaría al agente de vuelta a /onboarding. removeQueries
+      // fuerza un fetch limpio (loader → is_complete:true) sin ese rebote.
+      queryClient.removeQueries({ queryKey: ['profile-completion'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
 
       toast.success("¡Perfil completado exitosamente!");
       navigate("/agent/dashboard");
