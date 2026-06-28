@@ -19,6 +19,7 @@
 - Live baseline: 4 migrations (`clean_single_tenant_schema`, `rls_policies_role_based`, `storage_property_images_bucket`, `storage_drop_broad_read_policy`).
 - **Phase 2 hardening aplicado** vía MCP (`manual/0003`–`0007`): índices de cobertura para FKs, RLS perf + consolidación (`(select …)` initplan + una sola política permisiva por acción), drop del índice no usado `profiles_directory_idx`, y la tabla `rate_limit_events`. Advisors de performance `auth_rls_initplan` / `multiple_permissive_policies` / `unindexed_foreign_keys` → **0**.
 - RLS habilitado en todas las tablas públicas (incl. la nueva `rate_limit_events`, deny-all → solo service_role). Sin ruta de escalada de privilegios (solo `superadmin` otorga admin/superadmin). Los lints `0028/0029` (helpers SECURITY DEFINER) son **riesgo aceptado** documentado en `policies.sql` (revocar EXECUTE rompe RLS).
+- **Phase 7.5 aplicado** vía MCP (`manual/0008`): trigger `on_auth_user_created` + función `handle_new_user` (SECURITY DEFINER, `search_path` fijado, EXECUTE revocado de anon/authenticated/public → NO aparece en `0028/0029`) que crea el `profile` al alta en `auth.users`, reemplazando el insert client-side de `signUp`. Verificado con un alta de prueba en transacción revertida. Advisors: sin findings nuevos (siguen los pre-existentes de Fase 2 + leaked-password diferido).
 
 ## How to apply a DB change (runbook)
 
@@ -33,7 +34,7 @@
 
 ## Numbering
 
-`manual/` scripts are numbered sequentially: `0001_…`, `0002_…`. Current highest: `0007_phase2_rate_limit.sql` (Phase 2). Next change starts at `0008_`.
+`manual/` scripts are numbered sequentially: `0001_…`, `0002_…`. Current highest: `0008_handle_new_user_trigger.sql` (Phase 7.5). Next change starts at `0009_`.
 
 ## Edge function `verify_jwt` matrix (`config.toml`)
 

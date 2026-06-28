@@ -83,6 +83,33 @@ create table public.profiles (
 --  sin uso; ver supabase/manual/0006_drop_unused_index.sql)
 
 -- ----------------------------------------------------------------------------
+-- handle_new_user  (Phase 7.5 — crea el profile al alta en auth.users)
+-- ----------------------------------------------------------------------------
+-- Reemplaza el insert client-side de profiles tras signUp: server-side, atómico
+-- con el alta y sin depender de la sesión/RLS (security definer, search_path
+-- fijado). Mismas columnas que ponía el cliente. EXECUTE revocado (sólo lo
+-- invoca el trigger; no es RPC-callable y no aparece en los lints 0028/0029, a
+-- diferencia de los helpers de RLS). Ver manual/0008_handle_new_user_trigger.sql.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (user_id, email, display_name, is_complete)
+  values (new.id, new.email, split_part(new.email, '@', 1), true)
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- ----------------------------------------------------------------------------
 -- role_assignments  (FUENTE DE VERDAD de roles; sin organization_id)
 -- ----------------------------------------------------------------------------
 create table public.role_assignments (
@@ -346,7 +373,7 @@ alter table public.audit_logs        enable row level security;
 --   * RLS por tabla + políticas de Storage  -> supabase/policies.sql
 --   * Bucket `property-images` + cron de limpieza SOLO de `temp/`  -> policies.sql
 --   * RPCs públicas get_public_agents / get_public_agent_by_id (sin org)  -> policies.sql
---   * ¿Trigger handle_new_user en auth.users? -> confirmar con pg_dump del viejo
---     (hoy la app crea el profile manualmente en AcceptInvitation/signUp; se
---      reconcilia en PR1b para no duplicar).
+--   * Trigger handle_new_user en auth.users: AÑADIDO en Phase 7.5 (arriba) —
+--     crea el profile server-side al alta y reemplaza el insert client-side de
+--     signUp. Ver supabase/manual/0008_handle_new_user_trigger.sql.
 -- =============================================================================
