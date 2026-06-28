@@ -40,6 +40,7 @@ next-env.d.ts
 etl-import/
 etl-*.mjs
 .env*
+!.env.example
 
 # BMAD (retirado del proyecto) — evita que herramientas regeneren y re-trackeen estos artefactos
 _bmad/
