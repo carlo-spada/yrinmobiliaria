@@ -1,7 +1,20 @@
 @import "tailwindcss" source(none);
-@source "../index.html";
 @source "./**/*.tsx";
 @source "../app/**/*.tsx";
+
+/* v3→v4: el plugin de animaciones (utilidades animate-in/fade-in/zoom/slide y
+   las animaciones de apertura/cierre de los overlays de shadcn) ahora se carga
+   aquí con @plugin. Antes vivía en tailwind.config.ts (eliminado), que bajo v4
+   quedaba huérfano sin un @config, por lo que estas utilidades no se generaban. */
+@plugin "tailwindcss-animate";
+
+/* Modo oscuro basado en la clase `.dark` (coherente con el bloque de tokens
+   `.dark` de más abajo), en lugar del `prefers-color-scheme` por defecto de
+   Tailwind v4. Está intencionalmente DORMIDO: no hay toggle ni ThemeProvider
+   montado, así que `.dark` nunca se activa y el sitio se mantiene consistente
+   en claro (evita el estado previo "medio oscuro" en visitantes con OS oscuro).
+   Si en el futuro se añade un toggle, el tema oscuro ya queda completo. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Tailwind 4 Theme Configuration - Migrated from v3 config */
 @theme {
