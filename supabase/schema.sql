@@ -1,25 +1,32 @@
 -- =============================================================================
 -- YR Inmobiliaria — Esquema SINGLE-TENANT limpio (fuente de verdad)
 -- =============================================================================
--- Autorizado desde src/integrations/supabase/types.ts (espejo real de la BD viva).
+-- BASELINE VERIFICADO. Este archivo + policies.sql son la fuente de verdad
+-- declarativa y reconstruyen por completo el esquema `public` del backend vivo
+-- (ticsgpyathxawsupcghj). Reconciliado y verificado contra la BD viva el
+-- 2026-06-28 (Phase 3): columnas/tipos/defaults, PK/FK/unique, índices, enums,
+-- funciones, triggers, event triggers, RLS habilitado y bucket de Storage
+-- coinciden 1:1. Las políticas RLS y los grants van en policies.sql.
 --
--- PENDIENTE de reconciliar con `pg_dump --schema-only` del proyecto viejo
--- (ewsltpqbhbohuaonwflp) cuando lleguen las credenciales, para:
---   * cuerpos exactos de triggers (¿existe handle_new_user en auth.users?)
---   * defaults/constraints/check exactos
---   * el bucket de Storage y el cron de limpieza (van junto con policies.sql)
+-- Gobernanza: los parches aplicados a la BD viva viven, en orden, en
+-- supabase/manual/NNNN_*.sql (registro inmutable). Este baseline ya los
+-- incorpora a todos (manual/0001–0008). Ver supabase/README.md para el runbook
+-- de cambios y el mapeo manual ↔ versión de migración viva.
 --
--- Cambios vs. la BD vieja (decisiones del plan aprobado):
+-- Decisiones de diseño (plan aprobado), vs. la BD vieja de Lovable:
 --   * Single-tenant: SE ELIMINA `organizations` y toda columna `organization_id`.
 --   * Se descartan `entity_definitions` y `field_definitions` (experimento abandonado).
 --   * Modelo de roles: `app_role` AÑADE 'agent'. La identidad de rol vive SOLO en
 --     `role_assignments` (no en `profiles`, que el usuario puede editar → evita
 --     escalada de privilegios). `profiles.agent_level` pasa a ser solo antigüedad
 --     de display. Esto corrige el Bug 1 (agentes nuevos no reconocidos).
---   * RLS y Storage NO van aquí — van en policies.sql.
+--   * RLS (políticas) y Storage NO van aquí — van en policies.sql.
 -- =============================================================================
 
-create extension if not exists "pgcrypto";
+-- En Supabase, pgcrypto vive en el schema `extensions` (de ahí que el default de
+-- agent_invitations.token use `extensions.gen_random_bytes`). gen_random_uuid()
+-- es nativo de Postgres 13+ (no requiere extensión).
+create extension if not exists "pgcrypto" with schema extensions;
 
 -- ----------------------------------------------------------------------------
 -- ENUMS
@@ -306,6 +313,20 @@ create table public.audit_logs (
 create index audit_logs_created_idx on public.audit_logs (created_at desc);
 
 -- ----------------------------------------------------------------------------
+-- rate_limit_events  (Phase 2.6 — rate-limit persistente para formularios
+-- públicos; reemplaza el límite en memoria de las edge functions). Solo las edge
+-- functions (service_role, que SALTA RLS) leen/escriben; RLS habilitado SIN
+-- políticas = deny-all para anon/authenticated. Ver manual/0007_phase2_rate_limit.sql.
+-- ----------------------------------------------------------------------------
+create table public.rate_limit_events (
+  id         bigint generated always as identity primary key,
+  key        text not null,            -- p.ej. 'contact:<ip>' / 'visit:<ip>'
+  created_at timestamptz not null default now()
+);
+create index rate_limit_events_key_created_idx
+  on public.rate_limit_events (key, created_at desc);
+
+-- ----------------------------------------------------------------------------
 -- Índices de claves foráneas (Phase 2.2 — advisor `unindexed_foreign_keys`).
 -- Aplicados vía supabase/manual/0003_phase2_fk_indexes.sql.
 -- ----------------------------------------------------------------------------
@@ -367,13 +388,58 @@ alter table public.scheduled_visits  enable row level security;
 alter table public.agent_invitations enable row level security;
 alter table public.user_favorites    enable row level security;
 alter table public.audit_logs        enable row level security;
+alter table public.rate_limit_events enable row level security;
+
+-- ----------------------------------------------------------------------------
+-- rls_auto_enable  (red de seguridad: activa RLS automáticamente en cualquier
+-- tabla nueva de `public`). Event trigger en ddl_command_end. NO se invoca desde
+-- ninguna policy y, al devolver event_trigger, NO es RPC-callable vía PostgREST;
+-- por eso se le revoca EXECUTE (limpia los lints 0028/0029). Forma parte del
+-- baseline limpio; el revoke se registró en manual/0002_advisor_security_hardening.sql.
+-- ----------------------------------------------------------------------------
+create or replace function public.rls_auto_enable()
+returns event_trigger
+language plpgsql
+security definer
+set search_path = pg_catalog
+as $$
+declare
+  cmd record;
+begin
+  for cmd in
+    select *
+    from pg_event_trigger_ddl_commands()
+    where command_tag in ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')
+      and object_type in ('table', 'partitioned table')
+  loop
+    if cmd.schema_name is not null and cmd.schema_name in ('public')
+       and cmd.schema_name not in ('pg_catalog', 'information_schema')
+       and cmd.schema_name not like 'pg_toast%' and cmd.schema_name not like 'pg_temp%' then
+      begin
+        execute format('alter table if exists %s enable row level security', cmd.object_identity);
+        raise log 'rls_auto_enable: enabled RLS on %', cmd.object_identity;
+      exception
+        when others then
+          raise log 'rls_auto_enable: failed to enable RLS on %', cmd.object_identity;
+      end;
+    else
+      raise log 'rls_auto_enable: skip % (either system schema or not in enforced list: %.)', cmd.object_identity, cmd.schema_name;
+    end if;
+  end loop;
+end;
+$$;
+revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+
+drop event trigger if exists ensure_rls;
+create event trigger ensure_rls on ddl_command_end
+  when tag in ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')
+  execute function public.rls_auto_enable();
 
 -- =============================================================================
--- PENDIENTE (no en este archivo):
---   * RLS por tabla + políticas de Storage  -> supabase/policies.sql
---   * Bucket `property-images` + cron de limpieza SOLO de `temp/`  -> policies.sql
---   * RPCs públicas get_public_agents / get_public_agent_by_id (sin org)  -> policies.sql
---   * Trigger handle_new_user en auth.users: AÑADIDO en Phase 7.5 (arriba) —
---     crea el profile server-side al alta y reemplaza el insert client-side de
---     signUp. Ver supabase/manual/0008_handle_new_user_trigger.sql.
+-- El resto del modelo de acceso vive en supabase/policies.sql:
+--   * Políticas RLS por tabla + políticas de Storage.
+--   * Bucket `property-images` (público-lectura, staff-escritura).
+--   * RPC pública get_public_agents() + privacidad a nivel de columna en profiles.
+-- Nota: el trigger handle_new_user en auth.users está ARRIBA (Phase 7.5) — crea
+-- el profile server-side al alta y reemplaza el insert client-side de signUp.
 -- =============================================================================

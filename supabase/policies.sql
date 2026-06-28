@@ -70,6 +70,77 @@ create policy profiles_delete_admin on public.profiles for delete
   using ((select public.is_admin((select auth.uid()))));
 
 -- ---------------------------------------------------------------------------
+-- Directorio público de agentes + privacidad a nivel de COLUMNA (manual/0001).
+-- RLS filtra FILAS pero no COLUMNAS: profiles_select expone filas completas de
+-- agentes a anon. Cerramos la brecha restringiendo a `anon` (column-level grants)
+-- a columnas no sensibles; email/phone/whatsapp dejan de ser legibles por anon.
+-- get_public_agents() es el RPC del directorio (usePublicAgents/useAgentBySlug/
+-- seo-server) y devuelve SOLO columnas públicas. `authenticated` conserva SELECT
+-- completo (lee su propio perfil + administración).
+-- ---------------------------------------------------------------------------
+create or replace function public.get_public_agents()
+returns table (
+  id uuid,
+  display_name text,
+  photo_url text,
+  bio_es text,
+  bio_en text,
+  agent_level public.agent_level,
+  agent_years_experience integer,
+  agent_license_number text,
+  agent_specialty text[],
+  languages text[],
+  service_zones text[],
+  is_featured boolean,
+  instagram_handle text,
+  linkedin_url text,
+  facebook_url text
+)
+language sql stable security definer set search_path = public as $$
+  select
+    p.id,
+    p.display_name,
+    p.photo_url,
+    p.bio_es,
+    p.bio_en,
+    p.agent_level,
+    p.agent_years_experience,
+    p.agent_license_number,
+    p.agent_specialty,
+    p.languages,
+    p.service_zones,
+    coalesce(p.is_featured, false),
+    p.instagram_handle,
+    p.linkedin_url,
+    p.facebook_url
+  from public.profiles p
+  where p.show_in_directory and p.is_active;
+$$;
+grant execute on function public.get_public_agents() to anon, authenticated;
+
+revoke select on public.profiles from anon;
+grant select (
+  id,
+  display_name,
+  photo_url,
+  bio_es,
+  bio_en,
+  agent_level,
+  agent_years_experience,
+  agent_license_number,
+  agent_specialty,
+  languages,
+  service_zones,
+  is_featured,
+  show_in_directory,
+  is_active,
+  instagram_handle,
+  linkedin_url,
+  facebook_url,
+  job_title
+) on public.profiles to anon;
+
+-- ---------------------------------------------------------------------------
 -- role_assignments  (superadmin gestiona todo; admin gestiona agent/user)
 -- ---------------------------------------------------------------------------
 create policy role_assignments_select on public.role_assignments for select
@@ -193,6 +264,13 @@ create policy user_favorites_all_own on public.user_favorites for all
 -- ---------------------------------------------------------------------------
 create policy audit_logs_select_admin on public.audit_logs for select
   using ((select public.is_admin((select auth.uid()))));
+
+-- ---------------------------------------------------------------------------
+-- rate_limit_events  (Phase 2.6) — RLS habilitado en schema.sql SIN políticas =
+-- deny-all: ningún rol cliente accede; solo las edge functions (service_role,
+-- que salta RLS) leen/escriben. Es intencional (lint 0008 rls_enabled_no_policy
+-- es esperado/aceptado). No requiere política aquí.
+-- ---------------------------------------------------------------------------
 
 -- =============================================================================
 -- STORAGE: bucket property-images (lectura pública; escritura por rol staff).
