@@ -2,7 +2,7 @@
 
 > **Primary Reference:** See `CLAUDE.md` for complete project architecture and workflow.
 
-**Last Updated:** June 27, 2026
+**Last Updated:** June 28, 2026
 
 ---
 
@@ -63,7 +63,7 @@ e2e/                # Playwright smoke
 proxy.ts       # Session refresh + private-route gate
 ```
 
-Private routes = `page.tsx` (server, `robots:noindex`) + `view.tsx` (client `dynamic ssr:false`) over a screen that self-mounts its guard/layout.
+Private routes = `page.tsx` (server, `robots:noindex`) + `view.tsx` (client `dynamic ssr:false`); role/auth guards live in the route-group layout (`app/(app)/<group>/layout.tsx`), above the lazy `view.tsx` — not inside the screen.
 
 ---
 
