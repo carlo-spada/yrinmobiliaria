@@ -79,7 +79,8 @@ create table public.profiles (
   created_at             timestamptz default now(),
   updated_at             timestamptz default now()
 );
-create index profiles_directory_idx on public.profiles (show_in_directory) where show_in_directory;
+-- (profiles_directory_idx eliminado en Phase 2.2 — índice parcial no-selectivo
+--  sin uso; ver supabase/manual/0006_drop_unused_index.sql)
 
 -- ----------------------------------------------------------------------------
 -- role_assignments  (FUENTE DE VERDAD de roles; sin organization_id)
@@ -276,6 +277,21 @@ create table public.audit_logs (
   created_at timestamptz not null default now()
 );
 create index audit_logs_created_idx on public.audit_logs (created_at desc);
+
+-- ----------------------------------------------------------------------------
+-- Índices de claves foráneas (Phase 2.2 — advisor `unindexed_foreign_keys`).
+-- Aplicados vía supabase/manual/0003_phase2_fk_indexes.sql.
+-- ----------------------------------------------------------------------------
+create index if not exists agent_invitations_accepted_by_idx      on public.agent_invitations (accepted_by);
+create index if not exists agent_invitations_invited_by_idx       on public.agent_invitations (invited_by);
+create index if not exists contact_inquiries_assigned_by_idx      on public.contact_inquiries (assigned_by);
+create index if not exists contact_inquiries_assigned_to_agent_idx on public.contact_inquiries (assigned_to_agent);
+create index if not exists profiles_invited_by_idx                on public.profiles (invited_by);
+create index if not exists properties_created_by_idx              on public.properties (created_by);
+create index if not exists properties_is_translation_of_idx       on public.properties (is_translation_of);
+create index if not exists scheduled_visits_agent_id_idx          on public.scheduled_visits (agent_id);
+create index if not exists scheduled_visits_assigned_by_idx       on public.scheduled_visits (assigned_by);
+create index if not exists user_favorites_property_id_idx         on public.user_favorites (property_id);
 
 -- ----------------------------------------------------------------------------
 -- FUNCIONES DE ROL (single-tenant; SECURITY DEFINER para usarse dentro de RLS).
