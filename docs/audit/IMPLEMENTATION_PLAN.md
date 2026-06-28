@@ -59,8 +59,15 @@ Adelanto del P0 de la Phase 8 (flujo core roto, hallado recorriendo la app en na
 - **500 de SSR** por `loading-spinner.tsx` (usa `<motion.div>` de framer-motion) sin `'use client'`.
 Verificado en vivo en navegador. El resto de la auditoría UX/UI queda para la **Phase 8 completa** (tras Fases 3–6). Ver abajo.
 
+### ✅ Phase 3 — DONE (governance de migraciones) (PR [#36](https://github.com/carlo-spada/yrinmobiliaria/pull/36))
+
+Reconciliación **solo-repo** (cero escrituras a la BD viva): `schema.sql` + `policies.sql` quedan como el **baseline verificado** y completo, declarando lo que ya estaba vivo.
+- **Drift hallado y cerrado:** cuatro objetos vivían solo en `manual/` y nunca se habían plegado al baseline declarativo — la tabla `rate_limit_events` (+ índice + RLS-enable), el RPC `get_public_agents()`, los grants de privacidad por columna en `profiles`, y la infra `rls_auto_enable()`/`ensure_rls` (event trigger). Plegados a `schema.sql`/`policies.sql` reproduciendo la definición viva exacta. Header de `schema.sql` limpiado (nota obsoleta de `pg_dump` + referencia fantasma a `get_public_agent_by_id`).
+- **3.2 decisión de tooling:** seguir **declarativo** (`schema.sql`/`policies.sql` canónicos + `manual/NNNN` como registro inmutable), **no** migraciones CLI auto-aplicadas. Documentado en `supabase/README.md` con el mapeo ledger-vivo↔repo (10 migraciones vivas + 2 parches por SQL editor) y un procedimiento de drift-check repetible.
+- **Verificación:** diff read-only contra live (ticsgpyathxawsupcghj) por catálogo en 6 dimensiones + workflow adversarial de 6 agentes re-diffeando cada dimensión → **PASS, 0 drift**. Advisors sin findings nuevos; `next build` verde.
+
 ### ▶ Next up
-Phase 3 (governance de migraciones), Phase 4 (perf/caching), Phase 5 (SEO i18n), Phase 6 (analytics), luego **Phase 8 (auditoría UX/UI browser-driven)**. **Phase 7 completa**; P0 de UX ya shippeado (#34). Ver abajo.
+Phase 4 (perf/caching), Phase 5 (SEO i18n), Phase 6 (analytics), luego **Phase 8 (auditoría UX/UI browser-driven)**. **Phases 0–3 + 7 completas**; P0 de UX ya shippeado (#34). Ver abajo.
 
 ---
 
@@ -130,10 +137,12 @@ Phase 3 (governance de migraciones), Phase 4 (perf/caching), Phase 5 (SEO i18n),
 
 ---
 
-## Phase 3 — Migration governance cleanup
+## Phase 3 — Migration governance cleanup — ✅ DONE (PR [#36](https://github.com/carlo-spada/yrinmobiliaria/pull/36))
 
-- **3.1** Generate a verified baseline migration from live schema (export current `schema.sql`/`policies.sql` to a single `0000_baseline` under a chosen tool) and document the forward process. Risk Medium. Effort M. Approval required.
-- **3.2** Decide tooling: stay with manual `supabase/manual/NNNN_*.sql` (current) vs Supabase CLI migrations. Document in `supabase/README.md`.
+Repo-only reconciliation — **zero live-DB writes** (declares what was already live, so no owner approval needed).
+
+- **3.1 Verified baseline** ✅ — `schema.sql` + `policies.sql` declared as the canonical baseline and reconciled to be a **complete** mirror of live: folded in the four objects that lived only in `manual/` (the `rate_limit_events` table+index+RLS-enable, the `get_public_agents()` RPC, the `profiles` column-privacy grants, and the `rls_auto_enable`/`ensure_rls` event-trigger infra), and cleaned the stale `schema.sql` header (obsolete `pg_dump`-reconcile note + ghost `get_public_agent_by_id`). **Decision: no separate `0000_baseline` tool file** — that would duplicate `schema.sql`/`policies.sql` and invite drift; the declarative pair *is* the baseline, with `manual/NNNN` kept as the immutable applied-patch ledger. Verified 1:1 against live (ticsgpyathxawsupcghj) via read-only catalog diff across 6 dimensions (tables/cols, constraints/indexes, functions/enums, triggers/event-triggers, RLS policies, grants/storage) + a 6-agent adversarial re-verification → **PASS, 0 drift**.
+- **3.2 Tooling decision** ✅ — documented in `supabase/README.md`: **stay declarative** (`schema.sql`/`policies.sql` canonical + `manual/NNNN` ledger), **not** Supabase CLI auto-migrations (`db push` against a live prod DB is the foot-gun avoided). Added the live-ledger↔repo mapping (10 live migrations + the 2 SQL-editor patches), a verified-baseline stamp, and a repeatable read-only drift-check procedure.
 
 ---
 
