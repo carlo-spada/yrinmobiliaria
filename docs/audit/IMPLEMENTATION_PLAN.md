@@ -1,13 +1,36 @@
 # YR Inmobiliaria — Implementation Plan
 
-**Date:** 2026-06-27
+**Date:** 2026-06-27 · **Last Updated:** 2026-06-28
 **Source:** `AUDIT_REPORT.md`. Each task: objective · files · risk · priority · effort · acceptance · tests/checks · rollback.
 
 > Rules: small PR-sized changes; separate commits by category; run quality gates after each batch; never push to `main`; any DB/auth/RLS/storage/DNS/Vercel/Cloudflare change requires explicit approval before execution.
 
 ---
 
-## Phase 0 — Immediate safety checks (no runtime/UX/DB change) — **FIRST PR**
+## Progress log
+
+### ✅ Phase 0 — DONE (PR [#17](https://github.com/carlo-spada/yrinmobiliaria/pull/17), merged 2026-06-28, merge commit `78dac97`)
+
+All Phase 0 tasks shipped:
+- **0.1** `.env` untracked (`.gitignore` gains `!.env.example`). ✓
+- **0.2** Node pinned — `.nvmrc` = `22`, `engines.node` = `>=20.19`. Note: initial pin `20.18.0` broke CI (`ERR_REQUIRE_ESM` from `jsdom@27`/`parse5`); corrected to ≥20.19 / LTS 22. ✓
+- **0.3** `middleware.ts` → `proxy.ts` (export renamed, `tsconfig` + doc refs updated; deprecation warning gone). ✓
+- **0.4** 61 legacy migrations → `supabase/_legacy_migrations/` + `supabase/README.md` governance runbook. ✓
+- **0.5** browserslist refreshed. ✓
+- **0.6** GitHub Actions CI (`quality` + `audit` jobs); audit gates on prod deps only. ✓
+
+### ✅ Phase 1 (partial) — repo guardrails wired
+
+- **Branch protection on `main`** (via API): required checks `Typecheck / Lint / Test / Build` + `Dependency audit`; `strict:false`, `enforce_admins:false`. ✓
+- **Auto-merge** enabled at repo level (`allow_auto_merge:true`) and used to land PR #17. ✓
+- **Still open in Phase 1:** 1.1 env validation, 1.2 Playwright smoke, 1.3 Dependabot, 1.4 pre-commit. Optional: flip `strict:true` and add "require PR before merging" to fully close direct-push to `main`.
+
+### ▶ Next up
+Phase 2 (security/RLS/storage — approval-gated for DB) or Phase 7.2 (error boundaries, low-risk). See below.
+
+---
+
+## Phase 0 — Immediate safety checks (no runtime/UX/DB change) — ✅ DONE (PR #17)
 
 ### 0.1 Untrack `.env`
 - **Objective:** stop tracking `.env`; keep `.env.example`.
