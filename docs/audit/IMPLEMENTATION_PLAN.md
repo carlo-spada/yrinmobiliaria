@@ -28,8 +28,24 @@ All Phase 0 tasks shipped:
 - **Dependabot alerts + security updates** activados vía API (carril instantáneo ante avisos GHSA). ✓
 - **Diferido:** 1.2 Playwright contra preview (necesita infra de preview/secrets externos); 1.4 pre-commit husky/lint-staged (añade `prepare` a `npm ci` en la ruta de deploy; opcional y CI ya hace lint). Opcional: `strict:true` + "require PR before merging" para cerrar el push directo a `main`.
 
+### ✅ Phase 1 follow-up — ESLint alineado con Next (PR [#22](https://github.com/carlo-spada/yrinmobiliaria/pull/22))
+- `@next/eslint-plugin-next` (flat, `recommended`) reemplaza a `eslint-plugin-react-refresh` (artefacto de Vite, falso positivo en App Router). 37 warnings de ruido → 0 errores + 6 warnings de señal real (`@next/next/no-img-element`, pertenecen a la Fase 4.4).
+
+### ✅ Phase 2 — DONE (PRs [#23](https://github.com/carlo-spada/yrinmobiliaria/pull/23) DB, [#24](https://github.com/carlo-spada/yrinmobiliaria/pull/24) edge+cliente, merged 2026-06-28)
+
+Cambios de DB autorizados por el owner para esta fase; migraciones aplicadas vía Supabase MCP; 5 edge functions re-desplegadas (modo "ask" del clasificador del harness).
+
+- **2.1 RLS perf+correctness** ✓ — wrap `(select public.is_X((select auth.uid())))` + una sola política permisiva por (tabla, acción). Advisors `auth_rls_initplan` 28→0 y `multiple_permissive_policies` 40→0; smoke test como anon (lee público, deniega privado). Migraciones `0004`/`0005`; `policies.sql` actualizado.
+- **2.2 Index pack** ✓ — 10 índices FK (`0003`) + drop de `profiles_directory_idx` no usado (`0006`); `unindexed_foreign_keys` 10→0.
+- **2.3 Email escaping** ✓ — `escapeHtml`/`stripHeader` en `submit-contact`/`submit-schedule-visit`.
+- **2.4 Upload MIME sniffing** ✓ — verificación de magic bytes + sanitización de `imageId` en `upload-property-image`.
+- **2.5 Magic-link + invite atómico** ✓ — magic link desde `SITE_URL` (server-side) + claim atómico en `send/accept-agent-invitation`.
+- **2.6 Anti-abuso** ✓ — honeypot + rate-limit en DB (`rate_limit_events`, `0007`) + Turnstile (componente cliente + verificación edge tras el flag `TURNSTILE_ENFORCE`).
+- **2.7 Revoke EXECUTE** ✓ — verificado empíricamente que **rompe RLS** (los helpers se evalúan como el rol que consulta, anon incluido) → **riesgo aceptado documentado** en `policies.sql`. Auth leaked-password protection **diferido** (requiere plan Pro).
+- **Pendiente del owner:** site key de Turnstile en Vercel **Preview**; `TURNSTILE_ENFORCE=true` (Supabase secret) para activar la verificación end-to-end (honeypot + rate-limit ya activos).
+
 ### ▶ Next up
-Phase 2 (security/RLS/storage — approval-gated for DB) or Phase 7.2 (error boundaries, low-risk). See below.
+Phase 3 (governance de migraciones), Phase 4 (perf/caching), Phase 5 (SEO i18n), Phase 6 (analytics), Phase 7 (refactors — 7.2 error boundaries es de bajo riesgo). Ver abajo.
 
 ---
 
@@ -87,15 +103,15 @@ Phase 2 (security/RLS/storage — approval-gated for DB) or Phase 7.2 (error bou
 
 ---
 
-## Phase 2 — Security / RLS / storage hardening (approval required for DB)
+## Phase 2 — Security / RLS / storage hardening — ✅ DONE (PRs #23, #24)
 
-- **2.1 RLS perf + correctness (M1):** wrap `auth.*()`/`is_admin()` in `(select …)`; consolidate overlapping permissive SELECT policies. Files: `policies.sql` + `supabase/manual/NNNN_*.sql`. Risk Medium. Effort M. Acceptance: advisors `auth_rls_initplan`/`multiple_permissive_policies` cleared; RLS behavior unchanged (test as anon/user/agent/admin). Rollback: re-apply prior policy defs.
-- **2.2 Index pack (M2):** add covering indexes for hot FKs (`scheduled_visits.agent_id`, `contact_inquiries.assigned_to_agent`, `user_favorites.property_id`, + remaining). Drop 2 unused indexes. Files: `supabase/manual/NNNN_*.sql`. Risk Low. Effort S.
-- **2.3 Email escaping (M3):** HTML-escape interpolated user fields; strip CR/LF from header-bound values. Files: `submit-contact`, `submit-schedule-visit`. Risk Low. Effort S.
-- **2.4 Upload MIME sniffing (M4):** verify magic bytes; ignore client `contentType`; sanitize `imageId`. Files: `upload-property-image`. Risk Medium. Effort M.
-- **2.5 Magic link from `SITE_URL` (M5)** + atomic invite-accept (M6). Files: `send-agent-invitation`, `accept-agent-invitation`. Risk Medium. Effort M.
-- **2.6 Public-form abuse (H4):** DB-side rate limit + Turnstile/honeypot. Files: edge fns + new table/policy + client forms. Risk Medium. Effort M.
-- **2.7 Revoke EXECUTE on RPC-exposed helpers; enable Auth leaked-password protection (dashboard).** Risk Low. Effort S. Approval required.
+- **2.1 RLS perf + correctness (M1):** ✅ wrapped `auth.*()`/`is_*()` as `(select public.is_X((select auth.uid())))`; consolidated overlapping permissive policies (1 per table+action; `FOR ALL` admin split into I/U/D). Advisors `auth_rls_initplan`/`multiple_permissive_policies` → 0. `policies.sql` + `manual/0004`,`0005`. Verified via anon smoke test.
+- **2.2 Index pack (M2):** ✅ 10 covering FK indexes (`manual/0003`) + dropped unused `profiles_directory_idx` (`manual/0006`). `unindexed_foreign_keys` → 0.
+- **2.3 Email escaping (M3):** ✅ `escapeHtml` interpolated fields + `stripHeader` (CR/LF) on `submit-contact`, `submit-schedule-visit`. Deployed.
+- **2.4 Upload MIME sniffing (M4):** ✅ magic-byte sniff (jpeg/png/webp), ignore client `contentType`, sanitize `imageId` in `upload-property-image`. Deployed.
+- **2.5 Magic link from `SITE_URL` (M5) + atomic invite-accept (M6):** ✅ server-side `SITE_URL` link in `send-agent-invitation`; atomic claim (`UPDATE … WHERE accepted_at IS NULL`) + un-claim compensation in `accept-agent-invitation`. Deployed.
+- **2.6 Public-form abuse (H4):** ✅ DB rate-limit (`rate_limit_events`, `manual/0007`) + honeypot + Turnstile (client `Turnstile` component + edge verify behind `TURNSTILE_ENFORCE` flag).
+- **2.7 Revoke EXECUTE on RPC helpers:** ✅ verified empirically that revoke **breaks RLS** (helpers evaluated as the querying role) → **accepted-risk, documented** in `policies.sql`. Auth leaked-password protection: ⏸ **deferred (requires Supabase Pro)**.
 
 ---
 

@@ -1,6 +1,6 @@
 # Production Readiness Checklist — YR Inmobiliaria
 
-**Last Updated:** June 27, 2026
+**Last Updated:** June 28, 2026
 
 Use this checklist before going live. Keep docs lean (max 5 files) and stamp dates on edits.
 
@@ -86,8 +86,12 @@ Use this checklist before going live. Keep docs lean (max 5 files) and stamp dat
 - [ ] Environment variables set correctly
 - [ ] No API keys in code
 - [ ] CORS configured properly
-- [ ] Input validation on all forms
-- [ ] XSS protection implemented
+- [x] Input validation on all forms (Zod en cliente + validación server-side en edge functions)
+- [x] XSS protection implemented (escape HTML de valores de usuario en los emails; React escapa por defecto en el cliente) — Phase 2.3
+- [x] Hardening de formularios públicos: honeypot + rate-limit persistente en DB; Turnstile activable con `TURNSTILE_ENFORCE=true` — Phase 2.6
+- [x] RLS endurecido (deny-by-default; una política permisiva por acción; helpers init-planeados) — Phase 2.1
+- [x] Upload de imágenes: verificación de magic bytes + sanitización de la clave de objeto — Phase 2.4
+- [x] Invitaciones: magic link desde `SITE_URL` (no client origin) + aceptación atómica — Phase 2.5
 
 ---
 

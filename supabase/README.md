@@ -14,10 +14,11 @@
 
 **`_legacy_migrations/` is dead Lovable history** — kept only for archaeology. It does **not** reflect the live DB and must never be applied. The live database was rebuilt from a clean baseline; `supabase migrations list` on the live project shows the `20260619…` clean baseline (4 migrations), not these 61 files. **Do not run `supabase db push`** against this tree.
 
-## Live vs repo (as of 2026-06-27)
+## Live vs repo (as of 2026-06-28)
 
-- Live migrations: 4 (`clean_single_tenant_schema`, `rls_policies_role_based`, `storage_property_images_bucket`, `storage_drop_broad_read_policy`).
-- RLS enabled on all 12 public tables; 37 policies. No privilege-escalation path (only `superadmin` grants admin/superadmin).
+- Live baseline: 4 migrations (`clean_single_tenant_schema`, `rls_policies_role_based`, `storage_property_images_bucket`, `storage_drop_broad_read_policy`).
+- **Phase 2 hardening aplicado** vía MCP (`manual/0003`–`0007`): índices de cobertura para FKs, RLS perf + consolidación (`(select …)` initplan + una sola política permisiva por acción), drop del índice no usado `profiles_directory_idx`, y la tabla `rate_limit_events`. Advisors de performance `auth_rls_initplan` / `multiple_permissive_policies` / `unindexed_foreign_keys` → **0**.
+- RLS habilitado en todas las tablas públicas (incl. la nueva `rate_limit_events`, deny-all → solo service_role). Sin ruta de escalada de privilegios (solo `superadmin` otorga admin/superadmin). Los lints `0028/0029` (helpers SECURITY DEFINER) son **riesgo aceptado** documentado en `policies.sql` (revocar EXECUTE rompe RLS).
 
 ## How to apply a DB change (runbook)
 
@@ -32,7 +33,7 @@
 
 ## Numbering
 
-`manual/` scripts are numbered sequentially: `0001_…`, `0002_…`. Current highest: `0002_advisor_security_hardening.sql`. Next change starts at `0003_`.
+`manual/` scripts are numbered sequentially: `0001_…`, `0002_…`. Current highest: `0007_phase2_rate_limit.sql` (Phase 2). Next change starts at `0008_`.
 
 ## Edge function `verify_jwt` matrix (`config.toml`)
 

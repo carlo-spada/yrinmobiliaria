@@ -2,7 +2,7 @@
 
 > Build with intent; keep the repo lean; ship only after quality gates pass.
 
-**Last Updated:** June 27, 2026
+**Last Updated:** June 28, 2026
 
 ---
 
@@ -32,7 +32,7 @@ git stash push -m "WIP before sync" && git pull origin main
 - **TypeScript strict:** Avoid `any`, respect React hook rules, keep props typed. `next build` runs typecheck (no `ignoreBuildErrors`).
 - **Maps:** React Leaflet, client-side. Validate Oaxaca bounds (lat 15.6–18.7, lng -98.6 to -93.8).
 - **Assets:** Optimized AVIF/WebP in `/public` via `ResponsiveImage`. No large raw uploads.
-- **Secrets:** Public client config is `NEXT_PUBLIC_*` (safe to commit). Server secrets (`RESEND_API_KEY`, service role) live as Supabase Function secrets / Vercel env — never commit them.
+- **Secrets:** Public client config is `NEXT_PUBLIC_*` (safe to commit; incl. `NEXT_PUBLIC_TURNSTILE_SITE_KEY`). Server secrets (`RESEND_API_KEY`, service role, `TURNSTILE_SECRET_KEY`, `TURNSTILE_ENFORCE`) live as Supabase Function secrets / Vercel env — never commit them.
 
 ---
 
@@ -94,9 +94,9 @@ proxy.ts
 - Route targets: admin → `/admin`, agent → `/agent/dashboard`, user → `/cuenta`.
 
 ### Database (Supabase, single-tenant)
-- `users` / `profiles` / `properties` / `property_images` / `agent_invitations` / `scheduled_visits` / `contact_inquiries` / `service_zones` / `site_settings` / `role_assignments` …
+- `users` / `profiles` / `properties` / `property_images` / `agent_invitations` / `scheduled_visits` / `contact_inquiries` / `service_zones` / `site_settings` / `role_assignments` / `rate_limit_events` (anti-abuso; RLS deny-all, solo service_role) …
 - No `organizations` / `organization_id` (single-tenant). RLS is role-based; storage bucket `property-images` is public-read, staff-write.
-- **Edge functions (6):** `submit-contact`, `submit-schedule-visit`, `optimize-property-image`, `upload-property-image`, `send-agent-invitation`, `accept-agent-invitation`. `verify_jwt` per function is set in `supabase/config.toml`; functions that are `verify_jwt=false` (upload-property-image, accept-agent-invitation, the two public forms) do their own auth.
+- **Edge functions (6):** `submit-contact`, `submit-schedule-visit`, `optimize-property-image`, `upload-property-image`, `send-agent-invitation`, `accept-agent-invitation`. `verify_jwt` per function is set in `supabase/config.toml`; functions that are `verify_jwt=false` (upload-property-image, accept-agent-invitation, the two public forms) do their own auth. Los formularios públicos (`submit-contact`/`submit-schedule-visit`) aplican honeypot + rate-limit en DB (`rate_limit_events`) + verificación Turnstile (activable con `TURNSTILE_ENFORCE=true`); el email escapa todo valor de usuario.
 - The stale `supabase/migrations/` tree is **Lovable legacy and not the source of truth** — `schema.sql` + `policies.sql` + `supabase/manual/*.sql` are.
 
 ---
