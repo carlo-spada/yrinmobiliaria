@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { validateSupabaseEnv } from '@/lib/supabase-validation';
 
 // Re-export for backwards compatibility
-// eslint-disable-next-line react-refresh/only-export-components
 export { validateSupabaseEnv };
 
 /**
