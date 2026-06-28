@@ -18,7 +18,7 @@
 - **Rollback:** `git add -f .env`.
 
 ### 0.2 Pin Node runtime
-- **Objective:** prevent runtime drift (Next 16 needs ≥20.9).
+- **Objective:** prevent runtime drift. Next 16 needs ≥20.9, but the test toolchain (`jsdom@27`/`parse5`) needs `require(ESM)`, unflagged only in Node ≥20.19 / ≥22.12 — so `engines` = `>=20.19` and `.nvmrc` = `22` (current LTS; avoids the deprecated-Node-20 Actions-runner warning).
 - **Files:** `package.json` (`engines`), new `.nvmrc`.
 - **Risk:** Low. **Priority:** High. **Effort:** S.
 - **Acceptance:** `engines.node` set; `.nvmrc` present; build unaffected.
@@ -45,7 +45,7 @@
 ### 0.6 GitHub Actions CI
 - **Objective:** gate every PR.
 - **Files:** `.github/workflows/ci.yml`.
-- **Steps:** `npm ci` → `tsc --noEmit` → `eslint .` → `vitest run` → `next build` → `npm audit --audit-level=high` (non-blocking).
+- **Steps:** `npm ci` → `tsc --noEmit` → `eslint .` → `vitest run` → `next build`; separate `audit` job gates on `npm audit --omit=dev --audit-level=high` (prod deps only; dev-toolchain vulns informational).
 - **Risk:** Low. **Priority:** Critical. **Effort:** S.
 - **Acceptance:** workflow green on the PR.
 - **Rollback:** delete workflow.

@@ -128,7 +128,7 @@ Stack current and compatible (Next 16.2.9 / React 19.2.1 / TS 5.9 / Tailwind 4.1
 
 ## 12. CI/CD review
 
-- None. Recommend GitHub Actions: `npm ci` → `tsc --noEmit` → `eslint` → `vitest run` → `next build` → `npm audit --audit-level=high` (non-blocking). Add Node pinning + `.nvmrc`. Optional Playwright smoke against a preview URL.
+- None. Recommend GitHub Actions: `npm ci` → `tsc --noEmit` → `eslint` → `vitest run` → `next build`, plus an `audit` job gating on `npm audit --omit=dev --audit-level=high` (prod deps only). Add Node pinning + `.nvmrc` (Node 22; `engines >=20.19` for `require(ESM)`). Optional Playwright smoke against a preview URL.
 
 ---
 

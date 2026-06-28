@@ -48,10 +48,9 @@ jobs:
         run: npm run build
 
   audit:
-    name: Dependency audit (non-blocking)
+    name: Dependency audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -59,5 +58,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: npm audit (high+)
-        run: npm audit --audit-level=high
+      # Gate: fail only on high/critical vulnerabilities in PRODUCTION dependencies.
+      # Dev-only toolchain vulns (vite, ws via vitest) must not block the pipeline.
+      - name: Production dependency audit (high+)
+        run: npm audit --omit=dev --audit-level=high
+      # Informational: full audit incl. dev deps; never fails the build.
+      - name: Full dependency audit (informational)
+        run: npm audit --audit-level=moderate || true

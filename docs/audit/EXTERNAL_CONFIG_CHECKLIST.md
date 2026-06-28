@@ -8,7 +8,7 @@
 ## Vercel
 
 - [ ] Project → General: framework preset (Next.js), build command (`next build`), output, install command (`npm ci`).
-- [ ] Node.js version setting (should match `.nvmrc` / `engines`, ≥ 20.9).
+- [ ] Node.js version setting (should match `.nvmrc` = 22; `engines` requires ≥ 20.19 — the test toolchain `jsdom@27`/`parse5` needs `require(ESM)`, unflagged only in Node ≥ 20.19 / ≥ 22.12).
 - [ ] Environment variables — **names only** (confirm presence, not values):
   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_PROJECT_ID`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`, `NEXT_PUBLIC_WHATSAPP_NUMBER`.
   - Confirm **no** `SERVICE_ROLE` / `RESEND_API_KEY` is set as a public (`NEXT_PUBLIC_*`) var.
