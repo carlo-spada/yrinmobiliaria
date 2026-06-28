@@ -2,12 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type ReactNode } from 'react';
 
+import { Navigate } from '@/components/nav/Navigate';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole, type UserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import { Navigate, useLocation, useNavigate } from '@/lib/router-compat';
 import { logger } from '@/utils/logger';
 
 import { Button } from '../ui/button';
@@ -17,26 +18,32 @@ import { PageLoader } from '../ui/page-loader';
 /**
  * Guards de ruta nativos para el grupo privado de Next (App Router).
  *
- * Son la versión "sin react-router" de RouteAccessGuard + ProfileCompletionGuard:
- * usan el shim @/lib/router-compat (next/navigation) en lugar de react-router-dom,
- * por lo que funcionan en páginas Next nativas sin BrowserRouter. La isla legacy
- * (admin, durante el port incremental) conserva sus propios guards de react-router
- * hasta que se elimine; estos guards la reemplazan ruta a ruta.
+ * Usan `next/navigation` (usePathname/useSearchParams/useRouter) y el componente
+ * `Navigate` (@/components/nav/Navigate) directamente. Se montan a nivel de
+ * layout de ruta en `app/(app)/<group>/layout.tsx`.
  */
 
 const buildAuthRedirect = (pathname: string, search: string) =>
   `/auth?redirect=${encodeURIComponent(`${pathname}${search}`)}`;
 
+// `useSearchParams()` de Next devuelve los params en modo lectura; los
+// serializamos al formato `?a=b` que espera buildAuthRedirect.
+const toSearch = (sp: { toString(): string }): string => {
+  const s = sp.toString();
+  return s ? `?${s}` : '';
+};
+
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
 
   if (loading) {
     return <PageLoader />;
   }
 
   if (!user) {
-    return <Navigate to={buildAuthRedirect(location.pathname, location.search)} replace />;
+    return <Navigate to={buildAuthRedirect(pathname, toSearch(searchParams))} replace />;
   }
 
   return <>{children}</>;
@@ -55,14 +62,15 @@ export function RequireRole({
 }) {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
-  const location = useLocation();
+  const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
 
   if (authLoading || roleLoading) {
     return <PageLoader />;
   }
 
   if (!user) {
-    return <Navigate to={buildAuthRedirect(location.pathname, location.search)} replace />;
+    return <Navigate to={buildAuthRedirect(pathname, toSearch(searchParams))} replace />;
   }
 
   if (!allowedRoles.includes(role)) {
@@ -90,8 +98,9 @@ export function RequireRole({
 export function RequireStaff({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { isStaff, role, loading: roleLoading } = useUserRole();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   if (authLoading || roleLoading) {
     return (
@@ -105,7 +114,7 @@ export function RequireStaff({ children }: { children: ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to={buildAuthRedirect(location.pathname, location.search)} replace />;
+    return <Navigate to={buildAuthRedirect(pathname, toSearch(searchParams))} replace />;
   }
 
   if (!isStaff) {
@@ -127,10 +136,10 @@ export function RequireStaff({ children }: { children: ReactNode }) {
               Si crees que deberías tener acceso, contacta al administrador principal.
             </p>
             <div className="flex gap-2">
-              <Button onClick={() => navigate('/')} variant="default">
+              <Button onClick={() => router.push('/')} variant="default">
                 Ir al Inicio
               </Button>
-              <Button onClick={() => navigate('/cuenta')} variant="outline">
+              <Button onClick={() => router.push('/cuenta')} variant="outline">
                 Mi Cuenta
               </Button>
             </div>
@@ -150,7 +159,8 @@ export function RequireStaff({ children }: { children: ReactNode }) {
 export function RequireCompleteProfile({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
-  const location = useLocation();
+  const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
   const shouldEnforceCompletion = !!user && role === 'agent';
 
   const {
@@ -187,7 +197,7 @@ export function RequireCompleteProfile({ children }: { children: ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to={buildAuthRedirect(location.pathname, location.search)} replace />;
+    return <Navigate to={buildAuthRedirect(pathname, toSearch(searchParams))} replace />;
   }
 
   if (!shouldEnforceCompletion) {

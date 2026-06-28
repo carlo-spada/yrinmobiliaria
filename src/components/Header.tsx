@@ -1,4 +1,6 @@
 import { Calendar, ChevronDown, Heart, Mail, MapPin, Menu, Phone, X } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { lazy, Suspense, useEffect, useState } from 'react';
 
 
@@ -13,7 +15,6 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Link, useLocation } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 import { LanguageSelector } from './LanguageSelector';
@@ -33,7 +34,7 @@ const PublicMobileAccountSection = lazy(() =>
 function HeaderActionsFallback({ favoritesLabel, signInLabel }: { favoritesLabel: string; signInLabel: string }) {
   return (
     <>
-      <Link to="/favoritos" className="hidden md:block relative">
+      <Link href="/favoritos" className="hidden md:block relative">
         <Button
           variant="ghost"
           size="icon"
@@ -43,7 +44,7 @@ function HeaderActionsFallback({ favoritesLabel, signInLabel }: { favoritesLabel
           <Heart className="h-5 w-5" aria-hidden="true" />
         </Button>
       </Link>
-      <Link to="/auth" className="hidden md:block">
+      <Link href="/auth" className="hidden md:block">
         <Button variant="outline" size="sm">
           {signInLabel}
         </Button>
@@ -57,7 +58,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDeferredActions, setShowDeferredActions] = useState(false);
   const { t, language } = useLanguage();
-  const location = useLocation();
+  const pathname = usePathname() ?? '';
   const companyName = 'YR Inmobiliaria';
 
   useEffect(() => {
@@ -85,7 +86,7 @@ export function Header() {
     { label: t.propertyTypes.commercial, value: 'local', icon: '🏪' },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   return (
     <header
@@ -99,7 +100,7 @@ export function Header() {
       <nav className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
               <span className="text-2xl font-bold text-primary-foreground">
                 {String(companyName).split(' ')[0].substring(0, 2).toUpperCase()}
@@ -113,7 +114,7 @@ export function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
             <Link
-              to="/"
+              href="/"
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors rounded-md',
                 isActive('/')
@@ -141,7 +142,7 @@ export function Header() {
                           {propertyTypes.map((type) => (
                             <Link
                               key={type.value}
-                              to={`/propiedades?type=${type.value}`}
+                              href={`/propiedades?type=${type.value}`}
                               className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors group"
                             >
                               <span className="text-2xl">{type.icon}</span>
@@ -156,7 +157,7 @@ export function Header() {
                       </div>
                       <Separator />
                       <Link
-                        to="/propiedades"
+                        href="/propiedades"
                         className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors group"
                       >
                         <span className="text-sm font-medium text-foreground group-hover:text-primary">
@@ -171,7 +172,7 @@ export function Header() {
             </NavigationMenu>
 
             <Link
-              to="/mapa"
+              href="/mapa"
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors rounded-md',
                 isActive('/mapa')
@@ -183,7 +184,7 @@ export function Header() {
             </Link>
 
             <Link
-              to="/agentes"
+              href="/agentes"
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors rounded-md',
                 isActive('/agentes')
@@ -195,7 +196,7 @@ export function Header() {
             </Link>
 
             <Link
-              to="/nosotros"
+              href="/nosotros"
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors rounded-md',
                 isActive('/nosotros')
@@ -207,7 +208,7 @@ export function Header() {
             </Link>
 
             <Link
-              to="/contacto"
+              href="/contacto"
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors rounded-md',
                 isActive('/contacto')
@@ -241,7 +242,7 @@ export function Header() {
 
             <LanguageSelector />
             
-            <Link to="/agendar" className="hidden md:block">
+            <Link href="/agendar" className="hidden md:block">
               <Button size="sm" className="gap-2">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
                 {t.header.scheduleVisit}
@@ -278,7 +279,7 @@ export function Header() {
                   {/* Mobile Navigation Links */}
                   <div className="flex flex-col gap-2">
                     <Link
-                      to="/"
+                      href="/"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
                         'px-4 py-3 text-base font-medium rounded-lg transition-colors',
@@ -297,7 +298,7 @@ export function Header() {
                       {propertyTypes.map((type) => (
                         <Link
                           key={type.value}
-                          to={`/propiedades?type=${type.value}`}
+                          href={`/propiedades?type=${type.value}`}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2 ml-4 text-sm rounded-lg hover:bg-muted transition-colors"
                         >
@@ -306,7 +307,7 @@ export function Header() {
                         </Link>
                       ))}
                       <Link
-                        to="/propiedades"
+                        href="/propiedades"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 ml-4 text-sm rounded-lg hover:bg-muted transition-colors font-medium"
                       >
@@ -315,7 +316,7 @@ export function Header() {
                     </div>
 
                     <Link
-                      to="/mapa"
+                      href="/mapa"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
                         'px-4 py-3 text-base font-medium rounded-lg transition-colors',
@@ -328,7 +329,7 @@ export function Header() {
                     </Link>
 
                     <Link
-                      to="/nosotros"
+                      href="/nosotros"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
                         'px-4 py-3 text-base font-medium rounded-lg transition-colors',
@@ -341,7 +342,7 @@ export function Header() {
                     </Link>
 
                     <Link
-                      to="/contacto"
+                      href="/contacto"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
                         'px-4 py-3 text-base font-medium rounded-lg transition-colors',
@@ -354,7 +355,7 @@ export function Header() {
                     </Link>
 
                     <Link
-                      to="/agentes"
+                      href="/agentes"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
                         'px-4 py-3 text-base font-medium rounded-lg transition-colors',
@@ -373,12 +374,12 @@ export function Header() {
                   <Suspense
                     fallback={
                       <div className="space-y-2">
-                        <Link to="/favoritos" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Link href="/favoritos" onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="outline" className="w-full">
                             {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
                           </Button>
                         </Link>
-                        <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="outline" className="w-full">
                             {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
                           </Button>
@@ -394,7 +395,7 @@ export function Header() {
                   <Separator />
 
                   {/* Schedule Visit CTA */}
-                  <Link to="/agendar" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link href="/agendar" onClick={() => setIsMobileMenuOpen(false)}>
                     <Button className="w-full gap-2">
                       <Calendar className="h-4 w-4" />
                       {t.header.scheduleVisit}

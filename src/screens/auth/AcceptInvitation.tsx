@@ -1,4 +1,5 @@
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -9,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { logger } from "@/utils/logger";
 
 const passwordSchema = z.string()
@@ -29,8 +29,8 @@ interface InvitationPreview {
 }
 
 export default function AcceptInvitation() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get("token");
 
   const [invitation, setInvitation] = useState<InvitationPreview | null>(null);
@@ -102,7 +102,7 @@ export default function AcceptInvitation() {
       if (signInError) throw signInError;
 
       toast.success("¡Invitación aceptada! Completa tu perfil para comenzar.");
-      navigate("/onboarding/complete-profile");
+      router.push("/onboarding/complete-profile");
     } catch (err) {
       logger.error("Error accepting invitation:", err);
       const errorMessage = err instanceof Error ? err.message : "Error al aceptar la invitación";
@@ -128,7 +128,7 @@ export default function AcceptInvitation() {
             <XCircle className="h-16 w-16 mx-auto text-destructive" />
             <h1 className="text-2xl font-bold">Invitación no válida</h1>
             <p className="text-muted-foreground">{error}</p>
-            <Button onClick={() => navigate("/")} className="w-full">
+            <Button onClick={() => router.push("/")} className="w-full">
               Volver al inicio
             </Button>
           </div>

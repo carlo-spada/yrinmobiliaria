@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, CheckCircle, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -18,7 +19,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "@/lib/router-compat";
 import { logger } from "@/utils/logger";
 
 
@@ -62,7 +62,7 @@ const STEP_FIELDS: Record<number, (keyof ProfileFormData)[]> = {
 export default function CompleteProfile() {
   const { user, profile } = useAuth();
   const { zones } = useServiceZones();
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,7 +119,7 @@ export default function CompleteProfile() {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
 
       toast.success("¡Perfil completado exitosamente!");
-      navigate("/agent/dashboard");
+      router.push("/agent/dashboard");
     } catch (error) {
       logger.error("Error updating profile:", error);
       toast.error("Error al completar el perfil");

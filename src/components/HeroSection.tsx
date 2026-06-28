@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 
@@ -7,12 +8,11 @@ import { Select } from '@/components/ui/select-enhanced';
 import { Slider } from '@/components/ui/slider';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useServiceZones } from '@/hooks/useServiceZones';
-import { useNavigate } from '@/lib/router-compat';
 import { toLogPrice, formatMXN, MIN_PRICE, MAX_PRICE } from '@/utils/priceSliderHelpers';
 
 export function HeroSection() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { zones: dbZones } = useServiceZones();
 
   // Logarithmic slider values (0-100 range)
@@ -71,7 +71,7 @@ export function HeroSection() {
       params.set('maxPrice', priceRange[1].toString());
     }
     
-    navigate(`/propiedades?${params.toString()}`);
+    router.push(`/propiedades?${params.toString()}`);
   };
 
   return (

@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FileLock2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -14,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from '@/lib/router-compat';
 import { logger } from '@/utils/logger';
 
 const dataRightsSchema = z.object({
@@ -30,7 +30,7 @@ type DataRightsFormData = z.infer<typeof dataRightsSchema>;
 export default function DataRights() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const tr = t.legal.dataRights;
 
@@ -75,7 +75,7 @@ export default function DataRights() {
       }
 
       toast({ title: tr.successTitle, description: tr.successMessage });
-      navigate('/');
+      router.push('/');
     } catch (error) {
       logger.error('ARCO request submission failed', error);
       toast({

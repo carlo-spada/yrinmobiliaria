@@ -1,10 +1,9 @@
 import { Building2, Plus } from 'lucide-react';
-
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Link } from '@/lib/router-compat';
 
 interface EmptyPropertyListProps {
   message?: string;
@@ -56,7 +55,7 @@ export function EmptyPropertyList({
 
         {showAdminAction && (
           <div className="flex gap-3">
-            <Link to="/admin/properties">
+            <Link href="/admin/properties">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 {text.addProperty}

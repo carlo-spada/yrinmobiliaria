@@ -14,6 +14,7 @@ import {
   Maximize2,
   LandPlot,
 } from "lucide-react";
+import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
@@ -34,8 +35,8 @@ import { Skeleton } from "@/components/ui/skeleton-loader";
 import { Slider } from "@/components/ui/slider";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProperties } from "@/hooks/useProperties";
+import { useSearchParamsState } from '@/hooks/useSearchParamsState';
 import { useServiceZones } from "@/hooks/useServiceZones";
-import { useSearchParams, Link } from '@/lib/router-compat';
 import { Property, PropertyType } from "@/types/property";
 import { logger } from "@/utils/logger";
 import { filterPropertiesByMap, isValidCoordinate, normalizeCoord } from "@/utils/mapUtils";
@@ -137,7 +138,7 @@ function FlyToLocation({
 
 export default function MapView() {
   const { language, t } = useLanguage();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParamsState();
   const { data: allProperties = [], isLoading } = useProperties({ featured: false });
   const { zones: dbZones } = useServiceZones();
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
@@ -461,7 +462,7 @@ export default function MapView() {
                     : language === "es" ? "Renta" : "Rent"}
                 </Badge>
               </div>
-              <Link to={`/propiedad/${property.id}`}>
+              <Link href={`/propiedad/${property.id}`}>
                 <Button variant="primary" size="sm" className="w-full">
                   {language === "es" ? "Ver detalles" : "View details"}
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -507,7 +508,7 @@ export default function MapView() {
                 : "We couldn't find properties with valid locations at this time."}
             </p>
             <Button asChild>
-              <Link to="/propiedades">
+              <Link href="/propiedades">
                 {language === "es" ? "Ver todas las propiedades" : "View all properties"}
               </Link>
             </Button>

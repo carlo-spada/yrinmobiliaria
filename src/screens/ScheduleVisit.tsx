@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, Check, Clock } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -21,7 +22,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { useSchedulableProperties } from '@/hooks/useProperties';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, useSearchParams } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
 
@@ -40,10 +40,10 @@ const scheduleSchema = z.object({
 type ScheduleFormData = z.infer<typeof scheduleSchema>;
 
 export default function ScheduleVisit() {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { data: properties = [] } = useSchedulableProperties();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -217,7 +217,7 @@ export default function ScheduleVisit() {
                   <CalendarIcon className="w-5 h-5" />
                   {t.schedule?.addToCalendar || 'Agregar a Google Calendar'}
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => navigate('/propiedades')}>
+                <Button variant="outline" size="lg" onClick={() => router.push('/propiedades')}>
                   {t.schedule?.backToProperties || 'Ver más propiedades'}
                 </Button>
               </div>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { MapPin, Languages } from 'lucide-react';
+import Link from 'next/link';
 
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,7 +9,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
 import { PublicAgent } from '@/hooks/usePublicAgents';
-import { Link } from '@/lib/router-compat';
 
 
 interface AgentCardProps {
@@ -44,7 +44,7 @@ export function AgentCard({ agent, propertiesCount = 0 }: AgentCardProps) {
     .substring(0, 2);
 
   return (
-    <Link to={`/agentes/${slug}`}>
+    <Link href={`/agentes/${slug}`}>
       <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
         <Card className="group cursor-pointer transition-shadow duration-300 hover:shadow-xl h-full">
           <CardContent className="p-6 space-y-4">

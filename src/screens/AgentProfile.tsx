@@ -9,6 +9,8 @@ import {
   Calendar,
   ClipboardList,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 
 
 import { PropertyCard } from '@/components/PropertyCard';
@@ -21,7 +23,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAgentBySlug } from '@/hooks/useAgentBySlug';
 import { useProperties } from '@/hooks/useProperties';
 import { useAgentStats } from '@/hooks/usePublicAgents';
-import { useParams, useNavigate, Link } from '@/lib/router-compat';
+
 
 const levelColors = {
   junior: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
@@ -39,7 +41,7 @@ const levelLabels = {
 
 export default function AgentProfile() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { language } = useLanguage();
   const { data: agent, isLoading } = useAgentBySlug(slug || '');
   const { data: stats } = useAgentStats(agent?.id || '');
@@ -74,7 +76,7 @@ export default function AgentProfile() {
           <h1 className="text-2xl font-bold mb-4">
             {language === 'es' ? 'Agente no encontrado' : 'Agent not found'}
           </h1>
-          <Button onClick={() => navigate('/agentes')} variant="default">
+          <Button onClick={() => router.push('/agentes')} variant="default">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {language === 'es' ? 'Ver todos los agentes' : 'View all agents'}
           </Button>
@@ -101,7 +103,7 @@ export default function AgentProfile() {
         <div className="container mx-auto px-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/agentes')}
+            onClick={() => router.push('/agentes')}
             className="mb-6"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -326,7 +328,7 @@ export default function AgentProfile() {
                     : `${agent.display_name}'s Properties`}
                 </h2>
                 {agentProperties.length > 0 && (
-                  <Link to={`/propiedades?agent=${agent.id}`}>
+                  <Link href={`/propiedades?agent=${agent.id}`}>
                     <Button variant="ghost" size="sm">
                       {language === 'es' ? 'Ver todas →' : 'View all →'}
                     </Button>

@@ -1,4 +1,5 @@
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
+import Link from 'next/link';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 
 
@@ -14,7 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
-import { useSearchParams, Link } from '@/lib/router-compat';
+import { useSearchParamsState } from '@/hooks/useSearchParamsState';
 import { PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';
@@ -24,7 +25,7 @@ const ITEMS_PER_PAGE = 12;
 
 export default function Properties() {
   const { t, language } = useLanguage();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParamsState();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortByInternal] = useState<SortOption>('relevance');
   const [currentPage, setCurrentPage] = useState(1);
@@ -390,7 +391,7 @@ export default function Properties() {
                 />
 
                 <div className="flex gap-2">
-                  <Link to="/mapa">
+                  <Link href="/mapa">
                     <Button
                       variant="outline"
                       size="icon"

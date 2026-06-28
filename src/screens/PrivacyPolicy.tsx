@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Shield, Loader2, FileLock2 } from 'lucide-react';
+import Link from 'next/link';
 
 import { PageLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import { Link } from '@/lib/router-compat';
 import type { Language } from '@/types';
 
 type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
@@ -310,7 +310,7 @@ export default function PrivacyPolicy() {
               <p className="text-muted-foreground">{arcoCta.text}</p>
             </div>
             <Button asChild>
-              <Link to="/derechos-arco">{arcoCta.button}</Link>
+              <Link href="/derechos-arco">{arcoCta.button}</Link>
             </Button>
           </div>
         </Card>

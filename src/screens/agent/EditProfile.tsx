@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -16,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
-import { Link, useNavigate } from "@/lib/router-compat";
 import { logger } from "@/utils/logger";
 
 
@@ -42,7 +43,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 function EditProfileContent() {
   const { user, profile } = useAuth();
   const { zones } = useServiceZones();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -89,7 +90,7 @@ function EditProfileContent() {
       if (error) throw error;
 
       toast.success("Perfil actualizado exitosamente");
-      navigate("/agent/dashboard");
+      router.push("/agent/dashboard");
     } catch (error) {
       logger.error("Error updating profile:", error);
       toast.error("Error al actualizar el perfil");
@@ -100,7 +101,7 @@ function EditProfileContent() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <Button asChild variant="ghost" className="mb-6">
-          <Link to="/agent/dashboard" className="gap-2">
+          <Link href="/agent/dashboard" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Volver al panel
           </Link>
@@ -255,7 +256,7 @@ function EditProfileContent() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/agent/dashboard")}
+                onClick={() => router.push("/agent/dashboard")}
                 disabled={isSubmitting}
               >
                 Cancelar

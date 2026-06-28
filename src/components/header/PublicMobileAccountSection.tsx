@@ -1,12 +1,12 @@
 import { Heart, LogOut, User } from 'lucide-react';
-
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
 import { supabase } from '@/integrations/supabase/client';
-import { Link, useNavigate } from '@/lib/router-compat';
 
 interface PublicMobileAccountSectionProps {
   onNavigate?: () => void;
@@ -15,7 +15,7 @@ interface PublicMobileAccountSectionProps {
 export function PublicMobileAccountSection({
   onNavigate,
 }: PublicMobileAccountSectionProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { language } = useLanguage();
   const { user, loading } = usePublicSession();
 
@@ -29,18 +29,18 @@ export function PublicMobileAccountSection({
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     onNavigate?.();
-    navigate('/');
+    router.push('/');
   };
 
   if (loading) {
     return (
       <div className="space-y-2">
-        <Link to="/favoritos" onClick={onNavigate}>
+        <Link href="/favoritos" onClick={onNavigate}>
           <Button variant="outline" className="w-full">
             {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
           </Button>
         </Link>
-        <Link to="/auth" onClick={onNavigate}>
+        <Link href="/auth" onClick={onNavigate}>
           <Button variant="outline" className="w-full">
             {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
           </Button>
@@ -52,12 +52,12 @@ export function PublicMobileAccountSection({
   if (!user) {
     return (
       <div className="space-y-2">
-        <Link to="/favoritos" onClick={onNavigate}>
+        <Link href="/favoritos" onClick={onNavigate}>
           <Button variant="outline" className="w-full">
             {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
           </Button>
         </Link>
-        <Link to="/auth" onClick={onNavigate}>
+        <Link href="/auth" onClick={onNavigate}>
           <Button variant="outline" className="w-full">
             {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
           </Button>
@@ -79,7 +79,7 @@ export function PublicMobileAccountSection({
         </div>
       </div>
       <Link
-        to="/cuenta"
+        href="/cuenta"
         onClick={onNavigate}
         className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
       >
@@ -87,7 +87,7 @@ export function PublicMobileAccountSection({
         {language === 'es' ? 'Mi Cuenta' : 'My Account'}
       </Link>
       <Link
-        to="/favoritos"
+        href="/favoritos"
         onClick={onNavigate}
         className="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-lg hover:bg-muted transition-colors"
       >
