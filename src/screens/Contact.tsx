@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, Phone, MapPin, Clock, Facebook, Instagram, Send } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
+import { Turnstile } from '@/components/Turnstile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input-enhanced';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,9 @@ export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState<string>();
+  const [turnstileToken, setTurnstileToken] = useState('');
+  // Honeypot anti-bot: campo oculto que un humano nunca rellena.
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   // Get dynamic settings with fallbacks
   const companyPhone = getSetting('company_phone', '(951) 123-4567');
@@ -77,6 +81,8 @@ export default function Contact() {
           phone: data.phone,
           subject: data.subject,
           message: data.message,
+          company_website: honeypotRef.current?.value ?? '', // honeypot
+          turnstileToken,
         },
       });
 
@@ -262,6 +268,19 @@ export default function Contact() {
                     }}
                     error={consentError}
                   />
+
+                  {/* Honeypot: invisible para humanos; si llega con valor, el servidor descarta el envío */}
+                  <input
+                    ref={honeypotRef}
+                    type="text"
+                    name="company_website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute left-[-9999px] h-0 w-0 opacity-0"
+                  />
+
+                  <Turnstile onToken={setTurnstileToken} />
 
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                     {isSubmitting ? (t.contact?.sending || 'Enviando...') : (t.contact?.send || 'Enviar mensaje')}

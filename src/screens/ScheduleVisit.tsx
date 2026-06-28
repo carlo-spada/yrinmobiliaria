@@ -2,13 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, Check, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
+import { Turnstile } from '@/components/Turnstile';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input-enhanced';
@@ -49,6 +50,9 @@ export default function ScheduleVisit() {
   const [confirmedData, setConfirmedData] = useState<ScheduleFormData | null>(null);
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState<string>();
+  const [turnstileToken, setTurnstileToken] = useState('');
+  // Honeypot anti-bot: campo oculto que un humano nunca rellena.
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const preSelectedPropertyId = searchParams.get('propertyId');
 
@@ -101,6 +105,8 @@ export default function ScheduleVisit() {
           date: format(data.date, 'yyyy-MM-dd'),
           timeSlot: data.timeSlot,
           notes: data.notes || null,
+          company_website: honeypotRef.current?.value ?? '', // honeypot
+          turnstileToken,
         },
       });
 
@@ -424,6 +430,19 @@ export default function ScheduleVisit() {
                   }}
                   error={consentError}
                 />
+
+                {/* Honeypot: invisible para humanos; si llega con valor, el servidor descarta el envío */}
+                <input
+                  ref={honeypotRef}
+                  type="text"
+                  name="company_website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="absolute left-[-9999px] h-0 w-0 opacity-0"
+                />
+
+                <Turnstile onToken={setTurnstileToken} />
 
                 <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? (t.schedule?.scheduling || 'Agendando...') : (t.schedule?.schedule || 'Agendar visita')}
