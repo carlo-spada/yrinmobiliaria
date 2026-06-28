@@ -57,7 +57,6 @@ export const PropertyCard = memo(function PropertyCard({
   className,
   onClick,
   priority = false,
-  variants,
   agent,
 }: PropertyCardProps) {
   const { t, language } = useLanguage();
@@ -93,17 +92,14 @@ export const PropertyCard = memo(function PropertyCard({
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
-            className="w-full h-full"
+            className="relative w-full h-full"
           >
             <ResponsiveImage
               src={image}
-              variants={variants}
               alt={alt || `${title} - ${location}`}
               priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="w-full h-full object-cover"
-              width={400}
-              height={300}
             />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

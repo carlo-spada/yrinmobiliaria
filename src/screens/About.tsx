@@ -15,6 +15,7 @@ import Link from 'next/link';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -101,7 +102,9 @@ export default function About() {
         language === 'es'
           ? 'Yas es co-fundadora de YR Inmobiliaria y asesora en los Valles Centrales de Oaxaca desde 2019. Acompaña a familias e inversionistas con conocimiento local, seguimiento cercano y procesos claros.'
           : 'Yas is co-founder of YR Inmobiliaria and an advisor in Oaxaca’s Central Valleys since 2019. She guides families and investors with local insight, close follow-up, and clear processes.',
-      image: 'https://ui-avatars.com/api/?name=Yas+Ruiz&background=C85A3C&color=fff&size=200',
+      // `format=png` fuerza PNG: ui-avatars sirve SVG al fetch del optimizador
+      // (sin Accept de navegador) y next/image rechaza SVG remoto (400).
+      image: 'https://ui-avatars.com/api/?name=Yas+Ruiz&background=C85A3C&color=fff&size=200&format=png',
     },
     {
       name: 'Carlo Spada Tello',
@@ -111,7 +114,7 @@ export default function About() {
         language === 'es'
           ? 'Carlo es co-fundador y responsable de la estrategia digital y de datos. Diseña procesos claros y confiables usando tecnología e IA para decisiones mejor fundamentadas.'
           : 'Carlo is co-founder and leads digital and data strategy. He designs clearer, more reliable processes using technology and AI for better-grounded decisions.',
-      image: 'https://ui-avatars.com/api/?name=Carlo+Spada&background=2D5E4F&color=fff&size=200',
+      image: 'https://ui-avatars.com/api/?name=Carlo+Spada&background=2D5E4F&color=fff&size=200&format=png',
     },
   ];
 
@@ -236,11 +239,12 @@ export default function About() {
                 </div>
               </div>
               <div className="relative">
-                <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl">
-                  <img
+                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl">
+                  <ResponsiveImage
                     src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=600&fit=crop"
                     alt="Oaxaca"
-                    className="w-full h-full object-cover"
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-cover"
                   />
                 </div>
                 <div className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground p-6 rounded-xl shadow-lg">
@@ -308,11 +312,12 @@ export default function About() {
                 {team.map((member, index) => (
                   <Card key={index} className="overflow-hidden hover:shadow-xl transition-shadow">
                     <CardContent className="p-0">
-                      <div className="aspect-square bg-gradient-to-br from-primary/20 to-secondary/20">
-                        <img
+                      <div className="relative aspect-square bg-gradient-to-br from-primary/20 to-secondary/20">
+                        <ResponsiveImage
                           src={member.image}
                           alt={member.name}
-                          className="w-full h-full object-cover"
+                          sizes="(max-width: 768px) 100vw, 384px"
+                          className="object-cover"
                         />
                       </div>
                       <div className="p-6 space-y-3">

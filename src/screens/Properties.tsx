@@ -458,7 +458,7 @@ export default function Properties() {
                         area={property.features.constructionArea}
                         featured={property.featured}
                         status={statusMap[property.operation] || 'sale'}
-                        priority={currentPage === 1 && index < 6}
+                        priority={currentPage === 1 && index < 3}
                         agent={property.agent}
                       />
                     );
