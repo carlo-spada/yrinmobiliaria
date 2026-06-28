@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Shield, Mail, User } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -428,7 +429,7 @@ function UsersContent() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {user.photo_url ? (
-                        <img src={user.photo_url} alt={user.display_name} className="h-10 w-10 rounded-full object-cover" />
+                        <Image src={user.photo_url} alt={user.display_name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <User className="h-5 w-5 text-primary" />

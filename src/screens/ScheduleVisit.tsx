@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
+import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Turnstile } from '@/components/Turnstile';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -285,11 +286,14 @@ export default function ScheduleVisit() {
                   {selectedProperty && (
                     <div className="flex gap-4 p-4 bg-secondary/20 rounded-lg border border-border">
                       {selectedProperty.image ? (
-                        <img
-                          src={selectedProperty.image}
-                          alt={selectedProperty.title[language]}
-                          className="w-24 h-24 object-cover rounded-lg"
-                        />
+                        <div className="relative w-24 h-24 flex-shrink-0 overflow-hidden rounded-lg">
+                          <ResponsiveImage
+                            src={selectedProperty.image}
+                            alt={selectedProperty.title[language]}
+                            sizes="96px"
+                            className="object-cover"
+                          />
+                        </div>
                       ) : (
                         <div className="w-24 h-24 rounded-lg bg-muted" aria-hidden="true" />
                       )}

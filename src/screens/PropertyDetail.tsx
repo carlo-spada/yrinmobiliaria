@@ -208,10 +208,10 @@ export default function PropertyDetail() {
           <div className="max-w-6xl w-full px-4">
             <ResponsiveImage
               src={property.images[selectedImageIndex]}
-              variants={property.imageVariants?.[selectedImageIndex]?.variants}
               alt={property.title[language]}
               className="w-full h-auto max-h-[80vh] object-contain"
               priority
+              fill={false}
             />
             <p className="text-white text-center mt-4">
               {selectedImageIndex + 1} / {property.images.length}
@@ -249,9 +249,9 @@ export default function PropertyDetail() {
           >
             <ResponsiveImage
               src={property.images[selectedImageIndex]}
-              variants={property.imageVariants?.[selectedImageIndex]?.variants}
               alt={getImageAlt(selectedImageIndex)}
               className="w-full h-full object-cover"
+              sizes="(max-width: 1024px) 100vw, 1024px"
               priority
             />
             <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-md">
@@ -263,7 +263,7 @@ export default function PropertyDetail() {
               <button
                 key={index}
                 onClick={() => setSelectedImageIndex(index)}
-                className={`h-20 w-28 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-primary ${selectedImageIndex === index
+                className={`relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-primary ${selectedImageIndex === index
                     ? "ring-2 ring-primary"
                     : "opacity-70 hover:opacity-100"
                   }`}
@@ -271,9 +271,9 @@ export default function PropertyDetail() {
               >
                 <ResponsiveImage
                   src={image}
-                  variants={property.imageVariants?.[index]?.variants}
                   alt={getImageAlt(index)}
-                  className="h-full w-full object-cover rounded-md"
+                  sizes="112px"
+                  className="object-cover"
                 />
               </button>
             ))}

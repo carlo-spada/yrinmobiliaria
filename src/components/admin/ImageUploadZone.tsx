@@ -258,6 +258,9 @@ export const ImageUploadZone = ({
               key={index}
               className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-muted"
             >
+              {/* Vista previa de subida (URL blob:/temporal): next/image no optimiza
+                  blobs ni admite el fallback onError; <img> es lo correcto aquí. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={image.url}
                 alt={`Preview ${index + 1}`}

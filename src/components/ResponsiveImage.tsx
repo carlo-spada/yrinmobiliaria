@@ -1,4 +1,6 @@
-import { ImgHTMLAttributes } from 'react';
+'use client';
+
+import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
 
@@ -7,124 +9,85 @@ type ImageVariants = {
   webp: Record<number, string>;
 };
 
-interface ResponsiveImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'loading'> {
-  src?: string; // legacy single source
-  variants?: ImageVariants; // preferred: generated variants
+interface ResponsiveImageProps {
+  src?: string;
+  /**
+   * @deprecated Phase 4.4 — el optimizador de `next/image` genera el set
+   * responsive (AVIF/WebP) directamente desde `src`, así que las variantes
+   * pre-generadas ya no se usan. Se mantiene en la API para no tocar los ~11
+   * call sites que aún lo pasan; se ignora.
+   */
+  variants?: ImageVariants;
   alt: string;
   priority?: boolean;
   sizes?: string;
   className?: string;
+  /**
+   * `true` (default): la imagen LLENA el contenedor padre (object-cover). El
+   * padre DEBE estar posicionado (relative/absolute) y tener tamaño (aspect-* o
+   * alto fijo). `false`: tamaño intrínseco con `width`/`height` (p.ej. el
+   * lightbox del detalle, object-contain + h-auto).
+   */
+  fill?: boolean;
+  width?: number;
+  height?: number;
+  quality?: number;
+}
+
+const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
+
+/**
+ * Quita los parámetros de transform de las URLs de Supabase Storage. En este
+ * proyecto el endpoint `/render/image` (transform) está deshabilitado (403), así
+ * que esos params (`?width=…&format=…`) son no-op sobre `/object/public`; al
+ * removerlos, `next/image` cachea el origen por una URL limpia y estable.
+ */
+function cleanSrc(src: string): string {
+  if (src.includes('.supabase.co/storage/')) {
+    const q = src.indexOf('?');
+    return q === -1 ? src : src.slice(0, q);
+  }
+  return src;
 }
 
 /**
- * ResponsiveImage component for optimized image loading
- * - Automatically applies loading="eager" for priority images (LCP optimization)
- * - Uses loading="lazy" for non-priority images
- * - Supports custom sizes for responsive images
- * - Handles Supabase Storage URLs (framework for future transformation API)
+ * Imagen optimizada vía `next/image` (optimizador de Next/Vercel: resize
+ * responsive + AVIF/WebP + lazy + sin CLS). Modo `fill` por defecto (cubre un
+ * contenedor con tamaño definido); `fill={false}` para tamaño intrínseco.
+ * Soporta URLs de Supabase Storage y Unsplash (ver `remotePatterns`).
  */
 export function ResponsiveImage({
   src,
-  variants,
   alt,
   priority = false,
   sizes,
   className,
-  ...props
+  fill = true,
+  width,
+  height,
+  quality = 75,
 }: ResponsiveImageProps) {
-  // If variants are provided, prefer them (AVIF first, then WebP)
-  if (variants) {
-    const buildSrcSet = (record?: Record<number, string>) =>
-      record
-        ? Object.entries(record)
-            .map(([w, url]) => `${url} ${w}w`)
-            .join(', ')
-        : undefined;
+  if (!src) return null;
 
-    const avifSrcSet = buildSrcSet(variants.avif);
-    const webpSrcSet = buildSrcSet(variants.webp);
-
-    // Fallback src: pick the largest WebP if available, otherwise AVIF
-    const fallbackSrc =
-      variants.webp?.[Math.max(...Object.keys(variants.webp).map(Number))] ||
-      variants.avif?.[Math.max(...Object.keys(variants.avif).map(Number))] ||
-      '';
-
-    const defaultSizes =
-      sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
-
-    return (
-      <picture>
-        {avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={defaultSizes} />}
-        {webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={defaultSizes} />}
-        <img
-          src={fallbackSrc}
-          alt={alt}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          className={cn('transition-opacity duration-300', className)}
-          sizes={defaultSizes}
-          {...props}
-        />
-      </picture>
-    );
-  }
-
-  // Default sizes for property images
-  const defaultSizes = sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
-  
-  // Check if image is from Supabase Storage
-  const isSupabase = src ? src.includes('supabase.co/storage') : false;
-  
-  /**
-   * Generate Supabase image transformation srcSet
-   * - Preserves existing query params (e.g., signed URLs)
-   * - Multiple widths: 480, 768, 1080, 1440
-   * - WebP format for better compression
-   * - Quality: 75 for optimal balance
-   * - Uses resize=cover with calculated height for proper aspect ratio
-   * - Assumes 4:3 aspect ratio for property images (standard for listings)
-   */
-  const generateSupabaseSrcset = (url: string): string => {
-    if (!isSupabase) return '';
-    
-    const widths = [480, 768, 1080, 1440];
-    const aspectRatio = 4 / 3; // Standard property image aspect ratio
-    
-    const srcsetParts = widths.map(width => {
-      const height = Math.round(width / aspectRatio);
-      const supabaseUrl = new URL(url);
-      
-      // Preserve existing query params by only setting/overwriting transform params
-      supabaseUrl.searchParams.set('width', width.toString());
-      supabaseUrl.searchParams.set('height', height.toString());
-      supabaseUrl.searchParams.set('format', 'webp');
-      supabaseUrl.searchParams.set('quality', '75');
-      supabaseUrl.searchParams.set('resize', 'cover');
-      
-      return `${supabaseUrl.toString()} ${width}w`;
-    });
-    
-    return srcsetParts.join(', ');
+  const common = {
+    src: cleanSrc(src),
+    alt,
+    priority,
+    quality,
+    className: cn('transition-opacity duration-300', className),
   };
-  
-  const srcset = isSupabase && src ? generateSupabaseSrcset(src) : undefined;
 
-  // If no src provided, render nothing (caller error guard)
-  if (!src) {
-    return null;
+  if (fill) {
+    return <Image {...common} fill sizes={sizes || DEFAULT_SIZES} />;
   }
 
   return (
-    <img
-      src={src}
-      srcSet={srcset}
-      sizes={defaultSizes}
-      alt={alt}
-      loading={priority ? 'eager' : 'lazy'}
-      fetchPriority={priority ? 'high' : 'auto'}
-      className={cn('transition-opacity duration-300', className)}
-      {...props}
+    <Image
+      {...common}
+      width={width ?? 1600}
+      height={height ?? 1200}
+      sizes={sizes || '100vw'}
+      style={{ width: '100%', height: 'auto' }}
     />
   );
 }

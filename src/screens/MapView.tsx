@@ -433,14 +433,16 @@ export default function MapView() {
             closeOnClick={true}
           >
             <div className="w-64 p-2">
-              <ResponsiveImage
-                src={property.images[0]}
-                variants={property.imageVariants?.[0]?.variants}
-                alt={
-                  property.imagesAlt?.[0]?.[language] || property.title[language]
-                }
-                className="w-full h-32 object-cover rounded mb-2"
-              />
+              <div className="relative w-full h-32 overflow-hidden rounded mb-2">
+                <ResponsiveImage
+                  src={property.images[0]}
+                  alt={
+                    property.imagesAlt?.[0]?.[language] || property.title[language]
+                  }
+                  sizes="256px"
+                  className="object-cover"
+                />
+              </div>
               <h3 className="font-semibold text-sm mb-1">
                 {property.title[language]}
               </h3>
@@ -752,14 +754,16 @@ export default function MapView() {
                         >
                           <CardContent className="p-3">
                             <div className="flex gap-3">
-                              <ResponsiveImage
-                                src={property.images[0]}
-                                variants={property.imageVariants?.[0]?.variants}
-                                alt={
-                                  property.imagesAlt?.[0]?.[language] || property.title[language]
-                                }
-                                className="w-20 h-20 object-cover rounded"
-                              />
+                              <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded">
+                                <ResponsiveImage
+                                  src={property.images[0]}
+                                  alt={
+                                    property.imagesAlt?.[0]?.[language] || property.title[language]
+                                  }
+                                  sizes="80px"
+                                  className="object-cover"
+                                />
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-sm line-clamp-2 mb-1">
                                   {property.title[language]}
