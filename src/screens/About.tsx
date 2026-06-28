@@ -20,9 +20,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateSlug } from '@/hooks/useAgentBySlug';
+import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import type { Language } from '@/types';
+import { isUsablePhotoUrl } from '@/utils/photoUrl';
 
 type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
 
@@ -57,6 +60,17 @@ export default function About() {
       return data?.content ?? null;
     }
   });
+
+  // Foto REAL del agente (subida a Storage) indexada por slug, para el equipo de
+  // "Nosotros". Solo se aceptan URLs https usables vía `isUsablePhotoUrl`
+  // (descarta blobs heredados); si no hay foto real se cae al avatar de iniciales.
+  const { data: publicAgents = [] } = usePublicAgents();
+  const agentPhotoBySlug: Record<string, string> = {};
+  for (const a of publicAgents) {
+    if (isUsablePhotoUrl(a.photo_url)) {
+      agentPhotoBySlug[generateSlug(a.display_name)] = a.photo_url;
+    }
+  }
 
   const values = [
     {
@@ -96,6 +110,7 @@ export default function About() {
   const team = [
     {
       name: 'Yas Ruiz Vásquez',
+      agentSlug: 'yasmin-ruiz', // slug del perfil real (display_name "Yasmin Ruiz")
       position: language === 'es' ? 'Co-fundadora · Asesora inmobiliaria' : 'Co-founder · Real estate advisor',
       email: 'contacto@yrinmobiliaria.com',
       bio:
@@ -108,6 +123,7 @@ export default function About() {
     },
     {
       name: 'Carlo Spada Tello',
+      agentSlug: 'carlo-spada', // slug del perfil real (display_name "Carlo Spada")
       position: language === 'es' ? 'Co-fundador · Estrategia digital y datos' : 'Co-founder · Digital strategy & data',
       email: 'carlo@yrinmobiliaria.com',
       bio:
@@ -314,7 +330,8 @@ export default function About() {
                     <CardContent className="p-0">
                       <div className="relative aspect-square bg-gradient-to-br from-primary/20 to-secondary/20">
                         <ResponsiveImage
-                          src={member.image}
+                          // Foto real subida por el agente si existe; si no, el avatar de iniciales.
+                          src={agentPhotoBySlug[member.agentSlug] ?? member.image}
                           alt={member.name}
                           sizes="(max-width: 768px) 100vw, 384px"
                           className="object-cover"

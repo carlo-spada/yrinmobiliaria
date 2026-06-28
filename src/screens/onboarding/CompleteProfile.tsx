@@ -20,10 +20,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
+import { isUsablePhotoUrl } from "@/utils/photoUrl";
 
 
 const profileSchema = z.object({
-  photo_url: z.string().url("Foto de perfil requerida"),
+  // Debe ser una URL https real (objeto de Storage), no una vista previa `blob:`
+  // local — guardar un blob deja la foto rota (solo vive en esa pestaña).
+  photo_url: z
+    .string()
+    .refine(isUsablePhotoUrl, "Sube una foto de perfil (la imagen debe subirse, no una vista previa local)"),
   languages: z.array(z.string()).min(1, "Selecciona al menos un idioma"),
   bio_es: z.string().min(50, "La biografía debe tener al menos 50 caracteres"),
   bio_en: z.string().optional(),
