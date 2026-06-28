@@ -12,6 +12,36 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
+// imageId va en la clave del objeto de Storage → solo caracteres seguros para
+// evitar path traversal (../) o claves inesperadas.
+const SAFE_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+// Verifica los magic bytes y devuelve el tipo REAL del archivo, ignorando el
+// contentType que envía el cliente. Solo se aceptan los tipos del bucket
+// (jpeg/png/webp); cualquier otro contenido (HTML/SVG/script disfrazado de
+// imagen) se rechaza, evitando servir contenido ejecutable desde el bucket
+// público.
+function sniffImageType(bytes: Uint8Array): { ext: string; contentType: string } | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return { ext: 'jpg', contentType: 'image/jpeg' };
+  }
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+    bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a
+  ) {
+    return { ext: 'png', contentType: 'image/png' };
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) {
+    return { ext: 'webp', contentType: 'image/webp' };
+  }
+  return null;
+}
+
 // Uploads a property image using service_role. Workaround for this project's
 // storage-api not validating user JWTs (auth.uid() comes back null there, so the
 // is_staff() storage RLS rejects authenticated uploads). We validate the user via
@@ -43,7 +73,7 @@ serve(async (req) => {
     }
 
     // 3) Validate payload
-    const { propertyId, fileBase64, contentType, imageId } = await req.json();
+    const { propertyId, fileBase64, imageId } = await req.json();
     if (!propertyId || !fileBase64) {
       return json({ error: 'Missing propertyId or file' }, 400);
     }
@@ -58,13 +88,28 @@ serve(async (req) => {
       return json({ error: 'File too large' }, 413);
     }
 
-    // 4) Decode base64 and upload under {propertyId}/ with service_role
+    // 4) Decode base64, verify it is a REAL image (magic bytes), and upload
     const bytes = Uint8Array.from(atob(fileBase64), (c) => c.charCodeAt(0));
-    const id = imageId || `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const path = `${propertyId}/${id}.webp`;
+    const sniffed = sniffImageType(bytes);
+    if (!sniffed) {
+      return json({ error: 'File is not a valid JPEG, PNG, or WebP image' }, 400);
+    }
+
+    // Sanitize imageId (it becomes the storage object key) to block path traversal.
+    let id: string;
+    if (imageId !== undefined && imageId !== null && imageId !== '') {
+      if (typeof imageId !== 'string' || !SAFE_ID_RE.test(imageId)) {
+        return json({ error: 'Invalid imageId' }, 400);
+      }
+      id = imageId;
+    } else {
+      id = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+    }
+
+    const path = `${propertyId}/${id}.${sniffed.ext}`;
     const { error: upError } = await admin.storage
       .from('property-images')
-      .upload(path, bytes, { contentType: contentType || 'image/webp', upsert: false });
+      .upload(path, bytes, { contentType: sniffed.contentType, upsert: false });
     if (upError) return json({ error: upError.message }, 400);
 
     const { data: { publicUrl } } = admin.storage.from('property-images').getPublicUrl(path);

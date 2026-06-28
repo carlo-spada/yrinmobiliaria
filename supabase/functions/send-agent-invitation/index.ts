@@ -6,6 +6,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Escapa valores de usuario interpolados en el HTML del email.
+const escapeHtml = (input: string): string =>
+  input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 interface InvitationRequest {
   invitation_id: string;
 }
@@ -66,9 +75,11 @@ serve(async (req: Request) => {
       throw new Error("Invitation not found");
     }
 
-    // Generate magic link
-    const origin = req.headers.get("origin") || "https://yrinmobiliaria.com";
-    const magicLink = `${origin}/auth/accept-invitation?token=${invitation.token}`;
+    // Magic link desde SITE_URL (controlado por el servidor), NO desde el header
+    // `origin` del cliente — evita que el enlace del email apunte a un dominio
+    // manipulado / de phishing (M5).
+    const siteUrl = Deno.env.get("SITE_URL") ?? "https://yrinmobiliaria.com";
+    const magicLink = `${siteUrl}/auth/accept-invitation?token=${invitation.token}`;
 
     // Nombre del invitador (cosmético, para el saludo del email). profiles se
     // relaciona con auth.users por su columna user_id.
@@ -106,7 +117,7 @@ serve(async (req: Request) => {
       <h2 style="color: #212529; font-size: 22px; margin: 0 0 20px 0;">¡Hola!</h2>
 
       <p style="color: #495057; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
-        Has sido invitado/a por <strong>${inviterName}</strong> para unirte al equipo de <strong>${orgName}</strong> como agente inmobiliario.
+        Has sido invitado/a por <strong>${escapeHtml(inviterName)}</strong> para unirte al equipo de <strong>${orgName}</strong> como agente inmobiliario.
       </p>
 
       <p style="color: #495057; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">

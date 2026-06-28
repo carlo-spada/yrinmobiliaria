@@ -63,6 +63,28 @@ serve(async (req) => {
       return json({ error: 'La contraseña debe tener al menos 12 caracteres' }, 400);
     }
 
+    // Claim ATÓMICO de la invitación ANTES de crear nada: el UPDATE condicional
+    // (accepted_at IS NULL) garantiza que solo una petición concurrente gane y
+    // evita la doble-aceptación / estados parciales (M6). Si un paso posterior
+    // falla, se revierte (un-claim) para que la invitación siga utilizable.
+    const { data: claimed, error: claimErr } = await admin
+      .from('agent_invitations')
+      .update({ accepted_at: new Date().toISOString() })
+      .eq('id', invitation.id)
+      .is('accepted_at', null)
+      .select('id')
+      .maybeSingle();
+
+    if (claimErr) {
+      return json({ error: claimErr.message }, 500);
+    }
+    if (!claimed) {
+      return json({ error: 'Esta invitación ya ha sido aceptada' }, 409);
+    }
+
+    const unclaim = () =>
+      admin.from('agent_invitations').update({ accepted_at: null }).eq('id', invitation.id);
+
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email: invitation.email,
       password,
@@ -73,6 +95,7 @@ serve(async (req) => {
     });
 
     if (createErr || !created.user) {
+      await unclaim();
       return json({ error: createErr?.message || 'No se pudo crear la cuenta' }, 400);
     }
 
@@ -90,7 +113,10 @@ serve(async (req) => {
     });
 
     if (profileErr) {
+      // El borrado del usuario cascada-elimina el profile recién creado; además
+      // revertimos el claim para no dejar la invitación bloqueada.
       await admin.auth.admin.deleteUser(userId);
+      await unclaim();
       return json({ error: profileErr.message }, 400);
     }
 
@@ -100,12 +126,14 @@ serve(async (req) => {
 
     if (roleErr) {
       await admin.auth.admin.deleteUser(userId);
+      await unclaim();
       return json({ error: roleErr.message }, 400);
     }
 
+    // Finaliza: registra quién aceptó (accepted_at ya fue fijado por el claim).
     await admin
       .from('agent_invitations')
-      .update({ accepted_at: new Date().toISOString(), accepted_by: userId })
+      .update({ accepted_by: userId })
       .eq('id', invitation.id);
 
     return json({ success: true, email: invitation.email });

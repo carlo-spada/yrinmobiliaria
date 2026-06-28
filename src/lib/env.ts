@@ -24,6 +24,9 @@ export const clientEnvSchema = z.object({
     .default('https://yrinmobiliaria.com'),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
   NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
+  // Site key pública de Cloudflare Turnstile (anti-abuso en formularios). Opcional:
+  // si no está, el widget no se renderiza y los formularios siguen funcionando.
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -37,6 +40,7 @@ const rawClientEnv = {
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   NEXT_PUBLIC_WHATSAPP_NUMBER: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
 };
 
 function formatIssues(error: z.ZodError): string {

@@ -20,6 +20,19 @@ const sanitizeInput = (input: string, maxLength: number): string => {
     .replace(/[<>]/g, ''); // Remove potential HTML tags
 };
 
+// Escapa HTML para interpolar valores en el email sin riesgo de inyección
+// (XSS en el cliente de correo / ruptura de atributos).
+const escapeHtml = (input: string): string =>
+  input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Elimina CR/LF de valores que van en cabeceras de email (anti header-injection).
+const stripHeader = (input: string): string => input.replace(/[\r\n]+/g, ' ').trim();
+
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 255;
@@ -61,6 +74,41 @@ const checkRateLimit = (ip: string): boolean => {
   return true;
 };
 
+// Verificación Turnstile (anti-bot). Solo bloquea si TURNSTILE_ENFORCE='true',
+// así el deploy del edge no rompe el formulario antes de que el widget cliente
+// esté en vivo.
+const turnstileOk = async (token: unknown, ip: string): Promise<boolean> => {
+  if (Deno.env.get('TURNSTILE_ENFORCE') !== 'true') return true;
+  const secret = Deno.env.get('TURNSTILE_SECRET_KEY');
+  if (!secret) return true;
+  if (!token || typeof token !== 'string') return false;
+  const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+  });
+  const data = await resp.json();
+  return data?.success === true;
+};
+
+// Rate-limit persistente en DB (backstop del fast-path en memoria).
+const dbRateLimit = async (
+  supabase: ReturnType<typeof createClient>,
+  key: string,
+  maxPerHour: number,
+): Promise<boolean> => {
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW).toISOString();
+  await supabase.from('rate_limit_events').delete().eq('key', key).lt('created_at', since);
+  const { count } = await supabase
+    .from('rate_limit_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('key', key)
+    .gte('created_at', since);
+  if ((count ?? 0) >= maxPerHour) return false;
+  await supabase.from('rate_limit_events').insert({ key });
+  return true;
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -88,7 +136,23 @@ serve(async (req) => {
       );
     }
 
-    const { propertyId, name, email, phone, date, timeSlot, notes } = await req.json();
+    const { propertyId, name, email, phone, date, timeSlot, notes, company_website, turnstileToken } = await req.json();
+
+    // Honeypot: el campo oculto solo lo rellenan bots → fingir éxito sin guardar.
+    if (typeof company_website === 'string' && company_website.trim() !== '') {
+      return new Response(
+        JSON.stringify({ success: true, message: 'Visit scheduled successfully' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Turnstile (solo si TURNSTILE_ENFORCE='true')
+    if (!(await turnstileOk(turnstileToken, clientIp))) {
+      return new Response(
+        JSON.stringify({ error: 'Verificación anti-bot fallida. Recarga e inténtalo de nuevo.', code: 'TURNSTILE_FAILED' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Server-side validation
     if (!propertyId || typeof propertyId !== 'string') {
@@ -155,6 +219,14 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Rate-limit persistente en DB (además del fast-path en memoria de arriba).
+    if (!(await dbRateLimit(supabase, `visit:${clientIp}`, MAX_SUBMISSIONS_PER_HOUR))) {
+      return new Response(
+        JSON.stringify({ error: 'Too many submissions. Please try again later.', code: 'RATE_LIMIT_EXCEEDED' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Verify property exists AND is publicly visible (no borradores). Replica la
     // RLS pública (properties_select_public: status <> 'pendiente') para no
@@ -281,9 +353,9 @@ serve(async (req) => {
       <!-- Property Info -->
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; margin-bottom: 30px; color: white;">
         <p style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">Propiedad</p>
-        <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 600;">${propertyTitle}</h2>
+        <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 600;">${escapeHtml(propertyTitle)}</h2>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
-          <span style="font-size: 14px; opacity: 0.9;">📍 ${propertyZone}</span>
+          <span style="font-size: 14px; opacity: 0.9;">📍 ${escapeHtml(propertyZone)}</span>
           <span style="font-size: 18px; font-weight: 600;">${propertyPrice}</span>
         </div>
       </div>
@@ -312,7 +384,7 @@ serve(async (req) => {
               <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Nombre:</span>
             </td>
             <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef; text-align: right;">
-              <span style="color: #212529; font-size: 15px; font-weight: 600;">${sanitizedData.name}</span>
+              <span style="color: #212529; font-size: 15px; font-weight: 600;">${escapeHtml(sanitizedData.name)}</span>
             </td>
           </tr>
           <tr>
@@ -320,7 +392,7 @@ serve(async (req) => {
               <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Email:</span>
             </td>
             <td style="padding: 12px 0; border-bottom: 1px solid #e9ecef; text-align: right;">
-              <a href="mailto:${sanitizedData.email}" style="color: #10b981; font-size: 15px; text-decoration: none;">${sanitizedData.email}</a>
+              <a href="mailto:${escapeHtml(sanitizedData.email)}" style="color: #10b981; font-size: 15px; text-decoration: none;">${escapeHtml(sanitizedData.email)}</a>
             </td>
           </tr>
           <tr>
@@ -328,7 +400,7 @@ serve(async (req) => {
               <span style="color: #6c757d; font-size: 14px; font-weight: 500;">Teléfono:</span>
             </td>
             <td style="padding: 12px 0; text-align: right;">
-              <a href="tel:${sanitizedData.phone}" style="color: #10b981; font-size: 15px; text-decoration: none;">${sanitizedData.phone}</a>
+              <a href="tel:${escapeHtml(sanitizedData.phone)}" style="color: #10b981; font-size: 15px; text-decoration: none;">${escapeHtml(sanitizedData.phone)}</a>
             </td>
           </tr>
         </table>
@@ -338,17 +410,17 @@ serve(async (req) => {
       <div style="margin-bottom: 30px;">
         <h2 style="color: #212529; font-size: 20px; font-weight: 600; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">Notas Adicionales</h2>
         <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 4px;">
-          <p style="margin: 0; color: #92400e; font-size: 15px; white-space: pre-wrap;">${sanitizedData.notes}</p>
+          <p style="margin: 0; color: #92400e; font-size: 15px; white-space: pre-wrap;">${escapeHtml(sanitizedData.notes ?? '')}</p>
         </div>
       </div>
       ` : ''}
 
       <!-- CTA Buttons -->
       <div style="display: flex; gap: 15px; margin-top: 40px;">
-        <a href="mailto:${sanitizedData.email}" style="flex: 1; display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 15px; text-align: center; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
+        <a href="mailto:${escapeHtml(sanitizedData.email)}" style="flex: 1; display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 15px; text-align: center; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);">
           ✉️ Confirmar por Email
         </a>
-        <a href="tel:${sanitizedData.phone}" style="flex: 1; display: inline-block; background-color: #ffffff; color: #10b981; text-decoration: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 15px; text-align: center; border: 2px solid #10b981;">
+        <a href="tel:${escapeHtml(sanitizedData.phone)}" style="flex: 1; display: inline-block; background-color: #ffffff; color: #10b981; text-decoration: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 15px; text-align: center; border: 2px solid #10b981;">
           📞 Llamar Cliente
         </a>
       </div>
@@ -373,9 +445,9 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `${recipientName} <${recipientEmail}>`,
+            from: `${stripHeader(recipientName)} <${recipientEmail}>`,
             to: [recipientEmail],
-            subject: `[Visita Agendada] ${propertyTitle} - Para ${recipientName}`,
+            subject: stripHeader(`[Visita Agendada] ${propertyTitle} - Para ${recipientName}`),
             html: emailHtml,
             reply_to: sanitizedData.email,
           }),
