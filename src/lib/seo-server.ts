@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
 
+import { env } from '@/lib/env';
 import { getPublicSupabase } from '@/lib/supabase/server';
 import type { Language } from '@/types';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yrinmobiliaria.com';
+export const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
 /** Idioma activo leído de la cookie `locale` (default 'es'). */
 export async function getServerLocale(): Promise<Language> {
