@@ -1,8 +1,8 @@
 import { AlertCircle } from "lucide-react";
+import Link from 'next/link';
 import { Component, ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Link } from '@/lib/router-compat';
 
 
 interface Props {
@@ -48,7 +48,7 @@ export class MapErrorBoundary extends Component<Props, State> {
                 {language === "es" ? "Reintentar" : "Retry"}
               </Button>
             <Button variant="outline" asChild>
-              <Link to="/propiedades" replace>
+              <Link href="/propiedades" replace>
                 {language === "es" ? "Ver lista" : "View list"}
               </Link>
             </Button>

@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Link } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 interface ConsentCheckboxProps {
@@ -41,7 +42,7 @@ export function ConsentCheckbox({
         />
         <label htmlFor={id} className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
           {consent.prefix}{' '}
-          <Link to="/privacidad" className="text-primary underline hover:no-underline">
+          <Link href="/privacidad" className="text-primary underline hover:no-underline">
             {consent.privacyLink}
           </Link>{' '}
           {consent.suffix}

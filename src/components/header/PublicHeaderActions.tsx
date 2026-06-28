@@ -1,5 +1,6 @@
 import { Heart, LogOut, User } from 'lucide-react';
-
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -16,11 +17,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { usePublicSession } from '@/hooks/usePublicSession';
 import { supabase } from '@/integrations/supabase/client';
-import { Link, useNavigate } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 export function PublicHeaderActions() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { language, t } = useLanguage();
   const { count: favoritesCount } = useFavorites();
   const { user, loading } = usePublicSession();
@@ -34,12 +34,12 @@ export function PublicHeaderActions() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/');
+    router.push('/');
   };
 
   return (
     <>
-      <Link to="/favoritos" className="hidden md:block relative">
+      <Link href="/favoritos" className="hidden md:block relative">
         <Button
           variant="ghost"
           size="icon"
@@ -66,7 +66,7 @@ export function PublicHeaderActions() {
       </Link>
 
       {loading ? (
-        <Link to="/auth" className="hidden md:block">
+        <Link href="/auth" className="hidden md:block">
           <Button variant="outline" size="sm">
             {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
           </Button>
@@ -90,13 +90,13 @@ export function PublicHeaderActions() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/cuenta" className="cursor-pointer">
+              <Link href="/cuenta" className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
                 {language === 'es' ? 'Mi Cuenta' : 'My Account'}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/favoritos" className="cursor-pointer">
+              <Link href="/favoritos" className="cursor-pointer">
                 <Heart className="mr-2 h-4 w-4" />
                 {language === 'es' ? 'Mis Favoritos' : 'My Favorites'}
               </Link>
@@ -109,7 +109,7 @@ export function PublicHeaderActions() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Link to="/auth" className="hidden md:block">
+        <Link href="/auth" className="hidden md:block">
           <Button variant="outline" size="sm">
             {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
           </Button>

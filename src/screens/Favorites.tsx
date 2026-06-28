@@ -1,4 +1,5 @@
 import { Heart, ArrowLeft, Trash2, X, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 
@@ -24,7 +25,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
 import { usePublicSession } from '@/hooks/usePublicSession';
-import { Link } from '@/lib/router-compat';
 
 export default function Favorites() {
   const { language } = useLanguage();
@@ -76,7 +76,7 @@ export default function Favorites() {
                   {language === 'es' ? 'Propiedades que has guardado para revisar después' : 'Properties you have saved to review later'}
                 </p>
                 <div className="flex items-center justify-center gap-4 pt-4">
-                  <Link to="/propiedades">
+                  <Link href="/propiedades">
                     <Button variant="outline">
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       {language === 'es' ? 'Ver más propiedades' : 'View more properties'}
@@ -130,12 +130,12 @@ export default function Favorites() {
                         : '📱 Create an account to sync your favorites across devices'}
                     </span>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <Link to="/auth?mode=signup">
+                      <Link href="/auth?mode=signup">
                         <Button size="sm" variant="default">
                           {language === 'es' ? 'Crear Cuenta' : 'Sign Up'}
                         </Button>
                       </Link>
-                      <Link to="/auth?mode=login">
+                      <Link href="/auth?mode=login">
                         <Button size="sm" variant="outline">
                           {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
                         </Button>
@@ -160,7 +160,7 @@ export default function Favorites() {
                         ? '⚠️ Confirma tu email para guardar tus favoritos en la nube'
                         : '⚠️ Confirm your email to save your favorites in the cloud'}
                     </span>
-                    <Link to="/cuenta">
+                    <Link href="/cuenta">
                       <Button size="sm" variant="outline">
                         {language === 'es' ? 'Ir a Mi Cuenta →' : 'Go to My Account →'}
                       </Button>
@@ -195,7 +195,7 @@ export default function Favorites() {
                   <p className="text-muted-foreground">
                     {language === 'es' ? 'Explora nuestro catálogo y guarda las propiedades que más te gusten.' : 'Browse our catalog and save the properties you like the most.'}
                   </p>
-                  <Link to="/propiedades">
+                  <Link href="/propiedades">
                     <Button variant="primary">
                       {language === 'es' ? 'Explorar catálogo' : 'Browse catalog'}
                     </Button>

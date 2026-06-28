@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 
 import { PropertyCard } from '@/components/PropertyCard';
@@ -6,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProperties } from '@/hooks/useProperties';
-import { Link } from '@/lib/router-compat';
 
 export function FeaturedProperties() {
   const { t, language } = useLanguage();
@@ -68,7 +68,7 @@ export function FeaturedProperties() {
 
         {/* View All Button */}
         <div className="text-center animate-in fade-in duration-700 delay-500">
-          <Link to="/propiedades">
+          <Link href="/propiedades">
             <Button
               size="lg"
               variant="outline"

@@ -1,5 +1,6 @@
 import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
-
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
-import { Link, useNavigate } from '@/lib/router-compat';
 
 interface PropertyAgent {
   id: string;
@@ -35,7 +35,7 @@ const levelLabels = {
 
 export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
   const { language } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const slug = generateSlug(agent.display_name);
   const bio = language === 'es' ? agent.bio_es : agent.bio_en;
   const truncatedBio = bio ? (bio.length > 150 ? bio.substring(0, 150) + '...' : bio) : null;
@@ -95,7 +95,7 @@ export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
               const params = new URLSearchParams();
               params.set('agent', agent.id);
               if (propertyId) params.set('property', propertyId);
-              navigate(`/contacto?${params.toString()}`);
+              router.push(`/contacto?${params.toString()}`);
             }}
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -107,7 +107,7 @@ export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
               variant="outline"
               className="w-full"
               onClick={() => {
-                navigate(`/agendar?property=${propertyId}`);
+                router.push(`/agendar?property=${propertyId}`);
               }}
             >
               <MessageCircle className="mr-2 h-4 w-4" />
@@ -133,7 +133,7 @@ export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
         </div>
 
         {/* View Profile */}
-        <Link to={`/agentes/${slug}`} className="block">
+        <Link href={`/agentes/${slug}`} className="block">
           <Button variant="ghost" className="w-full">
             {language === 'es' ? 'Ver perfil completo' : 'View full profile'}
             <ExternalLink className="ml-2 h-4 w-4" />

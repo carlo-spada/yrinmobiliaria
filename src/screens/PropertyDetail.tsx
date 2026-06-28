@@ -12,6 +12,8 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense, lazy } from "react";
 
 
@@ -30,7 +32,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { env } from "@/lib/env";
-import { useParams, Link, useNavigate } from '@/lib/router-compat';
 
 const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
 
@@ -40,7 +41,7 @@ const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const { language, t } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { getSetting } = usePublicSiteSettings();
   const { toast } = useToast();
 
@@ -61,9 +62,9 @@ export default function PropertyDetail() {
   // Handle invalid UUID navigation in useEffect
   useEffect(() => {
     if (id && !isValidUUID(id)) {
-      navigate('/404', { replace: true });
+      router.replace('/404');
     }
-  }, [id, navigate]);
+  }, [id, router]);
 
   // Global keyboard navigation for gallery (ArrowLeft, ArrowRight, Escape)
   // Must be called before early returns to satisfy React hooks rules
@@ -98,7 +99,7 @@ export default function PropertyDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">{t.properties.noResults}</h1>
-          <Button onClick={() => navigate("/propiedades")} variant="primary">
+          <Button onClick={() => router.push("/propiedades")} variant="primary">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {language === "es" ? "Volver al catálogo" : "Back to catalog"}
           </Button>
@@ -224,7 +225,7 @@ export default function PropertyDetail() {
         {/* Back Button */}
         <Button
           variant="ghost"
-          onClick={() => navigate("/propiedades")}
+          onClick={() => router.push("/propiedades")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -511,7 +512,7 @@ export default function PropertyDetail() {
                       <MessageCircle className="mr-2 h-4 w-4" />
                       WhatsApp
                     </Button>
-                    <Link to={`/agendar?propertyId=${property.id}`} className="w-full">
+                    <Link href={`/agendar?propertyId=${property.id}`} className="w-full">
                       <Button variant="outline" className="w-full">
                         <Calendar className="mr-2 h-4 w-4" />
                         {language === "es" ? "Agendar visita" : "Schedule visit"}

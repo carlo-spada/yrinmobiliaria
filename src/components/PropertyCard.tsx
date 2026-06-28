@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
+import Link from 'next/link';
 import { memo } from 'react';
 
 
@@ -10,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
-import { Link } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 interface PropertyAgent {
@@ -83,7 +83,7 @@ export const PropertyCard = memo(function PropertyCard({
         )}
       >
         <Link
-          to={`/propiedad/${id}`}
+          href={`/propiedad/${id}`}
           onClick={onClick}
           aria-label={`View details for ${title}`}
           className="absolute inset-0 z-10 rounded-xl"
@@ -158,7 +158,7 @@ export const PropertyCard = memo(function PropertyCard({
 
           {agent ? (
             <Link
-              to={`/agentes/${generateSlug(agent.display_name)}`}
+              href={`/agentes/${generateSlug(agent.display_name)}`}
               className="relative z-20 flex items-center gap-2 pt-3 border-t border-border group/agent"
             >
               <Avatar className="h-8 w-8">

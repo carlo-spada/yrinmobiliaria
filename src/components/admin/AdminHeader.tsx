@@ -1,14 +1,14 @@
 import { LogOut, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from '@/lib/router-compat';
 
 export const AdminHeader = () => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -16,7 +16,7 @@ export const AdminHeader = () => {
       toast.error('Error al cerrar sesión');
     } else {
       toast.success('Sesión cerrada correctamente');
-      navigate('/');
+      router.push('/');
     }
   };
 

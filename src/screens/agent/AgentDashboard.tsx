@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Home, MessageSquare, Calendar, Edit } from "lucide-react";
+import Link from "next/link";
 
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "@/lib/router-compat";
 
 function AgentDashboardContent() {
   const { profile } = useAuth();
@@ -55,7 +55,7 @@ function AgentDashboardContent() {
             </p>
           </div>
           <Button asChild>
-            <Link to="/agent/profile/edit" className="gap-2">
+            <Link href="/agent/profile/edit" className="gap-2">
               <Edit className="h-4 w-4" />
               Editar Perfil
             </Link>
@@ -77,7 +77,7 @@ function AgentDashboardContent() {
               </div>
             </div>
             <Button asChild variant="link" className="mt-4 w-full">
-              <Link to="/admin/properties?agent=me">
+              <Link href="/admin/properties?agent=me">
                 Ver mis propiedades
               </Link>
             </Button>
@@ -96,7 +96,7 @@ function AgentDashboardContent() {
               </div>
             </div>
             <Button asChild variant="link" className="mt-4 w-full">
-              <Link to="/admin/inquiries?agent=me">
+              <Link href="/admin/inquiries?agent=me">
                 Ver consultas
               </Link>
             </Button>
@@ -115,7 +115,7 @@ function AgentDashboardContent() {
               </div>
             </div>
             <Button asChild variant="link" className="mt-4 w-full">
-              <Link to="/admin/visits?agent=me">
+              <Link href="/admin/visits?agent=me">
                 Ver visitas
               </Link>
             </Button>

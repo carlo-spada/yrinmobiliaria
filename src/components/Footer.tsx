@@ -1,13 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
-
+import Link from 'next/link';
 
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from '@/lib/router-compat';
 
 export function Footer() {
   const { t, language } = useLanguage();
@@ -83,7 +82,7 @@ export function Footer() {
               {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-sm text-secondary-foreground/80 hover:text-accent transition-colors inline-block"
                   >
                     {link.label}
@@ -100,7 +99,7 @@ export function Footer() {
               {zones.map((zone) => (
                 <li key={zone.href}>
                   <Link
-                    to={zone.href}
+                    href={zone.href}
                     className="text-sm text-secondary-foreground/80 hover:text-accent transition-colors inline-block"
                   >
                     {zone.label}
@@ -178,13 +177,13 @@ export function Footer() {
             © {currentYear} YR Inmobiliaria. {t.footer.rights}
           </p>
           <div className="flex gap-6">
-            <Link to="/privacidad" className="hover:text-accent transition-colors">
+            <Link href="/privacidad" className="hover:text-accent transition-colors">
               {t.footer.privacy}
             </Link>
-            <Link to="/terminos" className="hover:text-accent transition-colors">
+            <Link href="/terminos" className="hover:text-accent transition-colors">
               {t.footer.terms}
             </Link>
-            <Link to="/derechos-arco" className="hover:text-accent transition-colors">
+            <Link href="/derechos-arco" className="hover:text-accent transition-colors">
               {t.footer.dataRights}
             </Link>
           </div>

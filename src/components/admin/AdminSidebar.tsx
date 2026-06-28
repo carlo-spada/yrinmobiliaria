@@ -11,6 +11,7 @@ import {
   Activity,
   Building2,
 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
 
@@ -28,7 +29,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useLocation } from '@/lib/router-compat';
 import { cn } from '@/lib/utils';
 
 type AllowedRole = 'superadmin' | 'admin' | 'agent' | 'user';
@@ -49,9 +49,9 @@ interface MenuGroup {
 
 export function AdminSidebar() {
   const { open, isMobile, openMobile, setOpenMobile } = useSidebar();
-  const location = useLocation();
+  const pathname = usePathname() ?? '';
   const { role } = useUserRole();
-  const currentPath = location.pathname;
+  const currentPath = pathname;
 
   // Close mobile sidebar when navigating
   const handleNavClick = () => {

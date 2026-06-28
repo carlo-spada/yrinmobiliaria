@@ -8,10 +8,13 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 vi.mock("@/hooks/useAuth", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/useUserRole", () => ({ useUserRole: vi.fn() }));
-vi.mock("@/lib/router-compat", () => ({
+vi.mock("@/components/nav/Navigate", () => ({
   Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
-  useLocation: () => ({ pathname: "/admin/users", search: "" }),
-  useNavigate: () => vi.fn(),
+}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin/users",
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
 import { RequireStaff } from "./NativeRouteGuards";

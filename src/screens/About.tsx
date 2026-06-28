@@ -11,7 +11,7 @@ import {
   Calendar,
   Loader2
 } from 'lucide-react';
-
+import Link from 'next/link';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -21,7 +21,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import { Link } from '@/lib/router-compat';
 import type { Language } from '@/types';
 
 type CmsJsonContent = Database['public']['Tables']['cms_pages']['Row']['content'];
@@ -396,13 +395,13 @@ export default function About() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/agendar">
+                <Link href="/agendar">
                   <Button size="lg" className="gap-2">
                     <Calendar className="w-5 h-5" />
                     {language === 'es' ? 'Agendar Cita' : 'Schedule Appointment'}
                   </Button>
                 </Link>
-                <Link to="/propiedades">
+                <Link href="/propiedades">
                   <Button variant="outline" size="lg" className="gap-2">
                     <Building className="w-5 h-5" />
                     {language === 'es' ? 'Ver Propiedades' : 'View Properties'}

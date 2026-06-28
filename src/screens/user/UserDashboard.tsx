@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Heart, Mail, Check, LogOut, Trash2, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
+import { Navigate } from '@/components/nav/Navigate';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -31,7 +34,6 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useProperties } from '@/hooks/useProperties';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, Link, Navigate } from '@/lib/router-compat';
 
 
 const profileSchema = z.object({
@@ -47,7 +49,7 @@ export default function UserDashboard() {
   const { favorites: favoriteIds } = useFavorites();
   const { data: allProperties = [] } = useProperties();
   const { language } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [isResending, setIsResending] = useState(false);
   const [lastResendTime, setLastResendTime] = useState<number>(0);
@@ -130,7 +132,7 @@ export default function UserDashboard() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    router.push('/');
   };
 
   const handleSaveProfile = async (data: ProfileFormData) => {
@@ -177,7 +179,7 @@ export default function UserDashboard() {
         language === 'es' ? 'Cuenta desactivada exitosamente' : 'Account deactivated successfully'
       );
       await signOut();
-      navigate('/');
+      router.push('/');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al desactivar cuenta';
       toast.error(errorMessage);
@@ -257,7 +259,7 @@ export default function UserDashboard() {
                   <Heart className="h-6 w-6 text-primary" />
                   {language === 'es' ? 'Tus Favoritos' : 'Your Favorites'}
                 </h2>
-                <Link to="/favoritos">
+                <Link href="/favoritos">
                   <Button variant="ghost" size="sm">
                     {language === 'es' ? 'Ver todos →' : 'View all →'}
                   </Button>
@@ -308,7 +310,7 @@ export default function UserDashboard() {
                       ? 'Aún no tienes propiedades favoritas'
                       : "You don't have any favorite properties yet"}
                   </p>
-                  <Link to="/propiedades">
+                  <Link href="/propiedades">
                     <Button variant="default">
                       {language === 'es' ? 'Explorar propiedades →' : 'Explore properties →'}
                     </Button>

@@ -1,3 +1,4 @@
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -11,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
-import { useNavigate, useSearchParams } from '@/lib/router-compat';
 import { mapAuthError } from '@/utils/authErrors';
 import { sanitizeRedirect } from '@/utils/safeRedirect';
 
@@ -33,8 +33,8 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { role, loading: roleLoading } = useUserRole();
   const hasRedirected = useRef(false);
 
@@ -55,7 +55,7 @@ const Auth = () => {
       hasRedirected.current = true;
 
       if (safeRedirect) {
-        navigate(safeRedirect, { replace: true });
+        router.replace(safeRedirect);
         return;
       }
 
@@ -66,15 +66,15 @@ const Auth = () => {
       // - Regular user → /cuenta
       if (role === 'superadmin' || role === 'admin' || role === 'agent') {
         // Superadmins, Admins and Agents go to admin panel
-        navigate('/admin', { replace: true });
+        router.replace('/admin');
       } else {
         // Regular users go to user dashboard
-        navigate('/cuenta', { replace: true });
+        router.replace('/cuenta');
       }
     };
 
     handleRedirect();
-  }, [user, authLoading, roleLoading, role, navigate, searchParams]);
+  }, [user, authLoading, roleLoading, role, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

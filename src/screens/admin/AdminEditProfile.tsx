@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -17,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceZones } from "@/hooks/useServiceZones";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "@/lib/router-compat";
 import { logger } from "@/utils/logger";
 
 
@@ -43,7 +43,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 function AdminEditProfileContent() {
   const { user, profile } = useAuth();
   const { zones } = useServiceZones();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -111,7 +111,7 @@ function AdminEditProfileContent() {
 
       // console.log("[Profile Update] Success - updated rows:", result.length);
       toast.success("Perfil actualizado exitosamente");
-      navigate("/admin");
+      router.push("/admin");
     } catch (error) {
       logger.error("[Profile Update] Exception:", error);
       toast.error("Error al actualizar el perfil");
@@ -272,7 +272,7 @@ function AdminEditProfileContent() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/admin")}
+              onClick={() => router.push("/admin")}
               disabled={isSubmitting}
             >
               Cancelar
