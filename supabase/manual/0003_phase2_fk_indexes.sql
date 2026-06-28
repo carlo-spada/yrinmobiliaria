@@ -29,9 +29,6 @@ create index if not exists user_favorites_property_id_idx
   on public.user_favorites (property_id);
 
 -- -----------------------------------------------------------------------------
--- PENDIENTE (cambio destructivo — requiere OK explícito; aún NO aplicado):
--- El advisor marca `profiles_directory_idx` como `unused_index` (índice parcial
--- no-selectivo sobre un booleano, en una tabla pequeña). Para eliminarlo:
---
---   drop index if exists public.profiles_directory_idx;
+-- El índice no usado `profiles_directory_idx` se elimina en
+-- supabase/manual/0006_drop_unused_index.sql.
 -- -----------------------------------------------------------------------------

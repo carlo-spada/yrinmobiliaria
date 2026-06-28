@@ -79,7 +79,8 @@ create table public.profiles (
   created_at             timestamptz default now(),
   updated_at             timestamptz default now()
 );
-create index profiles_directory_idx on public.profiles (show_in_directory) where show_in_directory;
+-- (profiles_directory_idx eliminado en Phase 2.2 — índice parcial no-selectivo
+--  sin uso; ver supabase/manual/0006_drop_unused_index.sql)
 
 -- ----------------------------------------------------------------------------
 -- role_assignments  (FUENTE DE VERDAD de roles; sin organization_id)
