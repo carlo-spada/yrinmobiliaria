@@ -68,7 +68,7 @@ src/
 └── utils/          # Helpers, validation, i18n, image upload
 supabase/           # schema.sql, policies.sql, functions/, manual/, config.toml
 e2e/                # Playwright smoke
-middleware.ts       # Session refresh + private-route gate
+proxy.ts       # Session refresh + private-route gate
 ```
 
 ---
@@ -108,7 +108,7 @@ Hosted on **Vercel** (DNS in Cloudflare → Vercel). Pushing to `main` deploys; 
 - **agent** — own properties and profile
 - **user** — public features + favorites
 
-Route guards: `/admin` (admin/superadmin), `/agent/dashboard` (agents), `/cuenta` (authenticated users). The server gate lives in `middleware.ts`.
+Route guards: `/admin` (admin/superadmin), `/agent/dashboard` (agents), `/cuenta` (authenticated users). The server gate lives in `proxy.ts`.
 
 ---
 

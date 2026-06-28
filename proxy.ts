@@ -6,7 +6,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 // (RequireRole) una vez montada en cliente.
 const PRIVATE_PREFIXES = ['/admin', '/agent', '/onboarding', '/cuenta'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
