@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { MapPin, Languages } from 'lucide-react';
 import Link from 'next/link';
+import { useMemo } from 'react';
 
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
 import { PublicAgent } from '@/hooks/usePublicAgents';
+import { useServiceZones } from '@/hooks/useServiceZones';
 
 
 interface AgentCardProps {
@@ -42,6 +44,19 @@ export function AgentCard({ agent, propertiesCount = 0 }: AgentCardProps) {
     .join('')
     .toUpperCase()
     .substring(0, 2);
+
+  // `profiles.service_zones` almacena IDs de zona (uuid); los resolvemos a su
+  // nombre localizado vía `service_zones`. Los IDs desconocidos o inactivos se
+  // OMITEN (nunca se muestra un uuid en crudo).
+  const { zones } = useServiceZones();
+  const resolvedZones = useMemo(() => {
+    const nameById = new Map(
+      zones.map((z) => [z.id, language === 'es' ? z.name_es : z.name_en] as const)
+    );
+    return (agent.service_zones ?? [])
+      .map((id) => ({ id, name: nameById.get(id) }))
+      .filter((z): z is { id: string; name: string } => Boolean(z.name));
+  }, [zones, agent.service_zones, language]);
 
   return (
     <Link href={`/agentes/${slug}`}>
@@ -84,19 +99,19 @@ export function AgentCard({ agent, propertiesCount = 0 }: AgentCardProps) {
               </div>
             )}
 
-            {/* Service Zones */}
-            {agent.service_zones && agent.service_zones.length > 0 && (
+            {/* Service Zones (nombres resueltos; uuids sin match se omiten) */}
+            {resolvedZones.length > 0 && (
               <div className="flex items-start gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex flex-wrap gap-1">
-                  {agent.service_zones.slice(0, 3).map((zone, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {zone}
+                  {resolvedZones.slice(0, 3).map((zone) => (
+                    <Badge key={zone.id} variant="outline" className="text-xs">
+                      {zone.name}
                     </Badge>
                   ))}
-                  {agent.service_zones.length > 3 && (
+                  {resolvedZones.length > 3 && (
                     <Badge variant="outline" className="text-xs">
-                      +{agent.service_zones.length - 3}
+                      +{resolvedZones.length - 3}
                     </Badge>
                   )}
                 </div>

@@ -28,13 +28,18 @@ export function Footer() {
     { label: t.nav?.contact || 'Contacto', href: '/contacto' },
   ];
 
-  // Fetch zones from database with consistent cache key
+  // Comparte la query key ['service-zones'] con useServiceZones / AdminZones, así
+  // que DEBE traer el row completo (`select('*')`): si seleccionara solo
+  // name_es/name_en, esa forma parcial poblaría la caché compartida y dejaría a
+  // los otros consumidores sin `id` (rompía la resolución de zonas en AgentCard y
+  // las keys del filtro). Footer solo usa name_es/name_en; las demás columnas se
+  // ignoran.
   const { data: zonesData = [] } = useQuery({
     queryKey: ['service-zones'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('service_zones')
-        .select('name_es, name_en')
+        .select('*')
         .eq('active', true)
         .order('display_order', { ascending: true });
 
