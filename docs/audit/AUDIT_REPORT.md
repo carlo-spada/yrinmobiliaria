@@ -1,6 +1,6 @@
 # YR Inmobiliaria — Audit Report
 
-**Date:** 2026-06-27 · **Last Updated:** 2026-06-28 (resolved markers: Phases 0–2, 7.1–7.3)
+**Date:** 2026-06-27 · **Last Updated:** 2026-06-28 (resolved markers: Phases 0–2, 7.1–7.5)
 **Type:** Read-only audit (no code/DB/DNS/config modified during audit phase)
 **Auditor scope:** architecture, Next 16/React 19, Tailwind v4, Supabase DB/RLS/storage, edge functions, security, performance, SEO, analytics/observability, CI/CD, Vercel/Cloudflare, internal docs.
 
@@ -26,7 +26,7 @@ The real exposure is **operational safety, SEO reach, and performance/cost**, no
 
 - **Routing:** `app/(public)/*` (SSR + `generateMetadata` + server JSON-LD) and `app/(app)/*` (private: `page.tsx` server noindex shell + `view.tsx` client `dynamic ssr:false` mounting `src/screens/*`). No authenticated data is fetched server-side — clean boundary.
 - **Auth gate:** `middleware.ts` server-gates the coarse authed/unauthed boundary on `/admin /agent /onboarding /cuenta`; fine-grained role checks run client-side in screens.
-- **Compat shim:** `src/lib/router-compat.tsx` emulates react-router over `next/navigation`; **36 files** import it — permanent infrastructure now, not transitional.
+- **Compat shim:** `src/lib/router-compat.tsx` emulated react-router over `next/navigation`. ✅ **Retired** (PR #31, Phase 7.4): all importers migrated to native `next/link` + `next/navigation`, with `@/components/nav/Navigate`, `@/components/NavLink`, `@/hooks/useSearchParamsState` for the non-native cases.
 - **Data:** 100% client-side TanStack Query against a browser Supabase singleton. `QueryClient` created with no defaults → `refetchOnWindowFocus:true`, `retry:3` app-wide.
 
 ### Baseline checks (run 2026-06-27)
@@ -81,7 +81,7 @@ The real exposure is **operational safety, SEO reach, and performance/cost**, no
 - **M12 — Docs redundancy / stale claims** (README claims working bilingual SEO; no backend-change runbook).
 
 ### Low / Info
-- 6 `SECURITY DEFINER` helpers callable by `anon`/`authenticated` via RPC (revoke EXECUTE). Auth leaked-password protection disabled. `imageId` path-traversal in upload (staff-only). Wildcard CORS on all functions. Raw `error.message` returned to clients. `favoritesStorage` lacks `typeof window` guard. `signUp` profile insert client-side (prefer DB trigger). `next/image` unused (LCP gap). Slug logic duplicated, no diacritic normalization.
+- 6 `SECURITY DEFINER` helpers callable by `anon`/`authenticated` via RPC (revoke EXECUTE). Auth leaked-password protection disabled. `imageId` path-traversal in upload (staff-only). Wildcard CORS on all functions. Raw `error.message` returned to clients. `favoritesStorage` lacks `typeof window` guard. `signUp` profile insert client-side (✅ moved to a `handle_new_user` DB trigger, PR #32 / Phase 7.5). `next/image` unused (LCP gap). Slug logic duplicated, no diacritic normalization.
 
 ---
 
@@ -148,7 +148,7 @@ Detailed phases in `IMPLEMENTATION_PLAN.md`:
 4. Performance & caching (static/ISR, indexes, TanStack defaults, next/image).
 5. SEO + blog/CMS readiness (URL i18n, public CMS route, real NAP).
 6. Analytics/observability (consent gate, conversion events, Sentry).
-7. Architecture cleanup (router-shim retirement, route-enforced guards, Tailwind consolidation).
+7. Architecture cleanup (router-shim retirement, route-enforced guards, Tailwind consolidation). ✅ **Done** (Phase 7: PRs #26/#27/#28/#31/#32).
 
 ---
 

@@ -2,7 +2,7 @@
 
 A modern, bilingual (Spanish/English) real estate website for YR Inmobiliaria, showcasing properties in Oaxaca, Mexico. Live at **[yrinmobiliaria.com](https://yrinmobiliaria.com)**.
 
-**Last Updated:** June 27, 2026
+**Last Updated:** June 28, 2026
 
 ---
 
@@ -64,7 +64,7 @@ src/
 ├── hooks/          # Data fetching, auth, utilities
 ├── screens/        # Client screens mounted by view.tsx
 ├── integrations/   # Supabase client + generated types
-├── lib/            # router-compat shim, Supabase SSR helpers, SEO builders
+├── lib/            # Supabase SSR helpers, SEO builders
 └── utils/          # Helpers, validation, i18n, image upload
 supabase/           # schema.sql, policies.sql, functions/, manual/, config.toml
 e2e/                # Playwright smoke

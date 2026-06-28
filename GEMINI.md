@@ -2,7 +2,7 @@
 
 > AI-assisted development guide for Gemini. See `CLAUDE.md` for complete project architecture.
 
-**Last Updated:** June 27, 2026
+**Last Updated:** June 28, 2026
 
 ---
 
@@ -38,7 +38,7 @@ Modern, bilingual (Spanish/English) real estate platform for YR Inmobiliaria in 
 
 ### Architecture
 - **App Router:** file-based routing under `app/`. Public routes are server-rendered (metadata + JSON-LD + sitemap/robots); private routes use `page.tsx` (server) + `view.tsx` (client `dynamic ssr:false`).
-- **Router compat shim** (`@/lib/router-compat`) exposes react-router-style hooks/components over `next/navigation`; client screens use it instead of `react-router-dom` (which is not a dependency).
+- **Navigation:** client screens use native `next/link` + `next/navigation` directly (the `@/lib/router-compat` shim was retired in Phase 7.4); `react-router-dom` is not a dependency. Next-less gaps use `@/components/nav/Navigate`, `@/components/NavLink`, `@/hooks/useSearchParamsState`.
 - **Hooks for logic:** business logic in `src/hooks`; screens in `src/screens`.
 - **Direct Supabase:** the client talks to Supabase via the browser SSR client; RLS enforces access.
 
