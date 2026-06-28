@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
+import { PageLayout } from '@/components/layout';
 import { PageLoader } from '@/components/ui/page-loader';
 
 const View = dynamic(() => import('@/screens/AgentProfile'), {
@@ -9,6 +10,12 @@ const View = dynamic(() => import('@/screens/AgentProfile'), {
   loading: () => <PageLoader />,
 });
 
+// Header/Footer a nivel de ruta: AgentProfile no renderiza el chrome propio
+// (cubre los estados de carga / no encontrado / contenido).
 export default function RouteView() {
-  return <View />;
+  return (
+    <PageLayout>
+      <View />
+    </PageLayout>
+  );
 }

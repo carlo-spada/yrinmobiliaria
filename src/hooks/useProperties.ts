@@ -228,9 +228,6 @@ export const useProperty = (id: string) => {
               display_name,
               photo_url,
               agent_level,
-              whatsapp_number,
-              phone,
-              email,
               bio_es,
               bio_en
             )
