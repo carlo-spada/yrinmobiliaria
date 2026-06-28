@@ -74,7 +74,7 @@ npm run test:e2e     # Playwright smoke
 
 - **AuthContext** (`src/contexts/AuthContext.tsx`) · **useUserRole** (`src/hooks/useUserRole.ts`).
 - Roles via `role_assignments`: `superadmin`, `admin`, `agent`, `user`.
-- Server gate in `middleware.ts`; client guards in `src/components/auth/NativeRouteGuards.tsx`.
+- Server gate in `proxy.ts`; client guards in `src/components/auth/NativeRouteGuards.tsx`.
 
 ---
 

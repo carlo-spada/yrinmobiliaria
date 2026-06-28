@@ -61,7 +61,7 @@ git stash push -m "WIP before sync" && git pull origin main
 ### Routing & rendering
 - **Public routes** (`app/(public)/…`) are native Next pages with `generateMetadata` (title/desc/canonical/OG/hreflang) + **server-side JSON-LD** (`@/components/seo/JsonLd`). `sitemap.ts` / `robots.ts` are dynamic.
 - **Private routes** (`app/(app)/…`: `/admin/*`, `/agent/*`, `/cuenta`, `/auth`, `/onboarding/*`) follow `page.tsx` (server, `robots:noindex`) + `view.tsx` (client `dynamic` with `ssr:false`) over a screen that self-mounts its own guard/layout. No authenticated data is fetched server-side.
-- **`middleware.ts`** refreshes the Supabase session and server-gates the private prefixes (`/admin`, `/agent`, `/onboarding`, `/cuenta`) → redirects to `/auth` when unauthenticated.
+- **`proxy.ts`** refreshes the Supabase session and server-gates the private prefixes (`/admin`, `/agent`, `/onboarding`, `/cuenta`) → redirects to `/auth` when unauthenticated.
 - **Router compat shim** (`@/lib/router-compat`): re-exports `next/link` + `next/navigation` under react-router's API (`Link`/`NavLink`/`useNavigate`/`useLocation`/`useParams`/`useSearchParams`/`Navigate`) so the ported client screens compile unchanged. There is **no `react-router-dom`** dependency.
 
 ### Key Directories
@@ -83,7 +83,7 @@ supabase/
 ├── functions/      # 6 edge functions
 └── manual/         # SQL to apply by hand via dashboard (not auto-migrations)
 e2e/                # Playwright smoke specs
-middleware.ts
+proxy.ts
 ```
 
 ### Auth & Roles (single-tenant)

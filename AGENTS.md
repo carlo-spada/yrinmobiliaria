@@ -60,7 +60,7 @@ src/
 └── utils/          # Helpers, validation, i18n, image upload
 supabase/           # schema.sql, policies.sql, functions/, manual/, config.toml
 e2e/                # Playwright smoke
-middleware.ts       # Session refresh + private-route gate
+proxy.ts       # Session refresh + private-route gate
 ```
 
 Private routes = `page.tsx` (server, `robots:noindex`) + `view.tsx` (client `dynamic ssr:false`) over a screen that self-mounts its guard/layout.
@@ -95,7 +95,7 @@ npm run test:e2e     # Playwright smoke (PLAYWRIGHT_BASE_URL for prod / local ne
 
 - **AuthContext** (`src/contexts/AuthContext.tsx`) · **useUserRole** (`src/hooks/useUserRole.ts`).
 - Roles via `role_assignments`: `superadmin` > `admin` > `agent` > `user`.
-- Server gate in `middleware.ts` (`/admin`, `/agent`, `/onboarding`, `/cuenta`); client guards in `src/components/auth/NativeRouteGuards.tsx`.
+- Server gate in `proxy.ts` (`/admin`, `/agent`, `/onboarding`, `/cuenta`); client guards in `src/components/auth/NativeRouteGuards.tsx`.
 
 ---
 
