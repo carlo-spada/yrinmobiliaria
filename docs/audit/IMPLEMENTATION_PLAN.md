@@ -52,8 +52,15 @@ Cambios de DB autorizados por el owner para esta fase; migraciones aplicadas ví
 - **7.4 Retiro del router-shim** ✓ (PR #31) — borrado `src/lib/router-compat.tsx`; los 33 importadores migrados a `next/link` + `next/navigation` nativos. Lo que Next no tiene nativo va en primitivas propias: `@/components/nav/Navigate`, `@/components/NavLink`, `@/hooks/useSearchParamsState`. Las 3 primitivas + los guards a mano; los ~32 swaps mecánicos vía workflow de 32 agentes, verificados (cero refs residuales, typecheck limpio). Ya no hay dependencia de `react-router-dom`.
 - **7.5 Perfil en trigger de DB** ✓ (PR #32) — trigger `on_auth_user_created` + función `handle_new_user` (SECURITY DEFINER, `search_path` fijado, EXECUTE revocado → no aparece en lints 0028/0029) crea el `profile` al alta en `auth.users`, server-side y atómico; elimina el insert client-side de `signUp` (que dejaba huérfanos y fallaba por RLS con confirmación de email). `manual/0008` aplicado vía MCP + verificado con alta de prueba en transacción revertida; advisors sin findings nuevos.
 
+### ✅ Phase 8 (P0 slice) — fixes de UX públicos críticos (PR [#34](https://github.com/carlo-spada/yrinmobiliaria/pull/34))
+Adelanto del P0 de la Phase 8 (flujo core roto, hallado recorriendo la app en navegador; **no son regresiones de Phase 7**, son bugs preexistentes):
+- **Detalle de propiedad daba 401 → "no se encontraron propiedades"**: `useProperty` embebía el `profiles` del agente pidiendo columnas revocadas a `anon` (email/phone/whatsapp, bloqueadas en `manual/0001`) → PostgREST 401 a toda la query. Embed recortado al set público legible por anon (mismo que usa la lista). Sin cambio de DB, sin exponer PII.
+- **Faltaba Header/Footer** en `PropertyDetail`/`AgentDirectory`/`AgentProfile`: cada `view.tsx` envuelto en `PageLayout` (cubre estados carga/no-encontrado/contenido).
+- **500 de SSR** por `loading-spinner.tsx` (usa `<motion.div>` de framer-motion) sin `'use client'`.
+Verificado en vivo en navegador. El resto de la auditoría UX/UI queda para la **Phase 8 completa** (tras Fases 3–6). Ver abajo.
+
 ### ▶ Next up
-Phase 3 (governance de migraciones), Phase 4 (perf/caching), Phase 5 (SEO i18n), Phase 6 (analytics). **Phase 7 completa.** Ver abajo.
+Phase 3 (governance de migraciones), Phase 4 (perf/caching), Phase 5 (SEO i18n), Phase 6 (analytics), luego **Phase 8 (auditoría UX/UI browser-driven)**. **Phase 7 completa**; P0 de UX ya shippeado (#34). Ver abajo.
 
 ---
 
@@ -163,4 +170,16 @@ Phase 3 (governance de migraciones), Phase 4 (perf/caching), Phase 5 (SEO i18n),
 - **7.3** ✅ DONE (PR #28) — Deleted orphaned `tailwind.config.ts`; `@plugin tailwindcss-animate` (restores 34 dead animations) + `@custom-variant dark` (class-based, dormant) in `index.css`; `components.json` `config:""` (H11).
 - **7.4** ✅ DONE (PR #31) — Router-shim retired: `src/lib/router-compat.tsx` deleted; 33 importers on native `next/link`+`next/navigation`; non-native cases in `@/components/nav/Navigate` + `@/components/NavLink` + `@/hooks/useSearchParamsState`. No `react-router-dom`.
 - **7.5** ✅ DONE (PR #32) — `signUp` profile creation moved to a `handle_new_user` DB trigger on `auth.users` (security definer, EXECUTE revoked, on-conflict-do-nothing); client-side insert removed. `manual/0008`, applied + verified live.
+
+---
+
+## Phase 8 — UX/UI audit & fixes (browser-driven)
+
+A runtime UX/UI pass over the **live app** (not just static code analysis): drive the running app in a browser (Claude Preview / Chrome MCP), catalog issues, fix in small verified waves. **Owner decision: run AFTER Phases 3–6** (P0 breakages pulled forward — see 8.0).
+
+- **8.0 P0 public-page fixes** ✅ DONE (PR #34) — shipped early (broken core flow): property-detail 401 (`useProperty` requested anon-REVOKEd agent columns `email`/`phone`/`whatsapp_number` from `profiles` → 401; trimmed embed to the anon-safe set); missing `Header`/`Footer` on `PropertyDetail`/`AgentDirectory`/`AgentProfile` (wrapped each `view.tsx` in `PageLayout`); SSR 500 from `loading-spinner.tsx` (added `'use client'` for framer-motion). Verified live in-browser.
+- **8.1** Chrome consistency: unify the two patterns — 5 public screens use `PageLayout`, 5 use bare `<Header/><Footer/>` — on `PageLayout`. Risk Low. Effort S.
+- **8.2** `PropertyDetail` invalid-id handling: replace the literal `router.replace('/404')` with Next's `notFound()` + proper not-found UI. Risk Low. Effort S.
+- **8.3** Systematic per-route crawl (public + private): broken links, empty/error/loading states, responsive breakpoints (mobile/tablet/desktop), console errors, basic a11y (heading order, alt text, focus, contrast). Produce a prioritized backlog, then fix in waves. Risk Low. Effort M–L.
+- **Method:** browser-drive the running app (`.claude/launch.json` → `npm run dev`); navigate + read console/network via the Preview/Chrome MCP; fix in small auto-merged PRs with live verification.
 </content>
