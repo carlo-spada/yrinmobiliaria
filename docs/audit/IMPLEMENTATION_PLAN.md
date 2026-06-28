@@ -19,11 +19,14 @@ All Phase 0 tasks shipped:
 - **0.5** browserslist refreshed. ✓
 - **0.6** GitHub Actions CI (`quality` + `audit` jobs); audit gates on prod deps only. ✓
 
-### ✅ Phase 1 (partial) — repo guardrails wired
+### ✅ Phase 1 — guardrails + env validation (PRs [#17](https://github.com/carlo-spada/yrinmobiliaria/pull/17), [#19](https://github.com/carlo-spada/yrinmobiliaria/pull/19))
 
 - **Branch protection on `main`** (via API): required checks `Typecheck / Lint / Test / Build` + `Dependency audit`; `strict:false`, `enforce_admins:false`. ✓
-- **Auto-merge** enabled at repo level (`allow_auto_merge:true`) and used to land PR #17. ✓
-- **Still open in Phase 1:** 1.1 env validation, 1.2 Playwright smoke, 1.3 Dependabot, 1.4 pre-commit. Optional: flip `strict:true` and add "require PR before merging" to fully close direct-push to `main`.
+- **Auto-merge** enabled at repo level (`allow_auto_merge:true`); used to land #17/#18/#19. ✓
+- **1.1 Env validation** — `src/lib/env.ts` (Zod, fail-fast en boot, nombra la variable que falla) + centralización de los 13 lectores de `NEXT_PUBLIC_*` (Supabase, SEO/SSR, analytics/WhatsApp) en `env`; elimina la duplicación del default de `SITE_URL`. Test colocado. Revisión adversarial multi-agente previa. PR #19. ✓
+- **1.3 Dependabot** — `.github/dependabot.yml` diario agrupado (npm + github-actions), commits `chore(deps)`. PR #19. ✓
+- **Dependabot alerts + security updates** activados vía API (carril instantáneo ante avisos GHSA). ✓
+- **Diferido:** 1.2 Playwright contra preview (necesita infra de preview/secrets externos); 1.4 pre-commit husky/lint-staged (añade `prepare` a `npm ci` en la ruta de deploy; opcional y CI ya hace lint). Opcional: `strict:true` + "require PR before merging" para cerrar el push directo a `main`.
 
 ### ▶ Next up
 Phase 2 (security/RLS/storage — approval-gated for DB) or Phase 7.2 (error boundaries, low-risk). See below.
@@ -77,10 +80,10 @@ Phase 2 (security/RLS/storage — approval-gated for DB) or Phase 7.2 (error bou
 
 ## Phase 1 — CI & guardrails (follow-ups)
 
-- **1.1** Add env-var validation (Zod schema for `NEXT_PUBLIC_*` at boot). Files: `src/lib/env.ts`. Risk Low, Effort S.
-- **1.2** Add `.github/workflows` Playwright smoke against Vercel preview URL (optional, needs preview). Risk Low, Effort M.
-- **1.3** Dependabot/renovate config for weekly dep PRs. Risk Low, Effort S.
-- **1.4** Pre-commit (lint-staged) optional. Risk Low, Effort S.
+- **1.1** ✅ DONE (PR #19) — env-var validation (Zod schema for `NEXT_PUBLIC_*` at boot) in `src/lib/env.ts`; 13 consumers centralized on the validated `env`. Tested + adversarially reviewed.
+- **1.2** ⏸ Deferred — Playwright smoke against a Vercel preview URL (needs preview infra/secrets). Risk Low, Effort M.
+- **1.3** ✅ DONE (PR #19) — Dependabot daily, grouped (npm + github-actions); Dependabot alerts + security updates enabled via API.
+- **1.4** ⏸ Deferred (optional) — Pre-commit (husky/lint-staged); adds a `prepare` step to the Vercel `npm ci` deploy path and CI already lints. Risk Low, Effort S.
 
 ---
 
