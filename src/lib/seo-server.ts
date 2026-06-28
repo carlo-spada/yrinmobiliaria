@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 import { env } from '@/lib/env';
 import { getPublicSupabase } from '@/lib/supabase/server';
@@ -6,10 +6,49 @@ import type { Language } from '@/types';
 
 export const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
-/** Idioma activo leído de la cookie `locale` (default 'es'). */
-export async function getServerLocale(): Promise<Language> {
-  const cookieStore = await cookies();
-  return (cookieStore.get('locale')?.value as Language) || 'es';
+/**
+ * Locale canónico por defecto. Con i18n de URL única (sin prefijo /en todavía),
+ * el render de servidor (`<html lang>`, metadata, JSON-LD) usa este valor; el
+ * cambio a 'en' es 100% del cliente (`LanguageProvider`). La i18n por URL —y un
+ * locale derivado del segmento de ruta— llega en Phase 5.1.
+ */
+export const DEFAULT_LOCALE: Language = 'es';
+
+/**
+ * Locale con el que el servidor renderiza la ruta. Hoy siempre el canónico 'es':
+ * **no** lee la cookie `locale`, así que no marca la página como dinámica y
+ * permite render estático/ISR (Phase 4.1). Se mantiene como `Promise` para que
+ * 5.1 pueda derivarlo del segmento de URL sin tocar los 13 `page.tsx` que ya
+ * hacen `await getServerLocale()`.
+ */
+export function getServerLocale(): Promise<Language> {
+  return Promise.resolve(DEFAULT_LOCALE);
+}
+
+/**
+ * IDs de propiedades públicas (status `disponible`) para `generateStaticParams`
+ * y el sitemap. Degrada a `[]` si la BD no responde (build no se rompe; las
+ * rutas se generan on-demand vía `dynamicParams`).
+ */
+export async function listPublicPropertyIds(): Promise<string[]> {
+  try {
+    const supabase = getPublicSupabase();
+    const { data } = await supabase.from('properties').select('id').eq('status', 'disponible');
+    return (data ?? []).map((p) => p.id);
+  } catch {
+    return [];
+  }
+}
+
+/** Slugs de agentes públicos (directorio) para `generateStaticParams` y el sitemap. */
+export async function listPublicAgentSlugs(): Promise<string[]> {
+  try {
+    const supabase = getPublicSupabase();
+    const { data } = await supabase.rpc('get_public_agents');
+    return ((data ?? []) as Array<{ display_name: string }>).map((a) => toSlug(a.display_name));
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -44,7 +83,9 @@ export interface PropertyMeta {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export async function fetchPropertyMeta(id: string): Promise<PropertyMeta | null> {
+// `cache()` deduplica la consulta dentro de un mismo request: `generateMetadata`
+// y el cuerpo de la página comparten una sola lectura a Supabase por render.
+export const fetchPropertyMeta = cache(async (id: string): Promise<PropertyMeta | null> => {
   if (!UUID_RE.test(id)) return null;
 
   const supabase = getPublicSupabase();
@@ -76,7 +117,7 @@ export async function fetchPropertyMeta(id: string): Promise<PropertyMeta | null
     status: data.status ?? 'disponible',
     images,
   };
-}
+});
 
 export interface AgentMeta {
   id: string;
@@ -89,7 +130,7 @@ function toSlug(name: string) {
   return name.toLowerCase().replace(/ /g, '-');
 }
 
-export async function fetchAgentMeta(slug: string): Promise<AgentMeta | null> {
+export const fetchAgentMeta = cache(async (slug: string): Promise<AgentMeta | null> => {
   const supabase = getPublicSupabase();
   const { data } = await supabase.rpc('get_public_agents');
   const agents = (data ?? []) as Array<{
@@ -107,7 +148,7 @@ export async function fetchAgentMeta(slug: string): Promise<AgentMeta | null> {
     bio: { es: match.bio_es ?? '', en: match.bio_en ?? '' },
     photo_url: match.photo_url,
   };
-}
+});
 
 export function formatMXN(price: number) {
   return new Intl.NumberFormat('es-MX', {
@@ -217,6 +258,8 @@ export function buildPersonLd(agent: AgentMeta, language: Language): Record<stri
     ...(agent.photo_url ? { image: agent.photo_url } : {}),
     jobTitle: language === 'es' ? 'Asesor inmobiliario' : 'Real Estate Agent',
     worksFor: { '@type': 'Organization', name: 'YR Inmobiliaria', url: SITE_URL },
-    url: `${SITE_URL}/agentes/${agent.display_name.toLowerCase().replace(/ /g, '-')}`,
+    // Mismo `toSlug` que generateStaticParams / sitemap / fetchAgentMeta: una
+    // sola fuente para el slug (evita que el `url` del JSON-LD diverja).
+    url: `${SITE_URL}/agentes/${toSlug(agent.display_name)}`,
   };
 }

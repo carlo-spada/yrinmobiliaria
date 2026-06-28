@@ -8,12 +8,25 @@ import {
   formatMXN,
   getServerLocale,
   hreflangFor,
+  listPublicPropertyIds,
   SITE_URL,
 } from '@/lib/seo-server';
 
 import RouteView from './view';
 
 type PageProps = { params: Promise<{ id: string }> };
+
+// ISR: prerenderiza cada propiedad disponible en build y revalida cada hora.
+// `dynamicParams` deja que las propiedades nuevas (no incluidas en el build) se
+// generen on-demand y se cacheen. El cuerpo es `ssr:false`, así que lo que se
+// prerenderiza es el chrome + metadata + JSON-LD (la superficie SEO).
+export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const ids = await listPublicPropertyIds();
+  return ids.map((id) => ({ id }));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;

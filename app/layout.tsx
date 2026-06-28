@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
-import { cookies } from 'next/headers';
 
 import '@/index.css';
 
 import { env } from '@/lib/env';
-import type { Language } from '@/types';
+import { DEFAULT_LOCALE } from '@/lib/seo-server';
 
 import { Providers } from './providers';
 
@@ -49,14 +48,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const locale = (cookieStore.get('locale')?.value as Language) || 'es';
-
+// El layout NO lee la cookie `locale`: hacerlo (vía `cookies()`) marca TODA la
+// app como dinámica y bloquea el render estático/ISR de las páginas públicas
+// (Phase 4.1). Renderizamos el locale canónico por defecto ('es') de forma
+// estática; el `LanguageProvider` (cliente) lee la preferencia persistida al
+// montar y cambia a 'en' si aplica. La i18n por URL (/en) llega en Phase 5.1.
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={locale} className={`${inter.variable} ${playfair.variable}`}>
+    <html lang={DEFAULT_LOCALE} className={`${inter.variable} ${playfair.variable}`}>
       <body>
-        <Providers initialLanguage={locale}>{children}</Providers>
+        <Providers initialLanguage={DEFAULT_LOCALE}>{children}</Providers>
       </body>
     </html>
   );

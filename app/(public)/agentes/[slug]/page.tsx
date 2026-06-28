@@ -6,11 +6,22 @@ import {
   fetchAgentMeta,
   getServerLocale,
   hreflangFor,
+  listPublicAgentSlugs,
 } from '@/lib/seo-server';
 
 import RouteView from './view';
 
 type PageProps = { params: Promise<{ slug: string }> };
+
+// ISR: prerenderiza cada agente del directorio público y revalida cada hora.
+// `dynamicParams` cubre agentes nuevos on-demand.
+export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const slugs = await listPublicAgentSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
