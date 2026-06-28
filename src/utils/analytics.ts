@@ -1,6 +1,8 @@
 // Google Analytics utilities
 // GA4 is automatically initialized if NEXT_PUBLIC_GA_MEASUREMENT_ID env var is set
 
+import { env } from '@/lib/env';
+
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
@@ -8,7 +10,7 @@ declare global {
   }
 }
 
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+export const GA_MEASUREMENT_ID = env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 // Initialize Google Analytics
 export const initGA = () => {

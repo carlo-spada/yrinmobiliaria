@@ -29,6 +29,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { env } from "@/lib/env";
 import { useParams, Link, useNavigate } from '@/lib/router-compat';
 
 const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
@@ -118,7 +119,7 @@ export default function PropertyDetail() {
   const getImageAlt = (index: number) => property.imagesAlt?.[index]?.[language] || property.title[language];
 
   const handleWhatsApp = () => {
-    const phoneNumber = getSetting('whatsapp_number') || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+    const phoneNumber = getSetting('whatsapp_number') || env.NEXT_PUBLIC_WHATSAPP_NUMBER;
     if (!phoneNumber) {
       toast({
         title: language === "es" ? "Error" : "Error",

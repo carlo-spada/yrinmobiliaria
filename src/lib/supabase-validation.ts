@@ -1,24 +1,13 @@
+import { validateClientEnv } from './env';
+
 /**
- * Validates that required Supabase environment variables are present
- * @returns Object with isValid boolean and error message if invalid
+ * @deprecated Usa `validateClientEnv` de `@/lib/env`, que valida todas las
+ * variables `NEXT_PUBLIC_*`. Se mantiene por compatibilidad con
+ * `@/utils/supabaseValidation`.
+ *
+ * Valida que las variables de Supabase estén presentes.
+ * @returns `{ isValid, error? }`
  */
 export function validateSupabaseEnv(): { isValid: boolean; error?: string } {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!supabaseUrl || supabaseUrl === 'undefined') {
-    return {
-      isValid: false,
-      error: 'NEXT_PUBLIC_SUPABASE_URL is missing or invalid',
-    };
-  }
-
-  if (!supabaseKey || supabaseKey === 'undefined') {
-    return {
-      isValid: false,
-      error: 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing or invalid',
-    };
-  }
-
-  return { isValid: true };
+  return validateClientEnv();
 }

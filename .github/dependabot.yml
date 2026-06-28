@@ -1,0 +1,55 @@
+# Actualizaciones automáticas de dependencias.
+#
+# Dependabot chequea a diario (L–V) y abre PRs agrupados que disparan el CI y son
+# auto-mergeables. El intervalo mínimo de Dependabot es "daily"; para "varios
+# chequeos al día" haría falta Renovate, innecesario para el tamaño de este repo.
+#
+# Los PARCHES DE SEGURIDAD no dependen de este schedule: llegan al instante por el
+# canal "Dependabot security updates" (Settings → Code security), que abre un PR
+# en cuanto se publica un aviso GHSA.
+version: 2
+updates:
+  # --- Dependencias npm de la app ---
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "06:00"
+      timezone: "America/Mexico_City"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    groups:
+      # minor/patch de producción en un solo PR (bajo riesgo, auto-mergeable).
+      production-minor-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      # minor/patch de herramientas de desarrollo en otro PR.
+      dev-minor-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Los majors quedan como PRs individuales (requieren revisión humana).
+
+  # --- Actions del workflow de CI ---
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      timezone: "America/Mexico_City"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

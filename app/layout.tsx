@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 
 import '@/index.css';
 
+import { env } from '@/lib/env';
 import type { Language } from '@/types';
 
 import { Providers } from './providers';
@@ -22,7 +23,7 @@ const playfair = Playfair_Display({
   display: 'swap',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yrinmobiliaria.com';
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

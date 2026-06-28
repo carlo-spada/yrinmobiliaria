@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 
+import { env } from '@/lib/env';
 import { getPublicSupabase } from '@/lib/supabase/server';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yrinmobiliaria.com';
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
 // Re-genera el sitemap cada hora (ISR).
 export const revalidate = 3600;

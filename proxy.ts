@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { env } from '@/lib/env';
+
 // Rutas privadas: si no hay sesión, redirige a /auth (server-side, sin parpadeo).
 // El control fino por rol lo siguen haciendo los guards de la isla legacy
 // (RequireRole) una vez montada en cliente.
@@ -10,8 +12,8 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
       cookies: {
         getAll() {
