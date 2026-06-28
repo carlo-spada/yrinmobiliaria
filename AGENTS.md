@@ -56,7 +56,7 @@ src/
 ├── hooks/          # Data fetching, auth, utilities
 ├── screens/        # Client screens mounted by view.tsx (was src/pages)
 ├── integrations/   # Supabase client + generated types
-├── lib/            # router-compat shim, Supabase SSR helpers, SEO builders
+├── lib/            # Supabase SSR helpers, SEO builders
 └── utils/          # Helpers, validation, i18n, image upload
 supabase/           # schema.sql, policies.sql, functions/, manual/, config.toml
 e2e/                # Playwright smoke
@@ -85,7 +85,7 @@ npm run test:e2e     # Playwright smoke (PLAYWRIGHT_BASE_URL for prod / local ne
 - **TypeScript strict:** avoid `any`; `next build` typechecks.
 - **Naming:** `PascalCase.tsx` for components, `camelCase.ts` for utilities.
 - **Bilingual required:** all UI text via `LanguageContext` (ES/EN).
-- **Reuse:** `ResponsiveImage` for images, shadcn for UI, the `@/lib/router-compat` shim for navigation in client screens (no `react-router-dom`).
+- **Reuse:** `ResponsiveImage` for images, shadcn for UI; navigate with native `next/link` + `next/navigation` (no `react-router-dom`; the old router-compat shim was retired in Phase 7.4). Where Next lacks an equivalent: `@/components/nav/Navigate`, `@/components/NavLink`, `@/hooks/useSearchParamsState`.
 - **SEO:** public-page metadata + JSON-LD are produced server-side in `app/(public)/**/page.tsx` (via `generateMetadata` and `@/components/seo/JsonLd`) — do not add client-side meta/JSON-LD components.
 - **Assets:** pre-optimized AVIF/WebP in `/public`.
 
