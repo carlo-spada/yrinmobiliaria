@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSlug } from '@/hooks/useAgentBySlug';
 import { PublicAgent } from '@/hooks/usePublicAgents';
 import { useServiceZones } from '@/hooks/useServiceZones';
+import { resolveAgentZones } from '@/utils/serviceZones';
 
 
 interface AgentCardProps {
@@ -45,18 +46,13 @@ export function AgentCard({ agent, propertiesCount = 0 }: AgentCardProps) {
     .toUpperCase()
     .substring(0, 2);
 
-  // `profiles.service_zones` almacena IDs de zona (uuid); los resolvemos a su
-  // nombre localizado vía `service_zones`. Los IDs desconocidos o inactivos se
-  // OMITEN (nunca se muestra un uuid en crudo).
+  // `profiles.service_zones` guarda IDs de zona (uuid); se resuelven a su nombre
+  // localizado y se omiten los IDs sin match (ver resolveAgentZones).
   const { zones } = useServiceZones();
-  const resolvedZones = useMemo(() => {
-    const nameById = new Map(
-      zones.map((z) => [z.id, language === 'es' ? z.name_es : z.name_en] as const)
-    );
-    return (agent.service_zones ?? [])
-      .map((id) => ({ id, name: nameById.get(id) }))
-      .filter((z): z is { id: string; name: string } => Boolean(z.name));
-  }, [zones, agent.service_zones, language]);
+  const resolvedZones = useMemo(
+    () => resolveAgentZones(zones, agent.service_zones, language),
+    [zones, agent.service_zones, language]
+  );
 
   return (
     <Link href={`/agentes/${slug}`}>
