@@ -364,6 +364,34 @@ export function buildBreadcrumbLd(items: Array<{ name: string; url: string }>): 
   };
 }
 
+export interface ArticleLdInput {
+  title: string;
+  slug: string;
+  description: string;
+  datePublished?: string;
+  dateModified?: string;
+}
+
+export function buildArticleLd(article: ArticleLdInput, language: Language): Record<string, unknown> {
+  const path = `/blog/${article.slug}`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.description,
+    ...(article.datePublished ? { datePublished: article.datePublished } : {}),
+    ...(article.dateModified ? { dateModified: article.dateModified } : {}),
+    inLanguage: language,
+    author: { '@type': 'Organization', name: 'YR Inmobiliaria' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'YR Inmobiliaria',
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/favicon.ico` },
+    },
+    mainEntityOfPage: localeUrl(path, language),
+  };
+}
+
 export function buildPersonLd(agent: AgentMeta, language: Language): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
