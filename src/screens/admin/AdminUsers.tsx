@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { RoleGuard } from '@/components/admin/RoleGuard';
 import { UserRowSkeleton } from '@/components/admin/TableSkeleton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -428,15 +428,17 @@ function UsersContent() {
                 <TableRow key={user.user_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleEditClick(user)}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {/* Avatar (no next/image): photo_url puede ser una URL arbitraria
-                          o quedar rota (p.ej. blobs heredados) — AvatarImage degrada al
-                          fallback de inicial/ícono en vez de romper como haría next/image. */}
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.photo_url || undefined} alt={user.display_name} className="object-cover" />
-                        <AvatarFallback className="bg-primary/10">
-                          <User className="h-5 w-5 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
+                      {/* OptimizedAvatar: optimiza vía next/image SOLO las fotos de
+                          nuestro Storage; para URLs arbitrarias/rotas (p.ej. blobs
+                          heredados) degrada a <img>/ícono en vez de romper. */}
+                      <OptimizedAvatar
+                        src={user.photo_url}
+                        alt={user.display_name}
+                        sizePx={40}
+                        className="h-10 w-10"
+                        fallbackClassName="bg-primary/10"
+                        fallback={<User className="h-5 w-5 text-primary" />}
+                      />
                       <div>
                         <p className="font-medium">{user.display_name || 'Sin nombre'}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>

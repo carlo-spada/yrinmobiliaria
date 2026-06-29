@@ -44,13 +44,16 @@ interface ImageUploadZoneProps {
   onImagesChange: (images: EditorImage[]) => void;
   propertyId?: string;
   maxImages?: number;
+  /** Lado máximo (px) tras optimizar. Avatares de perfil pasan 512; default 1920. */
+  maxDimension?: number;
 }
 
 export const ImageUploadZone = ({
   images,
   onImagesChange,
   propertyId,
-  maxImages = 10
+  maxImages = 10,
+  maxDimension,
 }: ImageUploadZoneProps) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -92,7 +95,7 @@ export const ImageUploadZone = ({
       // Continues even if individual uploads fail (graceful degradation)
       for (const file of fileArray) {
         try {
-          const result = await uploadImage(file, propertyId);
+          const result = await uploadImage(file, propertyId, maxDimension);
           attempts.push({ file, success: true, result });
         } catch (error) {
           attempts.push({

@@ -2,7 +2,7 @@ import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -65,12 +65,14 @@ export function AgentContactCard({ agent, propertyId }: AgentContactCardProps) {
 
         {/* Agent Info */}
         <div className="flex items-start gap-4">
-          <Avatar className="h-24 w-24 ring-2 ring-primary/20">
-            <AvatarImage src={agent.photo_url || ''} alt={agent.display_name} />
-            <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <OptimizedAvatar
+            src={agent.photo_url}
+            alt={agent.display_name}
+            sizePx={96}
+            className="h-24 w-24 ring-2 ring-primary/20"
+            fallbackClassName="text-xl font-semibold bg-primary/10 text-primary"
+            fallback={initials}
+          />
           <div className="flex-1 min-w-0">
             <h4 className="text-base font-semibold text-foreground">{agent.display_name}</h4>
             {agent.agent_level && (
