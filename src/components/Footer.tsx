@@ -14,11 +14,14 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   // Get dynamic settings with fallbacks
-  const companyPhone = getSetting('company_phone', '(951) 123-4567');
+  const companyPhone = getSetting('company_phone', '(951) 610 6031');
   const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
-  const companyAddress = getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México');
-  const facebookUrl = getSetting('facebook_url', 'https://facebook.com');
-  const instagramUrl = getSetting('instagram_url', 'https://instagram.com');
+  const companyAddress = getSetting('company_address', 'Calle Independencia 12345, Centro Histórico, Oaxaca de Juárez, Oaxaca, México');
+  const facebookUrl = getSetting('facebook_url', 'https://www.facebook.com/yas.ruiz.vasquez.2025');
+  const instagramUrl = getSetting('instagram_url', 'https://www.instagram.com/yasr_ux/');
+  // href de teléfono en E.164 desde los dígitos de whatsapp_number (ya con código
+  // de país); el texto visible sigue mostrando company_phone con formato local.
+  const phoneHref = `tel:+${String(getSetting('whatsapp_number', '529516106031')).replace(/\D/g, '')}`;
 
   const quickLinks = [
     { label: t.nav?.properties || 'Propiedades', href: '/propiedades' },
@@ -127,7 +130,7 @@ export function Footer() {
               ) : (
                 <>
                 <a
-                  href={`tel:${String(companyPhone).replace(/\s+/g, '')}`}
+                  href={phoneHref}
                   className="flex items-center gap-3 text-sm text-secondary-foreground/80 hover:text-accent transition-colors group"
                 >
                   <Phone className="h-5 w-5 flex-shrink-0 group-hover:text-accent" />

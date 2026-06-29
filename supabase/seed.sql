@@ -13,10 +13,17 @@ insert into public.service_zones (name_es, name_en, active, display_order) value
   ('San Felipe del Agua',  'San Felipe del Agua', true, 3);
 
 -- Configuración del sitio (clave/valor jsonb)
+-- Claves = las que consume el cliente (company_*/whatsapp_number/…); valores =
+-- la NAP real (pública) para que un DB fresco coincida con producción.
 insert into public.site_settings (setting_key, setting_value, category, description) values
-  ('business_name',   '"YR Inmobiliaria"'::jsonb,          'general', 'Nombre del negocio'),
-  ('contact_email',   '"contacto@yrinmobiliaria.com"'::jsonb,'contact', 'Email de contacto'),
-  ('whatsapp_number', '"5219511234567"'::jsonb,            'contact', 'WhatsApp del negocio');
+  ('company_name',    '"YR Inmobiliaria"'::jsonb,                                                              'business', 'Nombre del negocio'),
+  ('company_email',   '"contacto@yrinmobiliaria.com"'::jsonb,                                                   'contact',  'Email de contacto'),
+  ('company_phone',   '"(951) 610 6031"'::jsonb,                                                                'contact',  'Teléfono (formato local de display)'),
+  ('whatsapp_number', '"529516106031"'::jsonb,                                                                  'contact',  'WhatsApp (código de país + número, solo dígitos)'),
+  ('company_address', '"Calle Independencia 12345, Centro Histórico, Oaxaca de Juárez, Oaxaca, México"'::jsonb, 'contact',  'Dirección'),
+  ('business_hours',  '"Lunes a Viernes: 9:00 AM - 6:00 PM\nFines de semana: 10:00 AM - 4:00 PM"'::jsonb,       'business', 'Horario de atención'),
+  ('facebook_url',    '"https://www.facebook.com/yas.ruiz.vasquez.2025"'::jsonb,                                'social',   'Facebook'),
+  ('instagram_url',   '"https://www.instagram.com/yasr_ux/"'::jsonb,                                            'social',   'Instagram');
 
 -- Propiedades de ejemplo (agent_id null por ahora; status disponible = público)
 insert into public.properties

@@ -42,12 +42,12 @@ export default function Contact() {
   const honeypotRef = useRef<HTMLInputElement>(null);
 
   // Get dynamic settings with fallbacks
-  const companyPhone = getSetting('company_phone', '(951) 123-4567');
+  const companyPhone = getSetting('company_phone', '(951) 610 6031');
   const companyEmail = getSetting('company_email', 'contacto@yrinmobiliaria.com');
-  const companyAddress = getSetting('company_address', 'Calle Independencia 123, Centro Histórico, Oaxaca de Juárez, Oaxaca, México');
-  const businessHours = getSetting('business_hours', 'Lunes a Viernes: 9:00 AM - 6:00 PM\nSábados: 10:00 AM - 2:00 PM');
-  const facebookUrl = getSetting('facebook_url', 'https://facebook.com');
-  const instagramUrl = getSetting('instagram_url', 'https://instagram.com');
+  const companyAddress = getSetting('company_address', 'Calle Independencia 12345, Centro Histórico, Oaxaca de Juárez, Oaxaca, México');
+  const businessHours = getSetting('business_hours', 'Lunes a Viernes: 9:00 AM - 6:00 PM\nFines de semana: 10:00 AM - 4:00 PM');
+  const facebookUrl = getSetting('facebook_url', 'https://www.facebook.com/yas.ruiz.vasquez.2025');
+  const instagramUrl = getSetting('instagram_url', 'https://www.instagram.com/yasr_ux/');
 
   const {
     register,
@@ -156,7 +156,7 @@ export default function Contact() {
     {
       icon: Send,
       label: 'WhatsApp',
-      url: `https://wa.me/${getSetting('whatsapp_number', '5219511234567')}`,
+      url: `https://wa.me/${getSetting('whatsapp_number', '529516106031')}`,
       color: 'hover:text-[#25D366]',
     },
   ];
