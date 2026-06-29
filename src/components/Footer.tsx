@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from 'lucide-react';
-import Link from 'next/link';
 
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';

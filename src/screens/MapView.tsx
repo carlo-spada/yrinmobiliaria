@@ -14,7 +14,6 @@ import {
   Maximize2,
   LandPlot,
 } from "lucide-react";
-import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
@@ -25,6 +24,7 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./MapView.css";
 import { PageLayout } from "@/components/layout";
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { MapErrorBoundary } from "@/components/MapErrorBoundary";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { Badge } from "@/components/ui/badge";

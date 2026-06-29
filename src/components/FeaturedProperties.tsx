@@ -1,7 +1,6 @@
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 
-
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { PropertyGridSkeleton } from '@/components/ui/skeleton-loader';

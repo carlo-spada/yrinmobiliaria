@@ -1,26 +1,21 @@
 import { cache } from 'react';
 
 import { env } from '@/lib/env';
+import { DEFAULT_LOCALE, withLocale } from '@/lib/i18n';
 import { getPublicSupabase } from '@/lib/supabase/server';
 import type { Language } from '@/types';
 import { slugify } from '@/utils/slug';
 
 export const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
-/**
- * Locale canónico por defecto. Con i18n de URL única (sin prefijo /en todavía),
- * el render de servidor (`<html lang>`, metadata, JSON-LD) usa este valor; el
- * cambio a 'en' es 100% del cliente (`LanguageProvider`). La i18n por URL —y un
- * locale derivado del segmento de ruta— llega en Phase 5.1.
- */
-export const DEFAULT_LOCALE: Language = 'es';
+// Locale canónico por defecto ('es'); fuente única en `@/lib/i18n`. Re-exportado
+// para los consumidores existentes (p. ej. `app/layout.tsx`).
+export { DEFAULT_LOCALE };
 
 /**
- * Locale con el que el servidor renderiza la ruta. Hoy siempre el canónico 'es':
- * **no** lee la cookie `locale`, así que no marca la página como dinámica y
- * permite render estático/ISR (Phase 4.1). Se mantiene como `Promise` para que
- * 5.1 pueda derivarlo del segmento de URL sin tocar los 13 `page.tsx` que ya
- * hacen `await getServerLocale()`.
+ * Locale del servidor para las rutas en la RAÍZ (español canónico). Las rutas
+ * espejo bajo `/en` no llaman a esto: pasan `'en'` explícito a la metadata y al
+ * JSON-LD. No lee cookies → no fuerza render dinámico (mantiene estático/ISR).
  */
 export function getServerLocale(): Promise<Language> {
   return Promise.resolve(DEFAULT_LOCALE);
@@ -142,20 +137,27 @@ export async function listPublicAgentSlugs(): Promise<string[]> {
   }
 }
 
+/** URL absoluta de una ruta canónica ES en un locale dado ('/'→raíz; 'en'→/en). */
+function localeUrl(path: string, locale: Language): string {
+  const rel = withLocale(path, locale);
+  return rel === '/' ? SITE_URL : `${SITE_URL}${rel}`;
+}
+
 /**
- * `alternates` (canonical + hreflang). Como el contenido vive en columnas
- * *_es/*_en bajo una sola URL por página (decisión i18n del plan), ambos
- * idiomas apuntan a la misma ruta canónica.
+ * `alternates` (canonical autoreferencial + hreflang recíproco) para un `path`
+ * canónico ES y el `locale` de la página. El español vive en la raíz y el inglés
+ * bajo `/en`; cada página declara su propio canonical y ambas se enlazan
+ * mutuamente vía hreflang (con `x-default` → español).
  */
-export function hreflangFor(path: string) {
-  const url = `${SITE_URL}${path === '/' ? '' : path}`;
-  const canonical = url || SITE_URL;
+export function hreflangFor(path: string, locale: Language = DEFAULT_LOCALE) {
+  const esUrl = localeUrl(path, 'es');
+  const enUrl = localeUrl(path, 'en');
   return {
-    canonical,
+    canonical: locale === 'en' ? enUrl : esUrl,
     languages: {
-      es: canonical,
-      en: canonical,
-      'x-default': canonical,
+      es: esUrl,
+      en: enUrl,
+      'x-default': esUrl,
     },
   };
 }

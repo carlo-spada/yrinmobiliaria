@@ -3,7 +3,9 @@ import { describe, it, expect } from 'vitest';
 import {
   buildLocalBusinessLd,
   buildOrganizationLd,
+  hreflangFor,
   parseAddress,
+  SITE_URL,
   toE164,
   type SiteSettingsMap,
 } from '@/lib/seo-server';
@@ -141,5 +143,34 @@ describe('buildLocalBusinessLd', () => {
     expect(ld.email).toBeUndefined();
     expect(ld.geo).toBeDefined();
     expect(ld.priceRange).toBe('$$');
+  });
+});
+
+describe('hreflangFor', () => {
+  it('página ES: canonical en la raíz + hreflang recíproco (x-default → es)', () => {
+    const a = hreflangFor('/propiedades', 'es');
+    expect(a.canonical).toBe(`${SITE_URL}/propiedades`);
+    expect(a.languages).toEqual({
+      es: `${SITE_URL}/propiedades`,
+      en: `${SITE_URL}/en/propiedades`,
+      'x-default': `${SITE_URL}/propiedades`,
+    });
+  });
+
+  it('página EN: canonical bajo /en, mismas alternativas', () => {
+    const a = hreflangFor('/propiedades', 'en');
+    expect(a.canonical).toBe(`${SITE_URL}/en/propiedades`);
+    expect(a.languages.es).toBe(`${SITE_URL}/propiedades`);
+    expect(a.languages.en).toBe(`${SITE_URL}/en/propiedades`);
+  });
+
+  it('home: raíz vs /en (sin slash colgante)', () => {
+    expect(hreflangFor('/', 'es').canonical).toBe(SITE_URL);
+    expect(hreflangFor('/', 'en').canonical).toBe(`${SITE_URL}/en`);
+    expect(hreflangFor('/').languages['x-default']).toBe(SITE_URL);
+  });
+
+  it('default locale es es (firma retrocompatible)', () => {
+    expect(hreflangFor('/contacto').canonical).toBe(`${SITE_URL}/contacto`);
   });
 });

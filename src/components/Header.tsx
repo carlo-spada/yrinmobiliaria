@@ -1,9 +1,8 @@
 import { Calendar, ChevronDown, Heart, Mail, MapPin, Menu, Phone, X } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { lazy, Suspense, useEffect, useState } from 'react';
 
-
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,

@@ -4,6 +4,8 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { forwardRef, type AnchorHTMLAttributes, type ReactNode } from "react";
 
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localizedHref, stripLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface NavLinkCompatProps
@@ -27,7 +29,10 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
     { className, activeClassName, pendingClassName: _pendingClassName, to, end, children, ...props },
     ref
   ) => {
-    const pathname = usePathname() ?? "";
+    const { language } = useLanguage();
+    // El estado activo se compara contra la ruta canónica (sin prefijo /en), y el
+    // href se localiza para enlazar al árbol del idioma activo.
+    const pathname = stripLocale(usePathname() ?? "");
     const targetPath = to.split("?")[0].split("#")[0];
     const isActive = end
       ? pathname === targetPath
@@ -36,7 +41,7 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
     return (
       <NextLink
         ref={ref}
-        href={to}
+        href={localizedHref(to, language)}
         aria-current={isActive ? "page" : undefined}
         className={cn(className, isActive && activeClassName)}
         {...props}

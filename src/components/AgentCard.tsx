@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion';
 import { MapPin, Languages } from 'lucide-react';
-import Link from 'next/link';
 import { useMemo } from 'react';
 
-
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';

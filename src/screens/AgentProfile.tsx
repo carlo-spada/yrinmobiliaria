@@ -9,11 +9,10 @@ import {
   Calendar,
   ClipboardList,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
-
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Badge } from '@/components/ui/badge';

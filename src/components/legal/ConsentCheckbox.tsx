@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';

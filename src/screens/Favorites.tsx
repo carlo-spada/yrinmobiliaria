@@ -1,5 +1,4 @@
 import { Heart, ArrowLeft, Trash2, X, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
 import { useState } from 'react';
 
 
@@ -7,6 +6,7 @@ import { FadeIn } from '@/components/animations/FadeIn';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {

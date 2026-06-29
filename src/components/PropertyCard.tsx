@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
 import { Bed, Bath, Maximize, MapPin } from 'lucide-react';
-import Link from 'next/link';
 import { memo } from 'react';
 
 
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Badge } from '@/components/ui/badge';
