@@ -14,6 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { stripLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -58,8 +59,18 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDeferredActions, setShowDeferredActions] = useState(false);
   const { t, language } = useLanguage();
+  const { getSetting } = usePublicSiteSettings();
   const pathname = usePathname() ?? '';
   const companyName = 'YR Inmobiliaria';
+
+  // NAP real desde site_settings (misma fuente que la página de Contacto y el
+  // JSON-LD de 5.3). Los fallbacks son los valores reales por si la BD no
+  // responde; el href de teléfono usa los dígitos de whatsapp_number (ya con
+  // código de país).
+  const companyPhone = String(getSetting('company_phone', '(951) 610 6031'));
+  const companyEmail = String(getSetting('company_email', 'contacto@yrinmobiliaria.com'));
+  const companyAddress = String(getSetting('company_address', 'Oaxaca de Juárez, Oaxaca'));
+  const phoneHref = `tel:+${String(getSetting('whatsapp_number', '529516106031')).replace(/\D/g, '')}`;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -439,19 +450,19 @@ export function Header() {
                     <div className="space-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4" />
-                        <a href="tel:+529511234567" className="hover:text-primary">
-                          +52 (951) 123-4567
+                        <a href={phoneHref} className="hover:text-primary">
+                          {companyPhone}
                         </a>
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        <a href="mailto:contacto@yrinmobiliaria.com" className="hover:text-primary">
-                          contacto@yrinmobiliaria.com
+                        <a href={`mailto:${companyEmail}`} className="hover:text-primary">
+                          {companyEmail}
                         </a>
                       </div>
                       <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 mt-0.5" />
-                        <span>Oaxaca de Juárez, Oaxaca</span>
+                        <span>{companyAddress}</span>
                       </div>
                     </div>
                   </div>
