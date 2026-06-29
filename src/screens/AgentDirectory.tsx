@@ -159,7 +159,7 @@ export default function AgentDirectory() {
               <SelectContent>
                 <SelectItem value="all">{language === 'es' ? 'Todas las zonas' : 'All zones'}</SelectItem>
                 {zones.map((zone) => (
-                  <SelectItem key={zone.id} value={zone.name_es}>
+                  <SelectItem key={zone.id} value={zone.id}>
                     {language === 'es' ? zone.name_es : zone.name_en}
                   </SelectItem>
                 ))}

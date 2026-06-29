@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
 
 import { PropertyCard } from '@/components/PropertyCard';
@@ -23,6 +24,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAgentBySlug } from '@/hooks/useAgentBySlug';
 import { useProperties } from '@/hooks/useProperties';
 import { useAgentStats } from '@/hooks/usePublicAgents';
+import { useServiceZones } from '@/hooks/useServiceZones';
+import { resolveAgentZones } from '@/utils/serviceZones';
 
 
 const levelColors = {
@@ -46,6 +49,14 @@ export default function AgentProfile() {
   const { data: agent, isLoading } = useAgentBySlug(slug || '');
   const { data: stats } = useAgentStats(agent?.id || '');
   const { data: allProperties = [] } = useProperties();
+  const { zones } = useServiceZones();
+
+  // `profiles.service_zones` guarda IDs de zona (uuid); se resuelven a su nombre
+  // localizado y se omiten los IDs sin match (ver resolveAgentZones).
+  const resolvedZones = useMemo(
+    () => resolveAgentZones(zones, agent?.service_zones, language),
+    [zones, agent?.service_zones, language]
+  );
 
   // Filter properties by agent
   const agentProperties = allProperties.filter(
@@ -248,16 +259,16 @@ export default function AgentProfile() {
 
             {/* Service Zones & Specialties */}
             <section className="grid md:grid-cols-2 gap-6">
-              {agent.service_zones && agent.service_zones.length > 0 && (
+              {resolvedZones.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-primary" />
                     {language === 'es' ? 'Zonas de servicio' : 'Service zones'}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {agent.service_zones.map((zone, index) => (
-                      <Badge key={index} variant="outline">
-                        {zone}
+                    {resolvedZones.map((zone) => (
+                      <Badge key={zone.id} variant="outline">
+                        {zone.name}
                       </Badge>
                     ))}
                   </div>
