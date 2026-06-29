@@ -11,10 +11,11 @@ import {
   Calendar,
   Loader2
 } from 'lucide-react';
-import Link from 'next/link';
+
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

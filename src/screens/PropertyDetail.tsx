@@ -12,13 +12,13 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense, lazy } from "react";
 
 
 import { AgentContactCard } from "@/components/AgentContactCard";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { PropertyCard } from "@/components/PropertyCard";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { ShareButtons } from "@/components/ShareButtons";

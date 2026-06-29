@@ -1,9 +1,9 @@
 import { Grid, List, SlidersHorizontal, MapPin, X } from 'lucide-react';
-import Link from 'next/link';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 
 
 import { PageLayout } from '@/components/layout';
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { PropertyCard } from '@/components/PropertyCard';
 import { PropertyFilters } from '@/components/PropertyFilters';
 import { Badge } from '@/components/ui/badge';

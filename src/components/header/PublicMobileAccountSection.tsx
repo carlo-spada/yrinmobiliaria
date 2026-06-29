@@ -1,7 +1,7 @@
 import { Heart, LogOut, User } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';

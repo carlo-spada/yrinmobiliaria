@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from "react";
+
+import { LocaleLink as Link } from '@/components/LocaleLink';
 
 const NotFound = () => {
   const pathname = usePathname() ?? '';

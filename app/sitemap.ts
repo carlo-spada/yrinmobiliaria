@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { env } from '@/lib/env';
+import { withLocale } from '@/lib/i18n';
 import { listPublicAgentSlugs, listPublicPropertyIds } from '@/lib/seo-server';
 
 const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
@@ -8,9 +9,36 @@ const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 // Re-genera el sitemap cada hora (ISR).
 export const revalidate = 3600;
 
+type ChangeFreq = 'weekly' | 'monthly';
+
+/** URL absoluta de una ruta canónica ES en un locale ('/'→raíz; 'en'→/en). */
+function abs(path: string, locale: 'es' | 'en'): string {
+  const rel = withLocale(path, locale);
+  return rel === '/' ? SITE_URL : `${SITE_URL}${rel}`;
+}
+
+/**
+ * Emite las DOS versiones (es + en) de una ruta, cada una con `alternates`
+ * recíprocos (hreflang en el sitemap) — así Google indexa ambos idiomas y sabe
+ * que son equivalentes.
+ */
+function localizedEntries(
+  path: string,
+  changeFrequency: ChangeFreq,
+  priority: number,
+): MetadataRoute.Sitemap {
+  const es = abs(path, 'es');
+  const en = abs(path, 'en');
+  const languages = { es, en };
+  return [
+    { url: es, changeFrequency, priority, alternates: { languages } },
+    { url: en, changeFrequency, priority, alternates: { languages } },
+  ];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPaths: Array<{ path: string; priority: number; changeFrequency: 'weekly' | 'monthly' }> = [
-    { path: '', priority: 1, changeFrequency: 'weekly' },
+  const staticPaths: Array<{ path: string; priority: number; changeFrequency: ChangeFreq }> = [
+    { path: '/', priority: 1, changeFrequency: 'weekly' },
     { path: '/propiedades', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/mapa', priority: 0.6, changeFrequency: 'weekly' },
     { path: '/agentes', priority: 0.7, changeFrequency: 'monthly' },
@@ -22,26 +50,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/derechos-arco', priority: 0.3, changeFrequency: 'monthly' },
   ];
 
-  const entries: MetadataRoute.Sitemap = staticPaths.map(({ path, priority, changeFrequency }) => ({
-    url: `${SITE_URL}${path}`,
-    changeFrequency,
-    priority,
-  }));
+  const entries: MetadataRoute.Sitemap = staticPaths.flatMap(({ path, priority, changeFrequency }) =>
+    localizedEntries(path, changeFrequency, priority),
+  );
 
-  // Mismas fuentes que `generateStaticParams` de las rutas dinámicas (helpers
-  // en seo-server, que degradan a `[]` si la BD no responde → el sitemap queda
-  // con las rutas estáticas). Garantiza que los slugs del sitemap == los de las
-  // páginas (mismo `toSlug`).
+  // Mismas fuentes que `generateStaticParams` de las rutas dinámicas (helpers en
+  // seo-server, que degradan a `[]` si la BD no responde). Garantiza que los slugs
+  // del sitemap == los de las páginas (mismo `toSlug`), en ambos idiomas.
   const [propertyIds, agentSlugs] = await Promise.all([
     listPublicPropertyIds(),
     listPublicAgentSlugs(),
   ]);
 
   for (const id of propertyIds) {
-    entries.push({ url: `${SITE_URL}/propiedad/${id}`, changeFrequency: 'weekly', priority: 0.8 });
+    entries.push(...localizedEntries(`/propiedad/${id}`, 'weekly', 0.8));
   }
   for (const slug of agentSlugs) {
-    entries.push({ url: `${SITE_URL}/agentes/${slug}`, changeFrequency: 'monthly', priority: 0.6 });
+    entries.push(...localizedEntries(`/agentes/${slug}`, 'monthly', 0.6));
   }
 
   return entries;

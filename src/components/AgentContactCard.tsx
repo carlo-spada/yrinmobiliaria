@@ -1,7 +1,7 @@
 import { Mail, Phone, MessageCircle, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

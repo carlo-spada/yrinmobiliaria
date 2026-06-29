@@ -1,7 +1,7 @@
 import { AlertCircle } from "lucide-react";
-import Link from 'next/link';
 import { Component, ReactNode } from "react";
 
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { Button } from "@/components/ui/button";
 
 

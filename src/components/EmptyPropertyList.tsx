@@ -1,6 +1,6 @@
 import { Building2, Plus } from 'lucide-react';
-import Link from 'next/link';
 
+import { LocaleLink as Link } from '@/components/LocaleLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
