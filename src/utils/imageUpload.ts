@@ -72,17 +72,24 @@ export const optimizeImage = (file: File, maxWidth = 1920, maxHeight = 1920, qua
 
           ctx.drawImage(img, 0, 0, width, height);
 
-          canvas.toBlob(
-            (blob) => {
+          // Codifica preferentemente WebP. Si el navegador no soporta WebP en
+          // canvas.toBlob (p. ej. Safari antiguo), `toBlob` cae SILENCIOSAMENTE a
+          // PNG — enorme para fotos (era la causa del avatar de 2.4 MB). Lo
+          // detectamos por el `type` del Blob y caemos a JPEG (universal y
+          // compacto) en vez de subir un PNG de varios MB.
+          const encode = (type: string) =>
+            new Promise<Blob | null>((res) => canvas.toBlob((b) => res(b), type, quality));
+
+          encode('image/webp')
+            .then((webp) => (webp && webp.type === 'image/webp' ? webp : encode('image/jpeg').then((jpeg) => jpeg ?? webp)))
+            .then((blob) => {
               if (blob) {
                 resolve(blob);
               } else {
                 reject(new Error('Error al optimizar la imagen. El archivo puede estar dañado. Intenta con otra imagen.'));
               }
-            },
-            'image/webp', // Convert to WebP for better compression
-            quality
-          );
+            })
+            .catch(() => reject(new Error('Error al optimizar la imagen. Intenta con otra imagen.')));
         } catch {
           reject(new Error('Error al procesar la imagen. Verifica que el archivo no esté dañado.'));
         }
@@ -175,7 +182,14 @@ const blobToBase64 = (blob: Blob): Promise<string> =>
  * (service_role) because this project's storage-api does not validate user JWTs,
  * so a direct authenticated upload from the browser is rejected by Storage RLS.
  */
-export const uploadImage = async (file: File, propertyId: string): Promise<ImageUploadResult> => {
+export const uploadImage = async (
+  file: File,
+  propertyId: string,
+  // Lado máximo (px) tras optimizar. Default 1920 (fotos de propiedad). Los
+  // avatares pasan 512: no necesitan más que ~160 px @3x y así no se almacenan
+  // multi-MB aunque el navegador caiga a PNG/JPEG en vez de WebP.
+  maxDimension = 1920
+): Promise<ImageUploadResult> => {
   // Validate file
   const validationError = validateImage(file);
   if (validationError) {
@@ -186,11 +200,13 @@ export const uploadImage = async (file: File, propertyId: string): Promise<Image
     // Optimize the image client-side, then upload it through the edge function.
     // The file always lands under {propertyId}/ (no temp/ branch — that was Bug 2,
     // where uploads to temp/ were reaped by a cleanup cron after 24h).
-    const optimizedBlob = await optimizeImage(file);
+    const optimizedBlob = await optimizeImage(file, maxDimension, maxDimension);
     const fileBase64 = await blobToBase64(optimizedBlob);
 
+    // El edge function re-sniffa los bytes para decidir el tipo almacenado, pero
+    // enviamos el tipo real (webp/jpeg) en vez de 'image/webp' fijo por claridad.
     const { data, error } = await supabase.functions.invoke('upload-property-image', {
-      body: { propertyId, fileBase64, contentType: 'image/webp' },
+      body: { propertyId, fileBase64, contentType: optimizedBlob.type || 'image/webp' },
     });
 
     if (error || data?.error) {

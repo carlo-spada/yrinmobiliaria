@@ -201,6 +201,7 @@ export default function CompleteProfile() {
                 <ImageUploadZone
                   images={watchedValues.photo_url ? [{ url: watchedValues.photo_url }] : []}
                   maxImages={1}
+                  maxDimension={512}
                   propertyId={user?.id}
                   onImagesChange={(imgs) =>
                     setValue("photo_url", imgs[0]?.url ?? "", {

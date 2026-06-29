@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -61,12 +61,14 @@ export function AgentCard({ agent, propertiesCount = 0 }: AgentCardProps) {
           <CardContent className="p-6 space-y-4">
             {/* Avatar and Name */}
             <div className="flex items-start gap-4">
-              <Avatar className="h-20 w-20 ring-2 ring-primary/20">
-                <AvatarImage src={agent.photo_url || ''} alt={agent.display_name} />
-                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <OptimizedAvatar
+                src={agent.photo_url}
+                alt={agent.display_name}
+                sizePx={80}
+                className="h-20 w-20 ring-2 ring-primary/20"
+                fallbackClassName="text-lg font-semibold bg-primary/10 text-primary"
+                fallback={initials}
+              />
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {agent.display_name}

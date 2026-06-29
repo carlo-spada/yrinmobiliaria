@@ -35,6 +35,7 @@ const renderUploader = (props?: Partial<React.ComponentProps<typeof ImageUploadZ
       onImagesChange={props?.onImagesChange ?? vi.fn()}
       propertyId={props?.propertyId}
       maxImages={props?.maxImages ?? 10}
+      maxDimension={props?.maxDimension}
     />
   );
 };
@@ -51,8 +52,22 @@ describe('ImageUploadZone', () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => expect(mockedUploadImage).toHaveBeenCalledTimes(1));
-    expect(mockedUploadImage).toHaveBeenCalledWith(file, 'prop-1');
+    // maxDimension no especificado -> undefined (uploadImage usa su default 1920).
+    expect(mockedUploadImage).toHaveBeenCalledWith(file, 'prop-1', undefined);
     expect(handleChange).toHaveBeenCalledWith([{ url: 'https://cdn.test/img.webp', path: 'test/path' }]);
+  });
+
+  it('forwards maxDimension to uploadImage (cap de avatar)', async () => {
+    mockedUploadImage.mockResolvedValueOnce({ url: 'https://cdn.test/img.webp', path: 'test/path' });
+    const file = new File(['data'], 'photo.jpg', { type: 'image/jpeg' });
+
+    const { container } = renderUploader({ propertyId: 'prop-1', maxDimension: 512 });
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => expect(mockedUploadImage).toHaveBeenCalledTimes(1));
+    expect(mockedUploadImage).toHaveBeenCalledWith(file, 'prop-1', 512);
   });
 
   it('shows a long-lived error toast on failure', async () => {

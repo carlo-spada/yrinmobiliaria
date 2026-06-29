@@ -14,8 +14,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 
+import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { PropertyCard } from '@/components/PropertyCard';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -125,12 +125,14 @@ export default function AgentProfile() {
             {/* Agent Info */}
             <div className="lg:col-span-2">
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                <Avatar className="h-40 w-40 ring-4 ring-primary/20">
-                  <AvatarImage src={agent.photo_url || ''} alt={agent.display_name} />
-                  <AvatarFallback className="text-4xl font-semibold bg-primary/10 text-primary">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                <OptimizedAvatar
+                  src={agent.photo_url}
+                  alt={agent.display_name}
+                  sizePx={160}
+                  className="h-40 w-40 ring-4 ring-primary/20"
+                  fallbackClassName="text-4xl font-semibold bg-primary/10 text-primary"
+                  fallback={initials}
+                />
 
                 <div className="flex-1 space-y-4">
                   <div>

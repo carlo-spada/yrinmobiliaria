@@ -5,8 +5,8 @@ import { memo } from 'react';
 
 
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { OptimizedAvatar } from '@/components/OptimizedAvatar';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -157,12 +157,14 @@ export const PropertyCard = memo(function PropertyCard({
               href={`/agentes/${generateSlug(agent.display_name)}`}
               className="relative z-20 flex items-center gap-2 pt-3 border-t border-border group/agent"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={agent.photo_url || ''} alt={agent.display_name} />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                  {agentInitials}
-                </AvatarFallback>
-              </Avatar>
+              <OptimizedAvatar
+                src={agent.photo_url}
+                alt={agent.display_name}
+                sizePx={32}
+                className="h-8 w-8"
+                fallbackClassName="text-xs bg-primary/10 text-primary"
+                fallback={agentInitials}
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">
                   {language === 'es' ? 'Agente:' : 'Agent:'}
