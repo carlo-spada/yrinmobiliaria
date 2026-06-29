@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
+import { slugify } from '@/utils/slug';
 
 import { PublicAgent } from './usePublicAgents';
 
@@ -20,7 +21,7 @@ export function useAgentBySlug(slug: string) {
 
       if (cachedAgents) {
         const agent = cachedAgents.find(
-          (a) => a.display_name.toLowerCase().replace(/ /g, '-') === slug.toLowerCase()
+          (a) => generateSlug(a.display_name) === slug.toLowerCase()
         );
         if (agent) return agent;
       }
@@ -37,7 +38,7 @@ export function useAgentBySlug(slug: string) {
 
       // Find exact match by converting display_name to slug format
       const agent = data?.find(
-        (a: PublicAgent) => a.display_name.toLowerCase().replace(/ /g, '-') === slug.toLowerCase()
+        (a: PublicAgent) => generateSlug(a.display_name) === slug.toLowerCase()
       );
 
       return agent ?? null;
@@ -49,10 +50,11 @@ export function useAgentBySlug(slug: string) {
   });
 }
 
+/**
+ * Genera el slug de URL de un agente a partir de su `display_name`. Delega en
+ * `slugify` (única fuente de verdad) para que los enlaces, la resolución del
+ * slug y el render de servidor (SSG/SEO) coincidan siempre. Ver `@/utils/slug`.
+ */
 export function generateSlug(displayName: string): string {
-  return displayName
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]/g, '');
+  return slugify(displayName);
 }

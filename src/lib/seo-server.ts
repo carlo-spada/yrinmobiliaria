@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { env } from '@/lib/env';
 import { getPublicSupabase } from '@/lib/supabase/server';
 import type { Language } from '@/types';
+import { slugify } from '@/utils/slug';
 
 export const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
 
@@ -126,8 +127,11 @@ export interface AgentMeta {
   photo_url: string | null;
 }
 
+// Mismo algoritmo de slug que los enlaces del cliente (`generateSlug`), vía la
+// fuente de verdad compartida — así `generateStaticParams`, la metadata canónica
+// y el JSON-LD producen exactamente la misma URL que apunta cada `<Link>`.
 function toSlug(name: string) {
-  return name.toLowerCase().replace(/ /g, '-');
+  return slugify(name);
 }
 
 export const fetchAgentMeta = cache(async (slug: string): Promise<AgentMeta | null> => {
