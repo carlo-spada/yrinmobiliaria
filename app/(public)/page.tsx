@@ -4,11 +4,16 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import {
   buildLocalBusinessLd,
   buildOrganizationLd,
+  getPublicSiteSettings,
   getServerLocale,
   hreflangFor,
 } from '@/lib/seo-server';
 
 import RouteView from './view';
+
+// ISR: el JSON-LD lee la NAP/redes de site_settings; revalida cada hora para
+// reflejar cambios del panel de admin sin redeploy (alineado con sitemap/PDP).
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
@@ -29,11 +34,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const locale = await getServerLocale();
+  const [locale, settings] = await Promise.all([getServerLocale(), getPublicSiteSettings()]);
   return (
     <>
-      <JsonLd data={buildOrganizationLd(locale)} />
-      <JsonLd data={buildLocalBusinessLd(locale)} />
+      <JsonLd data={buildOrganizationLd(locale, settings)} />
+      <JsonLd data={buildLocalBusinessLd(locale, settings)} />
       <RouteView />
     </>
   );
