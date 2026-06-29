@@ -66,8 +66,15 @@ Reconciliación **solo-repo** (cero escrituras a la BD viva): `schema.sql` + `po
 - **3.2 decisión de tooling:** seguir **declarativo** (`schema.sql`/`policies.sql` canónicos + `manual/NNNN` como registro inmutable), **no** migraciones CLI auto-aplicadas. Documentado en `supabase/README.md` con el mapeo ledger-vivo↔repo (10 migraciones vivas + 2 parches por SQL editor) y un procedimiento de drift-check repetible.
 - **Verificación:** diff read-only contra live (ticsgpyathxawsupcghj) por catálogo en 6 dimensiones + workflow adversarial de 6 agentes re-diffeando cada dimensión → **PASS, 0 drift**. Advisors sin findings nuevos; `next build` verde.
 
+### ✅ Phase 5 — DONE (SEO + i18n + blog) (PRs [#42](https://github.com/carlo-spada/yrinmobiliaria/pull/42), [#44](https://github.com/carlo-spada/yrinmobiliaria/pull/44), [#45](https://github.com/carlo-spada/yrinmobiliaria/pull/45), [#46](https://github.com/carlo-spada/yrinmobiliaria/pull/46))
+
+- **5.4 Slug centralizado + diacríticos** ✓ (PR #42) — `src/utils/slug.ts` (`slugify` con deburr NFD) como fuente única; `useAgentBySlug` y `seo-server.toSlug` la usan → enlaces, `generateStaticParams`, sitemap y JSON-LD producen el MISMO slug. Tests de round-trip.
+- **5.3 NAP/redes reales en JSON-LD** ✓ (PR #44) — `Organization`/`RealEstateAgent` ahora leen la NAP/redes reales de `site_settings` server-side (cacheado, anon) en vez de placeholders falsos; omiten campos sin dato (nunca emiten datos falsos). Home pasa a ISR 1h. Helpers puros `toE164`/`parseAddress` testeados. Verificado en el HTML prerenderizado.
+- **5.1 i18n por URL (C1)** ✓ (PR #45) — **ES en la raíz** (cero riesgo de ranking) + **espejo indexable `/en`**: hreflang recíproco + canonical por locale + sitemap por idioma. Núcleo puro/testeado en `src/lib/i18n.ts` (`localizedHref`, `withLocale`, allowlist de rutas públicas). Locale derivado de la URL en `LanguageProvider`; `LocaleLink` localiza los enlaces públicos; el selector navega entre árboles. Registro único de copy SEO (`page-seo.ts`). Verificado en HTML prerenderizado + sitemap (48 URLs).
+- **5.2 Blog/CMS público** ✓ (PR #46, stacked sobre #45) — `/blog` + `/blog/[slug]` (+ espejo `/en`) server-rendered sobre `cms_pages` (RLS: anon lee publicadas), Article JSON-LD, hreflang/canonical, ISR, `notFound()`, estado vacío. `extractCmsText` defensivo (jsonb opaco) testeado. **Markdown enriquecido = follow-up** (AdminCMS es un stub y `cms_pages` está vacía hoy; render mínimo de párrafos seguro). Blog en el nav + sitemap.
+
 ### ▶ Next up
-Phase 5 (SEO i18n), Phase 6 (analytics), luego **Phase 8 (auditoría UX/UI browser-driven)**. **Phases 0–4 + 7 completas**; P0 de UX ya shippeado (#34). Ver abajo.
+Phase 6 (analytics/observabilidad), luego **Phase 8 (auditoría UX/UI browser-driven)**. **Phases 0–5 + 7 completas**; P0 de UX ya shippeado (#34). Ver abajo.
 
 ---
 
@@ -156,12 +163,12 @@ Repo-only reconciliation — **zero live-DB writes** (declares what was already 
 
 ---
 
-## Phase 5 — SEO + blog/CMS readiness
+## Phase 5 — SEO + blog/CMS readiness — ✅ DONE (PRs #42, #44, #45, #46)
 
-- **5.1 URL-based i18n (C1)** — path-prefixed `/en`, per-path metadata, reciprocal hreflang, per-locale sitemap. Risk High. Effort L. Approval required (routing). Highest SEO ROI.
-- **5.2 Public CMS/blog route (H8)** — `app/(public)/blog/[slug]/page.tsx` + Article JSON-LD + sitemap enumeration of published `cms_pages` + ISR. Risk Medium. Effort M.
-- **5.3 Real NAP/logo/social in JSON-LD (H7).** Files: `seo-server.ts`. Risk Low. Effort S.
-- **5.4 Centralize slug logic + diacritic normalization.** Risk Low. Effort S.
+- **5.1 URL-based i18n (C1)** ✅ (PR #45) — owner-approved approach: **ES at root** (every existing URL unchanged → zero ranking risk) + indexable **`/en` mirror**; per-path metadata, reciprocal hreflang, per-locale canonical + sitemap. URL-derived locale (`LanguageProvider`); `localizedHref`/`LocaleLink` localize public links; single SEO-copy registry. Verified in prerendered HTML + sitemap (48 URLs).
+- **5.2 Public CMS/blog route (H8)** ✅ (PR #46) — `app/(public)/blog` + `/blog/[slug]` (+ `/en` mirror), server-rendered over published `cms_pages` (anon RLS), Article JSON-LD, hreflang/canonical, sitemap enumeration, ISR, `notFound()` + empty state. Defensive `extractCmsText` for the opaque jsonb. _Follow-up:_ rich Markdown rendering + wiring AdminCMS (a stub today) to actually persist to `cms_pages` (currently 0 rows).
+- **5.3 Real NAP/logo/social in JSON-LD (H7)** ✅ (PR #44) — sourced from `site_settings` server-side; omits fields when absent (no fake/placeholder data). `seo-server.ts`.
+- **5.4 Centralize slug logic + diacritic normalization** ✅ (PR #42) — `src/utils/slug.ts` single source (`slugify`, NFD deburr) used by client lookup + SSG/sitemap/JSON-LD.
 
 ---
 
