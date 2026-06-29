@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 
+import { listPublishedCmsPages } from '@/lib/cms';
 import { env } from '@/lib/env';
 import { withLocale } from '@/lib/i18n';
 import { listPublicAgentSlugs, listPublicPropertyIds } from '@/lib/seo-server';
@@ -42,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/propiedades', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/mapa', priority: 0.6, changeFrequency: 'weekly' },
     { path: '/agentes', priority: 0.7, changeFrequency: 'monthly' },
+    { path: '/blog', priority: 0.6, changeFrequency: 'weekly' },
     { path: '/nosotros', priority: 0.5, changeFrequency: 'monthly' },
     { path: '/contacto', priority: 0.5, changeFrequency: 'monthly' },
     { path: '/agendar', priority: 0.5, changeFrequency: 'monthly' },
@@ -57,9 +59,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Mismas fuentes que `generateStaticParams` de las rutas dinámicas (helpers en
   // seo-server, que degradan a `[]` si la BD no responde). Garantiza que los slugs
   // del sitemap == los de las páginas (mismo `toSlug`), en ambos idiomas.
-  const [propertyIds, agentSlugs] = await Promise.all([
+  const [propertyIds, agentSlugs, blogPosts] = await Promise.all([
     listPublicPropertyIds(),
     listPublicAgentSlugs(),
+    listPublishedCmsPages(),
   ]);
 
   for (const id of propertyIds) {
@@ -67,6 +70,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   for (const slug of agentSlugs) {
     entries.push(...localizedEntries(`/agentes/${slug}`, 'monthly', 0.6));
+  }
+  for (const post of blogPosts) {
+    entries.push(...localizedEntries(`/blog/${post.slug}`, 'monthly', 0.5));
   }
 
   return entries;

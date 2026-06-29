@@ -14,6 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { stripLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 import { LanguageSelector } from './LanguageSelector';
@@ -85,7 +86,9 @@ export function Header() {
     { label: t.propertyTypes.commercial, value: 'local', icon: '🏪' },
   ];
 
-  const isActive = (path: string) => pathname === path;
+  // Compara contra la ruta canónica (sin prefijo /en) para que el estado activo
+  // funcione igual en ambos idiomas.
+  const isActive = (path: string) => stripLocale(pathname) === path;
 
   return (
     <header
@@ -204,6 +207,18 @@ export function Header() {
               )}
             >
               {t.nav.about}
+            </Link>
+
+            <Link
+              href="/blog"
+              className={cn(
+                'px-4 py-2 text-sm font-medium transition-colors rounded-md',
+                isActive('/blog')
+                  ? 'text-primary bg-primary/10'
+                  : 'text-foreground hover:text-primary hover:bg-muted'
+              )}
+            >
+              Blog
             </Link>
 
             <Link
@@ -364,6 +379,19 @@ export function Header() {
                       )}
                     >
                       {language === 'es' ? 'Agentes' : 'Agents'}
+                    </Link>
+
+                    <Link
+                      href="/blog"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        'px-4 py-3 text-base font-medium rounded-lg transition-colors',
+                        isActive('/blog')
+                          ? 'text-primary bg-primary/10'
+                          : 'text-foreground hover:bg-muted'
+                      )}
+                    >
+                      Blog
                     </Link>
                   </div>
 

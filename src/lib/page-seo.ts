@@ -24,6 +24,17 @@ interface PageSeo {
 }
 
 export const STATIC_PAGE_SEO: Record<string, PageSeo> = {
+  '/blog': {
+    es: {
+      title: 'Blog',
+      description:
+        'Guías, noticias y consejos sobre bienes raíces en Oaxaca por YR Inmobiliaria.',
+    },
+    en: {
+      title: 'Blog',
+      description: 'Real estate guides, news and tips about Oaxaca by YR Inmobiliaria.',
+    },
+  },
   '/propiedades': {
     es: {
       title: 'Propiedades en venta y renta en Oaxaca',
