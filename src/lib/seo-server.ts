@@ -26,6 +26,96 @@ export function getServerLocale(): Promise<Language> {
   return Promise.resolve(DEFAULT_LOCALE);
 }
 
+// ---------------------------------------------------------------------------
+// site_settings (NAP/redes reales) para el JSON-LD del servidor
+// ---------------------------------------------------------------------------
+
+/** Mapa `setting_key` → valor (string) de `public.site_settings`. */
+export type SiteSettingsMap = Record<string, string>;
+
+/**
+ * Lee `site_settings` (lectura pública por RLS, cliente anon) para alimentar el
+ * JSON-LD con la NAP/redes reales que el admin configura en el panel, en vez de
+ * placeholders quemados en código. `cache()` deduplica la consulta por request;
+ * degrada a `{}` si la BD no responde (el JSON-LD cae a constantes seguras y
+ * omite los campos sin dato — nunca emite datos falsos).
+ */
+export const getPublicSiteSettings = cache(async (): Promise<SiteSettingsMap> => {
+  try {
+    const supabase = getPublicSupabase();
+    const { data } = await supabase.from('site_settings').select('setting_key, setting_value');
+    const map: SiteSettingsMap = {};
+    for (const row of (data ?? []) as Array<{ setting_key: string; setting_value: unknown }>) {
+      const value = row.setting_value;
+      if (value == null) continue;
+      const str = (typeof value === 'string' ? value : String(value)).trim();
+      if (str) map[row.setting_key] = str;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+});
+
+/** `true` si es una URL http(s) absoluta (filtro para `sameAs`). */
+function isHttpUrl(value: string | undefined): value is string {
+  return typeof value === 'string' && /^https?:\/\/\S+$/i.test(value.trim());
+}
+
+/**
+ * Normaliza un teléfono a E.164 (`+<dígitos>`) para `telephone`. Prefiere el
+ * `whatsapp_number` (la app lo valida como `52` + 10 dígitos, ya con código de
+ * país) sobre el `company_phone` de display. Devuelve `null` si no hay dígitos.
+ */
+export function toE164(...candidates: Array<string | undefined>): string | null {
+  for (const raw of candidates) {
+    const digits = (raw ?? '').replace(/\D/g, '');
+    if (digits) return `+${digits}`;
+  }
+  return null;
+}
+
+export interface PostalAddressParts {
+  streetAddress: string;
+  addressLocality: string;
+  addressRegion: string;
+  addressCountry: string;
+}
+
+function normalizeCountry(value: string): string {
+  const s = value.trim().toLowerCase();
+  if (s === 'méxico' || s === 'mexico' || s === 'mx') return 'MX';
+  return value.trim();
+}
+
+/**
+ * Parte la dirección de `company_address` en campos de `PostalAddress`. Formato
+ * esperado (panel de admin): «calle, colonia, ciudad, estado, país». Si no trae
+ * las 5 partes, cae a poner todo en `streetAddress` con la ubicación constante
+ * del negocio (Oaxaca) — nunca inventa datos. Devuelve `null` si viene vacío.
+ */
+export function parseAddress(raw: string | undefined | null): PostalAddressParts | null {
+  if (!raw?.trim()) return null;
+  const parts = raw
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length >= 5) {
+    return {
+      streetAddress: `${parts[0]}, ${parts[1]}`,
+      addressLocality: parts[2],
+      addressRegion: parts[3],
+      addressCountry: normalizeCountry(parts[parts.length - 1]),
+    };
+  }
+  return {
+    streetAddress: raw.trim(),
+    addressLocality: 'Oaxaca de Juárez',
+    addressRegion: 'Oaxaca',
+    addressCountry: 'MX',
+  };
+}
+
 /**
  * IDs de propiedades públicas (status `disponible`) para `generateStaticParams`
  * y el sitemap. Degrada a `[]` si la BD no responde (build no se rompe; las
@@ -166,40 +256,59 @@ export function formatMXN(price: number) {
 // JSON-LD builders (versión servidor: usan SITE_URL en lugar de window.location)
 // ---------------------------------------------------------------------------
 
-export function buildOrganizationLd(language: Language): Record<string, unknown> {
+export function buildOrganizationLd(
+  language: Language,
+  settings: SiteSettingsMap = {},
+): Record<string, unknown> {
+  const telephone = toE164(settings.whatsapp_number, settings.company_phone);
+  const email = settings.company_email;
+  const sameAs = [settings.facebook_url, settings.instagram_url].filter(isHttpUrl);
+  const hasContact = Boolean(telephone || email);
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'YR Inmobiliaria',
+    name: settings.company_name || 'YR Inmobiliaria',
     description:
       language === 'es'
         ? 'Expertos en bienes raíces en Oaxaca, México. Encuentra tu hogar perfecto con más de 10 años de experiencia.'
         : 'Real estate experts in Oaxaca, Mexico. Find your perfect home with over 10 years of experience.',
     url: SITE_URL,
     logo: `${SITE_URL}/favicon.ico`,
-    contactPoint: {
-      '@type': 'ContactPoint',
-      telephone: '+52-951-123-4567',
-      contactType: 'customer service',
-      availableLanguage: ['Spanish', 'English'],
-    },
-    sameAs: ['https://facebook.com/yrinmobiliaria', 'https://instagram.com/yrinmobiliaria'],
+    // Solo incluimos contactPoint/sameAs cuando hay dato real (site_settings);
+    // así un fallo de BD nunca emite teléfonos/redes falsos en el JSON-LD.
+    ...(hasContact
+      ? {
+          contactPoint: {
+            '@type': 'ContactPoint',
+            ...(telephone ? { telephone } : {}),
+            ...(email ? { email } : {}),
+            contactType: 'customer service',
+            areaServed: 'MX',
+            availableLanguage: ['Spanish', 'English'],
+          },
+        }
+      : {}),
+    ...(sameAs.length ? { sameAs } : {}),
   };
 }
 
-export function buildLocalBusinessLd(language: Language): Record<string, unknown> {
+export function buildLocalBusinessLd(
+  language: Language,
+  settings: SiteSettingsMap = {},
+): Record<string, unknown> {
+  const telephone = toE164(settings.whatsapp_number, settings.company_phone);
+  const email = settings.company_email;
+  const address = parseAddress(settings.company_address);
   return {
-    ...buildOrganizationLd(language),
+    ...buildOrganizationLd(language, settings),
     '@type': 'RealEstateAgent',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Centro Histórico',
-      addressLocality: 'Oaxaca de Juárez',
-      addressRegion: 'Oaxaca',
-      addressCountry: 'MX',
-    },
+    ...(telephone ? { telephone } : {}),
+    ...(email ? { email } : {}),
+    ...(address ? { address: { '@type': 'PostalAddress', ...address } } : {}),
     geo: { '@type': 'GeoCoordinates', latitude: 17.0732, longitude: -96.7266 },
-    openingHours: 'Mo-Fr 09:00-18:00',
+    // Horario real (site_settings.business_hours): L-V 9-18, S-D 10-16. En formato
+    // schema.org (el texto libre en español no es parseable de forma fiable).
+    openingHours: ['Mo-Fr 09:00-18:00', 'Sa-Su 10:00-16:00'],
     priceRange: '$$',
   };
 }
