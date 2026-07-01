@@ -86,17 +86,12 @@ function AdminEditProfileContent() {
   }, [profile, setValue]);
 
   const onSubmit = async (data: ProfileFormData) => {
-    // console.log("[Profile Update] Starting update for user:", user?.id);
-    // console.log("[Profile Update] Data to update:", data);
-
     try {
       const { data: result, error } = await supabase
         .from("profiles")
         .update(data)
         .eq("user_id", user?.id ?? '')
         .select();
-
-      // console.log("[Profile Update] Supabase response:", { result, error });
 
       if (error) {
         logger.error("[Profile Update] RLS or DB error:", {
@@ -114,7 +109,6 @@ function AdminEditProfileContent() {
         return;
       }
 
-      // console.log("[Profile Update] Success - updated rows:", result.length);
       toast.success("Perfil actualizado exitosamente");
       router.push("/admin");
     } catch (error) {

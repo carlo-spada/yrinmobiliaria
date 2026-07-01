@@ -74,7 +74,12 @@ export function PublicHeaderActions() {
       ) : user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="hidden md:flex rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex rounded-full"
+              aria-label={language === 'es' ? 'Menú de usuario' : 'User menu'}
+            >
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="text-xs bg-primary/10 text-primary">
                   {initials}
