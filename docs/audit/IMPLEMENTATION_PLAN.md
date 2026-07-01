@@ -1,6 +1,6 @@
 # YR Inmobiliaria — Implementation Plan
 
-**Date:** 2026-06-27 · **Last Updated:** 2026-07-01
+**Date:** 2026-06-27 · **Last Updated:** 2026-07-02
 **Source:** `AUDIT_REPORT.md`. Each task: objective · files · risk · priority · effort · acceptance · tests/checks · rollback.
 
 > Rules: small PR-sized changes; separate commits by category; run quality gates after each batch; never push to `main`; any DB/auth/RLS/storage/DNS/Vercel/Cloudflare change requires explicit approval before execution.
@@ -80,8 +80,9 @@ Reconciliación **solo-repo** (cero escrituras a la BD viva): `schema.sql` + `po
 - **6.3 Vercel Analytics + Speed Insights** ✓ (PR #61) — `@vercel/analytics` + `@vercel/speed-insights` en el root layout (sin cookies/PII, sin consentimiento; solo emiten en Vercel). **Sentry diferido** a un PR enfocado: no funciona sin un DSN del owner y su integración con Turbopack/source-maps conviene añadirla verificable una vez exista el DSN.
 - **Acción del owner para activar:** `NEXT_PUBLIC_GA_MEASUREMENT_ID` en Vercel (Prod + Preview) enciende GA/eventos; habilitar Analytics/Speed Insights en el panel de Vercel; verificar Search Console (enviar el sitemap bilingüe). Follow-ups menores (de la review): subir el FAB de WhatsApp mientras el banner está abierto; enlace de retiro de consentimiento en `/privacidad`.
 
-### ▶ Next up
-**Phase 8 (auditoría UX/UI browser-driven)** — el único bloque grande restante. **Phases 0–7 completas**; P0 de UX ya shippeado (#34). Ver abajo. Follow-ups sueltos: Sentry (6.3, requiere DSN); blog 5.2 (Markdown enriquecido + conectar AdminCMS que hoy es stub).
+### ▶ Phase 8 EN CURSO (auditoría UX/UI)
+**Phases 0–7 completas.** Phase 8: **8.0** ✅ (#34), **8.1** ✅ (#68), **8.2** ✅ (#67), **8.3 wave 1** ✅ (#69, a11y estático). Queda el **crawl browser-driven de 8.3** (responsive / estados vacíos-error / consola / foco / contraste por ruta) → mejor contra el deploy de preview de Vercel (el preview headless cuelga rutas `dynamic(ssr:false)`).
+**Follow-ups sueltos:** Sentry (6.3, requiere DSN del owner); blog 5.2 (Markdown enriquecido + conectar AdminCMS que hoy es stub); polish del banner de cookies (subir el FAB de WhatsApp con el banner abierto + link de retiro de consentimiento en `/privacidad`); **acciones del owner para activar analytics** (GA measurement id en Vercel; habilitar Vercel Analytics/Speed Insights; Search Console + sitemap).
 
 ---
 
@@ -202,8 +203,8 @@ Repo-only reconciliation — **zero live-DB writes** (declares what was already 
 A runtime UX/UI pass over the **live app** (not just static code analysis): drive the running app in a browser (Claude Preview / Chrome MCP), catalog issues, fix in small verified waves. **Owner decision: run AFTER Phases 3–6** (P0 breakages pulled forward — see 8.0).
 
 - **8.0 P0 public-page fixes** ✅ DONE (PR #34) — shipped early (broken core flow): property-detail 401 (`useProperty` requested anon-REVOKEd agent columns `email`/`phone`/`whatsapp_number` from `profiles` → 401; trimmed embed to the anon-safe set); missing `Header`/`Footer` on `PropertyDetail`/`AgentDirectory`/`AgentProfile` (wrapped each `view.tsx` in `PageLayout`); SSR 500 from `loading-spinner.tsx` (added `'use client'` for framer-motion). Verified live in-browser.
-- **8.1** Chrome consistency: unify the two patterns — 5 public screens use `PageLayout`, 5 use bare `<Header/><Footer/>` — on `PageLayout`. Risk Low. Effort S.
-- **8.2** `PropertyDetail` invalid-id handling: replace the literal `router.replace('/404')` with Next's `notFound()` + proper not-found UI. Risk Low. Effort S.
-- **8.3** Systematic per-route crawl (public + private): broken links, empty/error/loading states, responsive breakpoints (mobile/tablet/desktop), console errors, basic a11y (heading order, alt text, focus, contrast). Produce a prioritized backlog, then fix in waves. Risk Low. Effort M–L.
-- **Method:** browser-drive the running app (`.claude/launch.json` → `npm run dev`); navigate + read console/network via the Preview/Chrome MCP; fix in small auto-merged PRs with live verification.
+- **8.1** ✅ DONE (PR [#68](https://github.com/carlo-spada/yrinmobiliaria/pull/68)) — Chrome consistency: the 5 bare-`<Header/><Footer/>` public screens (Index, About, Contact, Favorites, ScheduleVisit) unified on `PageLayout` (the other 5 already used it). Content pages use the default (`pb-16`); homepage + ScheduleVisit's centered confirmation use `<PageLayout fullHeight>` (full-bleed flush). Dropped redundant `bg-background` (painted by `body`). Browser-verified Contact/About/ScheduleVisit/Favorites; homepage serves 200 (its `ssr:false` mount hangs in the headless preview — known flake).
+- **8.2** ✅ DONE (PR [#67](https://github.com/carlo-spada/yrinmobiliaria/pull/67)) — Replaced the client `router.replace('/404')` with server-side `notFound()` on all 4 dynamic pages (property + agent, ES + `/en`); fixed PropertyDetail's "no-results flash during load" (spinner via `isPending`, `notFound()` only when settled-null); upgraded the shared `NotFound` screen with `PageLayout` chrome + i18n (`t.notFound`). **Known limit:** `notFound()` inside an ISR route serves **200 (soft-404), not 404** — inherent Next 16 behavior (verified via curl; the pre-existing `/blog/[slug]` behaves the same). Neutralized with `robots: noindex, nofollow`. A real 404 would need `dynamicParams=false` (would break on-demand rendering of new properties → rejected).
+- **8.3** ▶ IN PROGRESS. **Wave 1** ✅ (PR [#69](https://github.com/carlo-spada/yrinmobiliaria/pull/69)) — static pass: `aria-label`s for icon-only buttons with no accessible name (Favorites dismiss `X` ×2, header user-menu avatar trigger) + removed dead commented `console.log`s. Static scan otherwise clean (no raw `<img>`, no internal `<a href>`, no `/404` literals, no stray `console.log`). **Remaining:** browser-driven per-route crawl (responsive breakpoints, empty/error/loading states, console errors, heading order, focus, contrast) → prioritized backlog + fix waves.
+- **Method:** the browser-driven crawl is best run against the **Vercel preview deployment** — the headless Preview MCP intermittently hangs mounting `dynamic(ssr:false)` routes (the whole public surface), which blocks a reliable local crawl. Static waves land as small auto-merged PRs.
 </content>
