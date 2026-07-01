@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProperty, useProperties } from "@/hooks/useProperties";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { env } from "@/lib/env";
+import { trackPropertyContact, trackPropertyView } from "@/utils/analytics";
 
 const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
 
@@ -65,6 +66,13 @@ export default function PropertyDetail() {
       router.replace('/404');
     }
   }, [id, router]);
+
+  // Registra la vista de propiedad (analytics) cuando la propiedad carga.
+  useEffect(() => {
+    if (property?.id) {
+      trackPropertyView(property.id, property.title[language]);
+    }
+  }, [property?.id, property?.title, language]);
 
   // Global keyboard navigation for gallery (ArrowLeft, ArrowRight, Escape)
   // Must be called before early returns to satisfy React hooks rules
@@ -130,6 +138,7 @@ export default function PropertyDetail() {
       return;
     }
     const message = `${language === "es" ? "Hola, estoy interesado en" : "Hi, I'm interested in"}: ${property.title[language]}`;
+    trackPropertyContact(property.id, 'whatsapp');
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 

@@ -205,6 +205,13 @@ export const translations: Translations = {
         suffix: 'y autorizo el tratamiento de mis datos personales.',
         required: 'Debes aceptar el Aviso de Privacidad para continuar.',
       },
+      cookies: {
+        message:
+          'Usamos cookies de análisis para entender cómo se usa el sitio y mejorarlo. Puedes aceptarlas o rechazarlas.',
+        accept: 'Aceptar',
+        reject: 'Rechazar',
+        learnMore: 'Más información',
+      },
       dataRights: {
         title: 'Derechos ARCO',
         subtitle: 'Ejerce tus derechos de Acceso, Rectificación, Cancelación u Oposición sobre tus datos personales.',
@@ -748,6 +755,13 @@ export const translations: Translations = {
         privacyLink: 'Privacy Notice',
         suffix: 'and authorize the processing of my personal data.',
         required: 'You must accept the Privacy Notice to continue.',
+      },
+      cookies: {
+        message:
+          'We use analytics cookies to understand how the site is used and improve it. You can accept or reject them.',
+        accept: 'Accept',
+        reject: 'Reject',
+        learnMore: 'Learn more',
       },
       dataRights: {
         title: 'Data Rights (ARCO)',
