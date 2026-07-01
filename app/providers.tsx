@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { CookieConsent } from '@/components/CookieConsent';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -42,6 +43,7 @@ export function Providers({
       <TooltipProvider>
         <LanguageProvider initialLanguage={initialLanguage}>
           {children}
+          <CookieConsent />
           <Toaster />
           <Sonner />
         </LanguageProvider>

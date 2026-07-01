@@ -204,6 +204,12 @@ export interface Translation {
       suffix: string;
       required: string;
     };
+    cookies: {
+      message: string;
+      accept: string;
+      reject: string;
+      learnMore: string;
+    };
     dataRights: {
       title: string;
       subtitle: string;
