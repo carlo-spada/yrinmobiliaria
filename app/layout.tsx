@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 
@@ -58,6 +60,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang={DEFAULT_LOCALE} className={`${inter.variable} ${playfair.variable}`}>
       <body>
         <Providers initialLanguage={DEFAULT_LOCALE}>{children}</Providers>
+        {/* Analítica de Vercel (sin cookies, sin PII) + Web Vitals. No requiere
+            consentimiento; solo emite datos en el entorno de Vercel. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
