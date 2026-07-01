@@ -1,6 +1,6 @@
 # YR Inmobiliaria — Implementation Plan
 
-**Date:** 2026-06-27 · **Last Updated:** 2026-06-28
+**Date:** 2026-06-27 · **Last Updated:** 2026-07-01
 **Source:** `AUDIT_REPORT.md`. Each task: objective · files · risk · priority · effort · acceptance · tests/checks · rollback.
 
 > Rules: small PR-sized changes; separate commits by category; run quality gates after each batch; never push to `main`; any DB/auth/RLS/storage/DNS/Vercel/Cloudflare change requires explicit approval before execution.
@@ -73,8 +73,15 @@ Reconciliación **solo-repo** (cero escrituras a la BD viva): `schema.sql` + `po
 - **5.1 i18n por URL (C1)** ✓ (PR #45) — **ES en la raíz** (cero riesgo de ranking) + **espejo indexable `/en`**: hreflang recíproco + canonical por locale + sitemap por idioma. Núcleo puro/testeado en `src/lib/i18n.ts` (`localizedHref`, `withLocale`, allowlist de rutas públicas). Locale derivado de la URL en `LanguageProvider`; `LocaleLink` localiza los enlaces públicos; el selector navega entre árboles. Registro único de copy SEO (`page-seo.ts`). Verificado en HTML prerenderizado + sitemap (48 URLs).
 - **5.2 Blog/CMS público** ✓ (PR #46, stacked sobre #45) — `/blog` + `/blog/[slug]` (+ espejo `/en`) server-rendered sobre `cms_pages` (RLS: anon lee publicadas), Article JSON-LD, hreflang/canonical, ISR, `notFound()`, estado vacío. `extractCmsText` defensivo (jsonb opaco) testeado. **Markdown enriquecido = follow-up** (AdminCMS es un stub y `cms_pages` está vacía hoy; render mínimo de párrafos seguro). Blog en el nav + sitemap.
 
+### ✅ Phase 6 — DONE (analytics/observabilidad) (PRs [#60](https://github.com/carlo-spada/yrinmobiliaria/pull/60), [#61](https://github.com/carlo-spada/yrinmobiliaria/pull/61))
+
+- **6.1 GA + Consent Mode v2 + banner** ✓ (PR #60) — `initGA` arranca con `analytics_storage` denegado (o la decisión guardada) antes del config; anuncios siempre denegados; idempotente (StrictMode). Banner de cookies bilingüe (`CookieConsent`, `useCookieConsent`) que solo aparece si hay GA configurada y sin decisión previa; hidratación-segura vía `useSyncExternalStore`; decisión en `localStorage`; aceptar → `gtag('consent','update')`. 8 tests; revisión adversarial 3-lentes → pass.
+- **6.2 Eventos de conversión + pageviews SPA** ✓ (PR #60) — `AnalyticsPageviews` (usePathname) manda un `page_view` por ruta (`send_page_view:false`); eventos en contacto, agendar visita, vista de propiedad, WhatsApp (PDP + FAB) y búsqueda/filtros. Labels sin PII.
+- **6.3 Vercel Analytics + Speed Insights** ✓ (PR #61) — `@vercel/analytics` + `@vercel/speed-insights` en el root layout (sin cookies/PII, sin consentimiento; solo emiten en Vercel). **Sentry diferido** a un PR enfocado: no funciona sin un DSN del owner y su integración con Turbopack/source-maps conviene añadirla verificable una vez exista el DSN.
+- **Acción del owner para activar:** `NEXT_PUBLIC_GA_MEASUREMENT_ID` en Vercel (Prod + Preview) enciende GA/eventos; habilitar Analytics/Speed Insights en el panel de Vercel; verificar Search Console (enviar el sitemap bilingüe). Follow-ups menores (de la review): subir el FAB de WhatsApp mientras el banner está abierto; enlace de retiro de consentimiento en `/privacidad`.
+
 ### ▶ Next up
-Phase 6 (analytics/observabilidad), luego **Phase 8 (auditoría UX/UI browser-driven)**. **Phases 0–5 + 7 completas**; P0 de UX ya shippeado (#34). Ver abajo.
+**Phase 8 (auditoría UX/UI browser-driven)** — el único bloque grande restante. **Phases 0–7 completas**; P0 de UX ya shippeado (#34). Ver abajo. Follow-ups sueltos: Sentry (6.3, requiere DSN); blog 5.2 (Markdown enriquecido + conectar AdminCMS que hoy es stub).
 
 ---
 
@@ -172,11 +179,11 @@ Repo-only reconciliation — **zero live-DB writes** (declares what was already 
 
 ---
 
-## Phase 6 — Analytics / observability
+## Phase 6 — Analytics / observability — ✅ DONE (PRs #60, #61)
 
-- **6.1** GA consent gate (Consent Mode v2 + banner) — H9. Risk Low. Effort M.
-- **6.2** Wire conversion events (contact/schedule/property-view/WhatsApp/search) + SPA pageviews — H10. Risk Low. Effort M.
-- **6.3** Add Sentry (low-ops) + Vercel Analytics/Speed Insights; verify Search Console. Risk Low. Effort M.
+- **6.1** ✅ (PR #60) — GA consent gate: Consent Mode v2 (default denied) + bilingual cookie banner; consent-gated init, `localStorage` persistence, hydration-safe. H9.
+- **6.2** ✅ (PR #60) — Conversion events (contact/schedule/property-view/WhatsApp/search) + per-route SPA pageviews; non-PII labels. H10.
+- **6.3** ✅ (PR #61) — `@vercel/analytics` + `@vercel/speed-insights` (cookieless, no consent). **Sentry deferred** (needs owner DSN + a verifiable Turbopack integration). Search Console verification = owner action.
 
 ---
 
