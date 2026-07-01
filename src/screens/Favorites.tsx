@@ -147,6 +147,7 @@ export default function Favorites() {
                     size="icon"
                     className="absolute top-2 right-2 h-6 w-6"
                     onClick={dismissBanner}
+                    aria-label={language === 'es' ? 'Cerrar aviso' : 'Dismiss notice'}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -171,6 +172,7 @@ export default function Favorites() {
                     size="icon"
                     className="absolute top-2 right-2 h-6 w-6"
                     onClick={dismissBanner}
+                    aria-label={language === 'es' ? 'Cerrar aviso' : 'Dismiss notice'}
                   >
                     <X className="h-4 w-4" />
                   </Button>
