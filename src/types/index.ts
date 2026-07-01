@@ -235,6 +235,11 @@ export interface Translation {
       backHome: string;
     };
   };
+  notFound: {
+    heading: string;
+    message: string;
+    backHome: string;
+  };
   admin: {
     // Sidebar navigation
     dashboard: string;

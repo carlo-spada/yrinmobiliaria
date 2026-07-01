@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
@@ -50,9 +51,14 @@ export default async function Page({ params }: PageProps) {
   const { slug } = await params;
   const agent = await fetchAgentMeta(slug);
 
+  // Igual que la ruta ES: 404 real para agentes inexistentes.
+  if (!agent) {
+    notFound();
+  }
+
   return (
     <>
-      {agent && <JsonLd data={buildPersonLd(agent, 'en')} />}
+      <JsonLd data={buildPersonLd(agent, 'en')} />
       <RouteView />
     </>
   );

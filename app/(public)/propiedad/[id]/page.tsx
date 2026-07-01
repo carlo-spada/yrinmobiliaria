@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
@@ -62,18 +63,24 @@ export default async function Page({ params }: PageProps) {
   const locale = await getServerLocale();
   const property = await fetchPropertyMeta(id);
 
-  const breadcrumb = property
-    ? buildBreadcrumbLd([
-        { name: locale === 'es' ? 'Inicio' : 'Home', url: SITE_URL },
-        { name: locale === 'es' ? 'Propiedades' : 'Properties', url: `${SITE_URL}/propiedades` },
-        { name: property.title[locale], url: `${SITE_URL}/propiedad/${id}` },
-      ])
-    : null;
+  // Propiedad inexistente o id con formato inválido → 404 real (status HTTP 404,
+  // cacheado por ISR como tal), en vez del soft-404 previo (200 + noindex) que se
+  // servía/cacheaba como página válida. `fetchPropertyMeta` ya devuelve null para
+  // ids que no son UUID, así que este guard cubre ambos casos.
+  if (!property) {
+    notFound();
+  }
+
+  const breadcrumb = buildBreadcrumbLd([
+    { name: locale === 'es' ? 'Inicio' : 'Home', url: SITE_URL },
+    { name: locale === 'es' ? 'Propiedades' : 'Properties', url: `${SITE_URL}/propiedades` },
+    { name: property.title[locale], url: `${SITE_URL}/propiedad/${id}` },
+  ]);
 
   return (
     <>
-      {property && <JsonLd data={buildProductLd(property, locale)} />}
-      {breadcrumb && <JsonLd data={breadcrumb} />}
+      <JsonLd data={buildProductLd(property, locale)} />
+      <JsonLd data={breadcrumb} />
       <RouteView />
     </>
   );
