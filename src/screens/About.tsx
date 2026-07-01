@@ -13,8 +13,7 @@ import {
 } from 'lucide-react';
 
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
+import { PageLayout } from '@/components/layout';
 import { LocaleLink as Link } from '@/components/LocaleLink';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Badge } from '@/components/ui/badge';
@@ -172,9 +171,11 @@ export default function About() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <PageLayout fullHeight>
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </PageLayout>
     );
   }
 
@@ -206,12 +207,9 @@ export default function About() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative py-20 md:py-32 overflow-hidden">
+    <PageLayout>
+      {/* Hero Section */}
+      <section className="relative py-20 md:py-32 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200')] bg-cover bg-center" />
@@ -433,10 +431,7 @@ export default function About() {
               </div>
             </div>
           </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+      </section>
+    </PageLayout>
   );
 }
