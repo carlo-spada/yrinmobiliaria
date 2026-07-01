@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import { useParams, useRouter } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense, lazy } from "react";
 
 
@@ -36,18 +36,15 @@ import { trackPropertyContact, trackPropertyView } from "@/utils/analytics";
 
 const PropertyMiniMap = lazy(() => import("@/components/PropertyMiniMap").then((module) => ({ default: module.PropertyMiniMap })));
 
-// UUID validation helper
-const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const router = useRouter();
   const { getSetting } = usePublicSiteSettings();
   const { toast } = useToast();
 
   // All hooks must be called before any conditional returns
-  const { data: property } = useProperty(id || '');
+  const { data: property, isPending } = useProperty(id || '');
   const { data: properties = [] } = useProperties();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -59,13 +56,6 @@ export default function PropertyDetail() {
     phone: "",
     message: "",
   });
-
-  // Handle invalid UUID navigation in useEffect
-  useEffect(() => {
-    if (id && !isValidUUID(id)) {
-      router.replace('/404');
-    }
-  }, [id, router]);
 
   // Registra la vista de propiedad (analytics) cuando la propiedad carga.
   useEffect(() => {
@@ -97,23 +87,21 @@ export default function PropertyDetail() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isLightboxOpen, property]);
 
-  // Return null for invalid UUID (navigation happens in useEffect)
-  if (id && !isValidUUID(id)) {
-    return null;
+  // El servidor ya devuelve un 404 real para ids inexistentes o con formato
+  // inválido (ver page.tsx → notFound()). Aquí solo cubrimos: (a) la carga del
+  // fetch client-side (ssr:false) y (b) el caso raro de un shell ISR cacheado
+  // para una propiedad borrada después del cacheo → notFound() canónico.
+  if (isPending) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
+        <span className="sr-only">{language === "es" ? "Cargando…" : "Loading…"}</span>
+      </div>
+    );
   }
 
   if (!property) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">{t.properties.noResults}</h1>
-          <Button onClick={() => router.push("/propiedades")} variant="primary">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {language === "es" ? "Volver al catálogo" : "Back to catalog"}
-          </Button>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   const similarProperties = properties

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
@@ -59,9 +60,14 @@ export default async function Page({ params }: PageProps) {
   const locale = await getServerLocale();
   const agent = await fetchAgentMeta(slug);
 
+  // Agente inexistente → 404 real (status HTTP 404, cacheado por ISR como tal).
+  if (!agent) {
+    notFound();
+  }
+
   return (
     <>
-      {agent && <JsonLd data={buildPersonLd(agent, locale)} />}
+      <JsonLd data={buildPersonLd(agent, locale)} />
       <RouteView />
     </>
   );

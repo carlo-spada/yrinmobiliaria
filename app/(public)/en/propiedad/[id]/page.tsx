@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
@@ -53,18 +54,21 @@ export default async function Page({ params }: PageProps) {
   const { id } = await params;
   const property = await fetchPropertyMeta(id);
 
-  const breadcrumb = property
-    ? buildBreadcrumbLd([
-        { name: 'Home', url: `${SITE_URL}/en` },
-        { name: 'Properties', url: `${SITE_URL}/en/propiedades` },
-        { name: property.title.en, url: `${SITE_URL}/en/propiedad/${id}` },
-      ])
-    : null;
+  // Igual que la ruta ES: 404 real para propiedades inexistentes / ids inválidos.
+  if (!property) {
+    notFound();
+  }
+
+  const breadcrumb = buildBreadcrumbLd([
+    { name: 'Home', url: `${SITE_URL}/en` },
+    { name: 'Properties', url: `${SITE_URL}/en/propiedades` },
+    { name: property.title.en, url: `${SITE_URL}/en/propiedad/${id}` },
+  ]);
 
   return (
     <>
-      {property && <JsonLd data={buildProductLd(property, 'en')} />}
-      {breadcrumb && <JsonLd data={breadcrumb} />}
+      <JsonLd data={buildProductLd(property, 'en')} />
+      <JsonLd data={breadcrumb} />
       <RouteView />
     </>
   );

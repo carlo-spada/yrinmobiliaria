@@ -237,6 +237,11 @@ export const translations: Translations = {
         backHome: 'Volver al inicio',
       },
     },
+    notFound: {
+      heading: 'Página no encontrada',
+      message: 'La página que buscas no existe o fue movida.',
+      backHome: 'Volver al inicio',
+    },
     admin: {
       // Sidebar navigation
       dashboard: 'Dashboard',
@@ -787,6 +792,11 @@ export const translations: Translations = {
         successMessage: 'We have received your request. We will reply to the email you provided.',
         backHome: 'Back to home',
       },
+    },
+    notFound: {
+      heading: 'Page not found',
+      message: "The page you're looking for doesn't exist or has been moved.",
+      backHome: 'Back to home',
     },
     admin: {
       // Sidebar navigation
