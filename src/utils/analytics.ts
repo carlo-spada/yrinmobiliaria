@@ -84,7 +84,9 @@ export const initGA = () => {
 
   window.gtag!('js', new Date());
   window.gtag!('config', GA_MEASUREMENT_ID, {
-    send_page_view: true,
+    // Las vistas de página SPA las envía `AnalyticsPageviews` en cada cambio de
+    // ruta (evita el doble conteo del page_view inicial de gtag).
+    send_page_view: false,
     cookie_flags: 'SameSite=None;Secure',
   });
 };
@@ -102,10 +104,11 @@ export function updateConsent(granted: boolean): void {
 }
 
 export const pageview = (url: string) => {
-  if (!window.gtag) return;
-  
-  window.gtag('config', GA_MEASUREMENT_ID, {
+  if (typeof window === 'undefined' || !window.gtag) return;
+
+  window.gtag('event', 'page_view', {
     page_path: url,
+    page_location: window.location.href,
   });
 };
 

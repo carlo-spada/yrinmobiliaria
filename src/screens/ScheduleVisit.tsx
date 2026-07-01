@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSchedulableProperties } from '@/hooks/useProperties';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { trackScheduleVisit } from '@/utils/analytics';
 import { logger } from '@/utils/logger';
 
 const scheduleSchema = z.object({
@@ -124,7 +125,8 @@ export default function ScheduleVisit() {
 
       setConfirmedData(data);
       setIsConfirmed(true);
-      
+      trackScheduleVisit(data.propertyId);
+
       toast({
         title: t.schedule?.successTitle || '¡Cita agendada!',
         description: t.schedule?.successMessage || 'Te enviaremos una confirmación por email.',

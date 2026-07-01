@@ -17,6 +17,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePublicSiteSettings } from '@/hooks/usePublicSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
+import { trackFormSubmission } from '@/utils/analytics';
 import { logger } from '@/utils/logger';
 
 
@@ -101,6 +102,7 @@ export default function Contact() {
         title: t.contact?.successTitle || '¡Mensaje enviado!',
         description: t.contact?.successMessage || 'Nos pondremos en contacto contigo pronto.',
       });
+      trackFormSubmission('contact');
       reset();
       setConsent(false);
     } catch (error) {

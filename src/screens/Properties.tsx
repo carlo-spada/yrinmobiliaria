@@ -17,6 +17,7 @@ import { useProperties } from '@/hooks/useProperties';
 import { usePublicAgents } from '@/hooks/usePublicAgents';
 import { useSearchParamsState } from '@/hooks/useSearchParamsState';
 import { PropertyFilters as PropertyFiltersType, PropertyType } from '@/types/property';
+import { trackSearch } from '@/utils/analytics';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest';
 type ViewMode = 'grid' | 'list';
@@ -102,6 +103,7 @@ export default function Properties() {
     const params = buildSearchParams(newFilters, selectedAgentId);
     setSearchParams(params, { replace: true });
     setCurrentPage(1);
+    trackSearch(newFilters as Record<string, unknown>);
   };
 
   const setSortBy = (newSortBy: SortOption) => {
