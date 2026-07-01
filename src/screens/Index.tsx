@@ -1,9 +1,8 @@
 import { lazy, Suspense } from 'react';
 
 import { FeaturedProperties } from '@/components/FeaturedProperties';
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
+import { PageLayout } from '@/components/layout';
 import { LazySection } from '@/components/LazySection';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -24,39 +23,35 @@ const SectionFallback = () => (
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <HeroSection />
-        <FeaturedProperties />
-        
-        {/* Lazy load below-the-fold sections */}
-        <LazySection>
-          <Suspense fallback={<SectionFallback />}>
-            <ZonesSection />
-          </Suspense>
-        </LazySection>
-        
-        <LazySection>
-          <Suspense fallback={<SectionFallback />}>
-            <WhyChooseUs />
-          </Suspense>
-        </LazySection>
-        
-        <LazySection>
-          <Suspense fallback={<SectionFallback />}>
-            <StatsSection />
-          </Suspense>
-        </LazySection>
-        
-        <LazySection>
-          <Suspense fallback={<SectionFallback />}>
-            <FinalCTA />
-          </Suspense>
-        </LazySection>
-      </main>
-      <Footer />
-    </div>
+    <PageLayout fullHeight>
+      <HeroSection />
+      <FeaturedProperties />
+
+      {/* Lazy load below-the-fold sections */}
+      <LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <ZonesSection />
+        </Suspense>
+      </LazySection>
+
+      <LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <WhyChooseUs />
+        </Suspense>
+      </LazySection>
+
+      <LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <StatsSection />
+        </Suspense>
+      </LazySection>
+
+      <LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <FinalCTA />
+        </Suspense>
+      </LazySection>
+    </PageLayout>
   );
 };
 

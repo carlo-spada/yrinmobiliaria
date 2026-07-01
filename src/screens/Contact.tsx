@@ -4,8 +4,7 @@ import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
+import { PageLayout } from '@/components/layout';
 import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
 import { Turnstile } from '@/components/Turnstile';
 import { Button } from '@/components/ui/button';
@@ -164,12 +163,9 @@ export default function Contact() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-16 md:py-24">
+    <PageLayout>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-4">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
@@ -366,9 +362,6 @@ export default function Contact() {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 }

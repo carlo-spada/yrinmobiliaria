@@ -7,8 +7,7 @@ import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
+import { PageLayout } from '@/components/layout';
 import { ConsentCheckbox } from '@/components/legal/ConsentCheckbox';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { Turnstile } from '@/components/Turnstile';
@@ -169,10 +168,8 @@ export default function ScheduleVisit() {
     const property = properties.find(p => p.id === confirmedData.propertyId);
     
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header />
-        
-        <main className="flex-1 flex items-center justify-center py-16">
+      <PageLayout fullHeight>
+        <div className="flex flex-1 items-center justify-center py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center space-y-8">
               <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
@@ -226,20 +223,15 @@ export default function ScheduleVisit() {
               </div>
             </div>
           </div>
-        </main>
-
-        <Footer />
-      </div>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-16 md:py-24">
+    <PageLayout>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-4">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
@@ -457,9 +449,6 @@ export default function ScheduleVisit() {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+    </PageLayout>
   );
 }
